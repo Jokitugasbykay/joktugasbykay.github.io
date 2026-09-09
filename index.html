@@ -389,12 +389,12 @@
         .payment-summary-box .p-label { font-size: 0.85em; color: var(--text-secondary); margin-bottom: 2px; }
         .payment-summary-box .p-val { font-size: 1.1em; font-weight: 700; color: var(--primary); }
 
-        /* === PESANAN SAYA === */
+       /* === ORDER HISTORY UI === */
         .order-history-item { border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; margin-bottom: 15px; text-align: left; background: var(--card-solid); box-shadow: var(--shadow-default); transition: var(--transition); cursor: pointer; }
         .order-history-item:hover { border-color: var(--primary-light); box-shadow: var(--shadow-card); transform: translateY(-2px); }
         .order-history-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border-color); padding-bottom: 10px; margin-bottom: 10px; }
         .order-id { font-weight: 700; color: var(--text-main); font-size: 0.95em; }
-        
+
         /* Status Badges */
         .status-badge { font-size: 0.8em; padding: 4px 10px; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
         .status-pending { background: #FEF3C7; color: #D97706; } 
@@ -882,24 +882,26 @@
             <p id="ordersSubtitle">Riwayat pesanan kamu di NUGASIN.</p>
         </div>
         <div class="modal-body">
+            <!-- Filter & Search Bar -->
             <div class="filter-sort-bar" style="margin-bottom: 15px; padding:10px;">
                 <div class="filter-pills" id="orderFilterContainer">
-                    <button class="filter-pill active" onclick="window.filterOrders('Semua')">Semua</button>
-                    <button class="filter-pill" onclick="window.filterOrders('Pending Order')">Pending</button>
-                    <button class="filter-pill" onclick="window.filterOrders('Sedang Dikerjakan')">Dikerjakan</button>
-                    <button class="filter-pill" onclick="window.filterOrders('Selesai')">Selesai</button>
+                    <button class="filter-pill active" onclick="filterOrders('Semua')">Semua</button>
+                    <button class="filter-pill" onclick="filterOrders('Pending Order')">Pending</button>
+                    <button class="filter-pill" onclick="filterOrders('Sedang Dikerjakan')">Dikerjakan</button>
+                    <button class="filter-pill" onclick="filterOrders('Selesai')">Selesai</button>
                 </div>
                 <div style="flex-grow:1; margin-left:10px;">
-                    <input type="text" id="orderSearchInput" class="form-control" placeholder="🔍 Cari nomor order..." style="padding: 6px 12px; font-size:0.85em;" oninput="window.searchOrders()">
+                    <input type="text" id="orderSearchInput" class="form-control" placeholder="Cari nomor order..." style="padding: 6px 12px; font-size:0.85em;" oninput="searchOrders()">
                 </div>
             </div>
             
+            <!-- Tempat List Pesanan Muncul -->
             <div id="orderHistoryContainer" style="max-height: 50vh; overflow-y:auto; padding-right:5px;">
                 <!-- Orders injected here -->
             </div>
         </div>
         <div class="modal-footer">
-            <button onclick="window.closeModal('ordersModal'); if(!currentUser && currentTrackWA) currentTrackWA=''; " class="btn-modal-secondary" style="width:100%;">Tutup</button>
+            <button onclick="closeModal('ordersModal'); if(!currentUser && currentTrackWA) currentTrackWA=''; " class="btn-modal-secondary" style="width:100%;">Tutup</button>
         </div>
     </div>
 </div>
@@ -953,7 +955,7 @@
                 <button id="btnCopyOrderId" class="btn-outline" style="flex:1;">Salin No. Order</button>
                 <button id="btnWaAdminDetail" class="btn-modal-primary" style="flex:1; background:var(--whatsapp); box-shadow:none;">💬 Hubungi Admin</button>
             </div>
-            <button onclick="window.closeModal('orderDetailModal'); document.getElementById('ordersModal').style.display='flex';" class="btn-outline" style="width:100%; justify-content:center;">Kembali ke Daftar</button>
+            <button onclick="window.closeModal('orderDetailModal')" class="btn-outline" style="width:100%; justify-content:center;">← Kembali / Tutup</button>
         </div>
     </div>
 </div>
@@ -1082,7 +1084,7 @@
             <div class="services-grid" id="testimoni-products-grid"></div>
         </div>
         <div id="testimoni-detail-view" style="display: none;">
-            <button class="btn-outline" style="margin-bottom: 20px; border:none; padding:0; background: transparent; box-shadow: none;" onclick="window.showTestimoniList()">← Kembali ke Daftar Produk</button>
+            <button class="btn-outline" style="margin-bottom: 20px; border:none; padding:0; background: transparent; box-shadow: none;" onclick="window.showTestimoniList()">Kembali ke Daftar Produk</button>
             <div class="hero-box" style="padding: 30px; margin-bottom: 30px; background: var(--card-solid);">
                 <div class="hero-content">
                     <h2 id="detail-product-title" style="margin-bottom: 5px;">Nama Produk</h2>
@@ -2509,178 +2511,107 @@ Teman tugas mahasiswa.`;
         window.openOrderDetail(currentOrder.id);
     };
 
-    // ==========================================
-    // SISTEM PESANAN SAYA (TRACKING / HISTORY)
-    // ==========================================
-    let currentTrackWA = ''; 
-    let currentOrderFilter = 'Semua';
+// ==========================================
+// SISTEM PESANAN SAYA
+// ==========================================
+let currentTrackWA = ''; 
+let currentOrderFilter = 'Semua';
 
-    window.openOrdersModal = () => {
-        if(currentUser) {
-            currentTrackWA = ''; // Reset state
+window.openOrdersModal = () => {
+    if(currentUser) {
+        currentTrackWA = ''; 
+        renderOrdersList();
+        document.getElementById('ordersModal').style.display = 'flex';
+        document.body.classList.add('modal-open');
+    } else {
+        if(currentTrackWA) {
             renderOrdersList();
             document.getElementById('ordersModal').style.display = 'flex';
             document.body.classList.add('modal-open');
         } else {
-            if(currentTrackWA) {
-                renderOrdersList();
-                document.getElementById('ordersModal').style.display = 'flex';
-                document.body.classList.add('modal-open');
-            } else {
-                // AUTO-FILL LOGIC JIKA ADA PESANAN TERAKHIR
-                const lastOrderId = localStorage.getItem('nugasin_last_order_id');
-                if(lastOrderId) {
-                    document.getElementById('trackInput').value = lastOrderId;
-                } else {
-                    document.getElementById('trackInput').value = '';
-                }
-
-                document.getElementById('trackError').style.display = 'none';
-                document.getElementById('guestTrackModal').style.display = 'flex';
-                document.body.classList.add('modal-open');
-            }
-        }
-    };
-
-    window.processGuestTrack = () => {
-        const input = document.getElementById('trackInput').value.trim();
-        const errorEl = document.getElementById('trackError');
-        
-        if(!input) { 
-            errorEl.innerText = "Silakan masukkan Order ID."; 
-            errorEl.style.display = 'block'; 
-            return; 
-        }
-        
-        if(!input.startsWith('NUG-')) {
-            errorEl.innerText = "Format Order ID tidak valid.";
-            errorEl.style.display = 'block';
-            return;
-        }
-
-        let found = ORDERS.some(o => o.id === input);
-
-        if(found) {
-            currentTrackWA = input; // Disimpan sebagai Order ID
-            errorEl.style.display = 'none';
-            window.closeModal('guestTrackModal');
-            window.filterOrders('Semua'); 
-            document.getElementById('ordersModal').style.display = 'flex';
+            document.getElementById('trackInput').value = '';
+            document.getElementById('trackError').style.display = 'none';
+            document.getElementById('guestTrackModal').style.display = 'flex';
             document.body.classList.add('modal-open');
+        }
+    }
+};
+
+window.filterOrders = (status) => {
+    currentOrderFilter = status;
+    document.querySelectorAll('#orderFilterContainer .filter-pill').forEach(btn => { 
+        if(btn.innerText === status || (status==='Pending Order' && btn.innerText==='Pending') || (status==='Sedang Dikerjakan' && btn.innerText==='Dikerjakan')) {
+            btn.classList.add('active'); 
         } else {
-            errorEl.innerText = "Pesanan dengan Order ID tersebut tidak ditemukan.";
-            errorEl.style.display = 'block';
+            btn.classList.remove('active'); 
         }
-    };
+    });
+    renderOrdersList();
+};
 
-    window.processHelpTrack = () => {
-        const input = document.getElementById('helpTrackInput').value.trim();
-        const errorEl = document.getElementById('helpTrackError');
-        
-        if(!input) { 
-            errorEl.innerText = "Silakan masukkan Order ID."; 
-            errorEl.style.display = 'block'; 
-            return; 
-        }
-        
-        if(!input.startsWith('NUG-')) {
-            errorEl.innerText = "Format Order ID tidak valid.";
-            errorEl.style.display = 'block';
-            return;
-        }
+window.searchOrders = () => { renderOrdersList(); };
 
-        let found = ORDERS.some(o => o.id === input);
-
-        if(found) {
-            currentTrackWA = input; // Disimpan sebagai Order ID
-            errorEl.style.display = 'none';
-            window.filterOrders('Semua'); 
-            document.getElementById('ordersModal').style.display = 'flex';
-            document.body.classList.add('modal-open');
-        } else {
-            errorEl.innerText = "Pesanan dengan Order ID tersebut tidak ditemukan.";
-            errorEl.style.display = 'block';
-        }
-    };
+function renderOrdersList() {
+    const container = document.getElementById('orderHistoryContainer');
+    let userOrders = [];
     
-    window.filterOrders = (status) => {
-        currentOrderFilter = status;
-        document.querySelectorAll('#orderFilterContainer .filter-pill').forEach(btn => { 
-            if(btn.innerText === status || (status==='Pending Order' && btn.innerText==='Pending') || (status==='Sedang Dikerjakan' && btn.innerText==='Dikerjakan')) {
-                btn.classList.add('active'); 
-            } else {
-                btn.classList.remove('active'); 
-            }
-        });
-        renderOrdersList();
-    };
-
-    window.searchOrders = () => { renderOrdersList(); };
-
-    function renderOrdersList() {
-        const container = document.getElementById('orderHistoryContainer');
-        let userOrders = [];
-        
-        if(currentUser) {
-            userOrders = ORDERS.filter(o => o.userId === currentUser.uid);
-        } else if(currentTrackWA) {
-            if(currentTrackWA.startsWith('NUG-')) {
-                userOrders = ORDERS.filter(o => o.id === currentTrackWA);
-            } else {
-                userOrders = ORDERS.filter(o => o.customer.whatsapp === currentTrackWA);
-            }
+    // Tarik data pesanan berdasarkan user (login/guest track)
+    if(currentUser) {
+        userOrders = ORDERS.filter(o => o.userId === currentUser.uid);
+    } else if(currentTrackWA) {
+        if(currentTrackWA.startsWith('NUG-')) {
+            userOrders = ORDERS.filter(o => o.id === currentTrackWA);
+        } else {
+            userOrders = ORDERS.filter(o => o.customer.whatsapp === currentTrackWA);
         }
-
-        const searchTerm = document.getElementById('orderSearchInput').value.toLowerCase();
-        
-        let filtered = userOrders.filter(o => {
-            const ordStatus = o.orderStatus || 'PENDING_ORDER';
-            let matchStatus = false;
-            if(currentOrderFilter === 'Semua') matchStatus = true;
-            else if(currentOrderFilter === 'Pending Order' && ordStatus === 'PENDING_ORDER') matchStatus = true;
-            else if(currentOrderFilter === 'Sedang Dikerjakan' && ordStatus === 'IN_PROGRESS') matchStatus = true;
-            else if(currentOrderFilter === 'Selesai' && ordStatus === 'COMPLETED') matchStatus = true;
-            
-            const matchSearch = o.id.toLowerCase().includes(searchTerm) || o.items.some(i => i.name.toLowerCase().includes(searchTerm));
-            return matchStatus && matchSearch;
-        }).sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-        if(filtered.length === 0) {
-            container.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:30px 0;">Tidak ada pesanan yang sesuai.</p>';
-            return;
-        }
-
-        container.innerHTML = filtered.map(o => {
-            const ordStatus = o.orderStatus || 'PENDING_ORDER';
-            let statusClass = 'status-pending';
-            let statusText = 'Menunggu Diproses';
-            
-            if(ordStatus === 'IN_PROGRESS') { statusClass = 'status-processing'; statusText = 'Sedang Dikerjakan'; }
-            if(ordStatus === 'COMPLETED') { statusClass = 'status-completed'; statusText = 'Selesai'; }
-
-            const estDate = o.estimatedCompletion ? new Date(o.estimatedCompletion).toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'}) : '-';
-            const estText = ordStatus === 'COMPLETED' ? `✓ Selesai pada ${estDate}` : `Estimasi selesai: ${estDate}`;
-
-            return `
-            <div class="order-history-item" onclick="window.openOrderDetail('${o.id}')">
-                <div class="order-history-header">
-                    <span class="order-id">${o.id}</span>
-                    <span class="status-badge ${statusClass}">${statusText}</span>
-                </div>
-                <div style="font-size:0.95em; color:var(--text-main); font-weight:600; margin-bottom:5px;">
-                    ${o.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:0.8em; color:var(--text-muted);">${new Date(o.createdAt).toLocaleDateString('id-ID')}</span>
-                    <span class="order-total">${formatRupiah(o.total)}</span>
-                </div>
-                <div class="order-est-box">
-                    ⏳ <span>${estText}</span>
-                </div>
-            </div>`;
-        }).join('');
     }
 
+    const searchTerm = document.getElementById('orderSearchInput').value.toLowerCase();
+    
+    // Logika Filter & Pencarian
+    let filtered = userOrders.filter(o => {
+        const mappedStatus = STATUS_MAP[o.status] || o.status;
+        const matchStatus = currentOrderFilter === 'Semua' ? true : mappedStatus === currentOrderFilter;
+        const matchSearch = o.id.toLowerCase().includes(searchTerm) || o.items.some(i => i.name.toLowerCase().includes(searchTerm));
+        return matchStatus && matchSearch;
+    }).sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    // Jika Kosong
+    if(filtered.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:30px 0;">Tidak ada pesanan yang sesuai.</p>';
+        return;
+    }
+
+    // Tampilkan List
+    container.innerHTML = filtered.map(o => {
+        const mappedStatus = STATUS_MAP[o.status] || o.status;
+        let statusClass = 'status-pending';
+        if(o.status === 'processing') statusClass = 'status-processing';
+        if(o.status === 'completed') statusClass = 'status-completed';
+        if(o.status === 'cancelled') statusClass = 'status-cancelled';
+
+        const estDate = o.estimatedCompletion ? new Date(o.estimatedCompletion).toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'}) : '-';
+        const estText = o.status === 'completed' ? `✓ Selesai pada ${estDate}` : `Estimasi selesai: ${estDate}`;
+
+        return `
+        <div class="order-history-item" onclick="openOrderDetail('${o.id}')">
+            <div class="order-history-header">
+                <span class="order-id">${o.id}</span>
+                <span class="status-badge ${statusClass}">${mappedStatus}</span>
+            </div>
+            <div style="font-size:0.95em; color:var(--text-main); font-weight:600; margin-bottom:5px;">
+                ${o.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.8em; color:var(--text-muted);">${new Date(o.createdAt).toLocaleDateString('id-ID')}</span>
+                <span class="order-total">${formatRupiah(o.total)}</span>
+            </div>
+            <div class="order-est-box">
+                ⏳ <span>${estText}</span>
+            </div>
+        </div>`;
+    }).join('');
+}
     window.openOrderDetail = (orderId) => {
         const order = ORDERS.find(o => o.id === orderId); if(!order) return;
         
@@ -3212,7 +3143,39 @@ const copyBtn = document.getElementById('btnCopyOrderId');
             errorEl.style.display = 'block';
         }
     };
+window.processGuestTrack = () => {
+        const input = document.getElementById('trackInput').value.trim();
+        const errorEl = document.getElementById('trackError'); // INI BARIS YANG HILANG SEBELUMNYA
+        
+        if(!input) { 
+            errorEl.innerText = "Silakan masukkan nomor pesanan terlebih dahulu.";
+            errorEl.style.display = 'block'; 
+            return; 
+        }
+        
+        let found = false;
+        if(input.startsWith('NUG-')) {
+            const order = ORDERS.find(o => o.id === input);
+            if(order) {
+                errorEl.style.display = 'none';
+                window.openOrderDetail(order.id);
+                found = true;
+            }
+        } else {
+            const normWA = normalizeWhatsAppNumber(input);
+            const order = ORDERS.find(o => o.customer.whatsapp === normWA);
+            if(order) {
+                errorEl.style.display = 'none';
+                window.openOrderDetail(order.id);
+                found = true;
+            }
+        }
 
+        if(!found) {
+            errorEl.innerText = "Pesanan tidak ditemukan. Periksa kembali nomor pesananmu.";
+            errorEl.style.display = 'block';
+        }
+    };
     document.addEventListener("DOMContentLoaded", async () => { 
         renderApp(); checkWelcomePopup(); await loadReviews(); restoreCheckoutState();
 
