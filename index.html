@@ -4544,34 +4544,25 @@
         };
 
         // ==========================================
-        // SISTEM KERANJANG 
-        // ==========================================
-        let CART = [];
+       // ==========================================
+    // SISTEM KERANJANG 
+    // ==========================================
+    let CART = [];
 
-        async function loadCart() {
-            if (currentUser && isFirebaseActive) { const snap = await getDoc(doc(db, "carts", currentUser.uid)); CART = snap.exists() ? snap.data().items || [] : []; }
-            else { const saved = localStorage.getItem('nugasin_guest_cart'); CART = saved ? JSON.parse(saved) : []; }
-            updateCartBadge();
-        }
+    async function loadCart() {
+        const saved = localStorage.getItem('nugasin_guest_cart');
+        CART = saved ? JSON.parse(saved) : [];
+        updateCartBadge();
+    }
 
-        async function saveCart() {
-            if (currentUser && isFirebaseActive) await setDoc(doc(db, "carts", currentUser.uid), { items: CART });
-            else localStorage.setItem('nugasin_guest_cart', JSON.stringify(CART));
-            updateCartBadge();
-        }
+    async function saveCart() {
+        localStorage.setItem('nugasin_guest_cart', JSON.stringify(CART));
+        updateCartBadge();
+    }
 
-        async function mergeCartsOnLogin() {
-            const guestJSON = localStorage.getItem('nugasin_guest_cart');
-            if (guestJSON) {
-                const guestCart = JSON.parse(guestJSON);
-                if (guestCart.length > 0 && isFirebaseActive) {
-                    const snap = await getDoc(doc(db, "carts", currentUser.uid)); let userCart = snap.exists() ? snap.data().items || [] : [];
-                    guestCart.forEach(gItem => { const exist = userCart.find(c => c.productId === gItem.productId); if (exist) exist.quantity += gItem.quantity; else userCart.push(gItem); });
-                    CART = userCart; await saveCart();
-                }
-                localStorage.removeItem('nugasin_guest_cart');
-            }
-        }
+    async function mergeCartsOnLogin() {
+        // Keranjang disederhanakan menggunakan localStorage penuh
+    }
 
         window.addToCart = (productId) => {
             const product = CONFIG.PRODUCTS.find(p => p.id === productId); if (!product) return;
@@ -5412,207 +5403,79 @@ Teman tugas mahasiswa.`;
         }
 
         async function loadReviews() {
-            if (isFirebaseActive) {
-                try {
-                    const snap = await getDocs(collection(db, "reviews"));
-                    REVIEWS = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                } catch (e) { }
-            }
-            else {
+        try {
+            const { data, error } = await supabase.from('reviews').select('*');
+            if (data && !error) {
+                REVIEWS = data;
+            } else {
                 REVIEWS = JSON.parse(localStorage.getItem('nugasin_reviews')) || [];
             }
-
-            // Hapus otomatis jika sebelumnya sempat ada data bintang 1 atau 2 yang tersimpan
-            REVIEWS = REVIEWS.filter(r => r.rating >= 3);
-
-            if (REVIEWS.length === 0) {
-                REVIEWS = generateDemoReviews();
-                if (!isFirebaseActive) localStorage.setItem('nugasin_reviews', JSON.stringify(REVIEWS));
-            }
-
-            if (currentTab === 'testimoni') {
-                if (document.getElementById('testimoni-list-view').style.display !== 'none') {
-                    window.showTestimoniList();
-                } else if (currentReviewProductId) {
-                    window.showProductReviews(currentReviewProductId);
-                }
-            }
+        } catch (e) {
+            console.error("Gagal memuat review Supabase:", e);
+            REVIEWS = JSON.parse(localStorage.getItem('nugasin_reviews')) || [];
         }
 
-        function calculateAverageRating(reviewsArr) {
-            if (reviewsArr.length === 0) return 0;
-            const total = reviewsArr.reduce((sum, r) => sum + r.rating, 0);
-            return (total / reviewsArr.length).toFixed(1);
+        // Hapus otomatis jika sebelumnya sempat ada data bintang 1 atau 2 yang tersimpan
+        REVIEWS = REVIEWS.filter(r => r.rating >= 3);
+
+        if (REVIEWS.length === 0) {
+            REVIEWS = generateDemoReviews();
         }
 
-        function getProductStats(productId) {
-            const pr = REVIEWS.filter(r => r.productId === productId);
-            if (pr.length === 0) return { avg: 0, count: 0, dist: { 5: 0, 4: 0, 3: 0 } };
+        if(currentTab === 'testimoni') { 
+            if(document.getElementById('testimoni-list-view').style.display !== 'none') {
+                window.showTestimoniList(); 
+            } else if(currentReviewProductId) {
+                window.showProductReviews(currentReviewProductId); 
+            }
+        }
+    }
 
-            const dist = { 5: 0, 4: 0, 3: 0 };
-            pr.forEach(r => { if (dist[r.rating] !== undefined) dist[r.rating]++; });
-
-            return {
-                avg: calculateAverageRating(pr),
-                count: pr.length,
-                dist: dist
-            };
+    window.submitReview = async () => {
+        const text = document.getElementById('revText').value.trim();
+        const errorEl = document.getElementById('revError');
+        
+        // BATASAN MINIMAL BINTANG 3 SAAT USER MENULIS ULASAN BARU
+        if (currentStarRating < 3) {
+            errorEl.innerText = "Minimal rating yang dapat diberikan adalah 3 bintang.";
+            errorEl.style.display = "block";
+            return;
+        }
+        if (!text) {
+            errorEl.innerText = "Silakan tuliskan ulasan Anda terlebih dahulu.";
+            errorEl.style.display = "block";
+            return;
         }
 
-        function getStarsHTML(rating) {
-            let s = "";
-            for (let i = 1; i <= 5; i++) {
-                s += i <= rating ? '<span style="color:var(--warning-star);">⭐</span>' : '<span style="color:var(--border-color); filter: grayscale(100%); opacity: 0.3;">⭐</span>';
-            }
-            return s;
-        }
-
-        window.showTestimoniList = () => {
-            document.getElementById('testimoni-detail-view').style.display = 'none';
-            document.getElementById('testimoni-list-view').style.display = 'block';
-
-            document.getElementById('testimoni-products-grid').innerHTML = CONFIG.PRODUCTS.map(p => {
-                const s = getProductStats(p.id);
-                const rText = s.count > 0 ? `<span class="star-icon">⭐</span> <span style="color:var(--text-main); font-weight:700;">${s.avg}</span> <span class="count">(${s.count} ulasan)</span>` : `<span class="count">Belum ada ulasan</span>`;
-
-                return `<div class="service-card"><div class="service-icon" style="font-size:1.5em; margin-bottom:10px;">${p.icon}</div><h3>${p.title}</h3><span class="category-badge" style="margin-bottom:15px;">${p.category}</span><div class="rating-summary">${rText}</div><button class="btn-outline" style="width:100%; margin-top:auto;" onclick="window.showProductReviews('${p.id}')">Lihat Ulasan</button></div>`;
-            }).join('');
+        document.getElementById('btnSubmitReview').innerText = "Mengirim...";
+        
+        const reviewData = { 
+            id: `REV-${Date.now()}`,
+            userId: currentUser.uid, 
+            productId: currentReviewProductId, 
+            rating: currentStarRating, 
+            comment: text, 
+            customerName: currentUser.name, 
+            userPhoto: currentUser.photo || "", 
+            date: new Date().toISOString(),
+            isDemo: false 
         };
-
-        window.filterReviewsByStar = (star) => {
-            currentStarFilter = star;
-            window.showProductReviews(currentReviewProductId);
-        };
-
-        window.showProductReviews = (pId) => {
-            const product = CONFIG.PRODUCTS.find(p => p.id === pId);
-            if (!product) return;
-            currentReviewProductId = pId;
-
-            document.getElementById('testimoni-list-view').style.display = 'none';
-            document.getElementById('detail-product-title').innerText = `${product.icon} ${product.title}`;
-
-            const s = getProductStats(pId);
-
-            // Render Header & Filter Bintang (Hanya 3, 4, 5)
-            let statsHtml = '';
-            if (s.count > 0) {
-                statsHtml = `
-                <div style="margin-bottom: 20px; display:flex; align-items:center; gap:10px;">
-                    <span style="font-size: 1.8em; font-weight: 800; color: var(--text-main);">⭐ ${s.avg}</span>
-                    <span style="font-size: 0.95em; color: var(--text-secondary);">dari ${s.count} ulasan</span>
-                </div>
-                <div class="filter-pills" style="margin-bottom: 25px; overflow-x: auto; padding-bottom: 5px;">
-                    <button class="filter-pill ${currentStarFilter === 0 ? 'active' : ''}" onclick="window.filterReviewsByStar(0)">Semua</button>
-                    <button class="filter-pill ${currentStarFilter === 5 ? 'active' : ''}" onclick="window.filterReviewsByStar(5)">⭐ 5 (${s.dist[5]})</button>
-                    <button class="filter-pill ${currentStarFilter === 4 ? 'active' : ''}" onclick="window.filterReviewsByStar(4)">⭐ 4 (${s.dist[4]})</button>
-                    <button class="filter-pill ${currentStarFilter === 3 ? 'active' : ''}" onclick="window.filterReviewsByStar(3)">⭐ 3 (${s.dist[3]})</button>
-                </div>
-            `;
-            } else {
-                statsHtml = `<span style="font-size:0.9em; color:var(--text-muted); margin-bottom:20px; display:block;">Belum ada ulasan</span>`;
-            }
-
-            document.getElementById('detail-product-stats').innerHTML = statsHtml;
-            document.getElementById('btn-tulis-ulasan').onclick = () => window.openReviewModal(product.id, product.title);
-
-            let pRev = REVIEWS.filter(r => r.productId === pId);
-            if (currentStarFilter > 0) pRev = pRev.filter(r => r.rating === currentStarFilter);
-            pRev.sort((a, b) => new Date(b.date || b.createdAt || 0) - new Date(a.date || a.createdAt || 0));
-
-            document.getElementById('detail-reviews-grid').innerHTML = pRev.length === 0
-                ? `<div class="service-card" style="grid-column: 1 / -1; text-align: center; padding: 40px;"><h3 style="margin-bottom:10px; color:var(--text-main);">Belum ada ulasan</h3><p style="margin-bottom:20px; color:var(--text-secondary);">Tidak ada ulasan untuk rating ini.</p><button class="btn-outline" onclick="window.filterReviewsByStar(0)">Lihat Semua Rating</button></div>`
-                : pRev.map(r => {
-                    const anonName = anonymizeName(r.customerName || r.userName || r.name);
-                    const isVerified = (r.orderId || !r.isDemo) ? `<span style="color:var(--success); font-size:0.75em; font-weight:600; background:#DCFCE7; padding:2px 8px; border-radius:12px; margin-left:8px;">✓ Pembeli Terverifikasi</span>` : '';
-                    const rDate = new Date(r.date || r.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-
-                    return `
-                <div class="service-card" style="display:flex; flex-direction:column;">
-                    <div style="border-bottom: 1px dashed var(--border-color); padding-bottom: 12px; margin-bottom: 15px;">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:5px;">
-                            <div style="display:flex; flex-direction:column; gap:4px;">
-                                <div><strong style="color:var(--text-main); font-size:1.1em;">${escapeHTML(anonName)}</strong> ${isVerified}</div>
-                                <div style="font-size: 0.9em; letter-spacing: 2px;">${getStarsHTML(r.rating)}</div>
-                            </div>
-                        </div>
-                    </div>
-                    <p style="font-style: italic; color:var(--text-secondary); line-height:1.6; margin-bottom:15px; flex-grow:1;">"${escapeHTML(r.comment || r.text)}"</p>
-                    <div style="font-size: 0.8em; color: var(--text-muted); text-align:right;">${rDate}</div>
-                </div>`;
-                }).join('');
-
-            document.getElementById('testimoni-detail-view').style.display = 'block';
-        };
-
-        const starElems = document.querySelectorAll('#interactiveStars .star');
-        starElems.forEach((star, idx) => {
-            star.addEventListener('mouseover', () => starElems.forEach((s, i) => { s.innerText = i <= idx ? "★" : "☆"; s.style.color = i <= idx ? "var(--warning-star)" : "var(--border-color)"; }));
-            star.addEventListener('mouseout', () => starElems.forEach((s, i) => { s.innerText = i < currentStarRating ? "★" : "☆"; s.style.color = i < currentStarRating ? "var(--warning-star)" : "var(--border-color)"; }));
-            star.addEventListener('click', () => { currentStarRating = idx + 1; });
-        });
-
-        window.openReviewModal = (pId, pTitle) => {
-            // PERINGATAN WAJIB LOGIN GOOGLE
-            if (!currentUser) {
-                window.showToast("Silakan masuk dengan akun Google untuk memberikan ulasan.");
-                window.openAuthModal();
-                return;
-            }
-            document.getElementById('reviewProductName').innerText = pTitle;
-            currentStarRating = 0;
-            starElems.forEach(s => { s.innerText = "☆"; s.style.color = "var(--border-color)"; });
-
-            document.getElementById('revText').value = "";
-            document.getElementById('revError').style.display = "none";
-            document.getElementById('reviewModal').style.display = 'flex';
-            document.body.classList.add('modal-open');
-        };
-
-        window.submitReview = async () => {
-            const text = document.getElementById('revText').value.trim();
-            const errorEl = document.getElementById('revError');
-
-            // BATASAN MINIMAL BINTANG 3 SAAT USER MENULIS ULASAN BARU
-            if (currentStarRating < 3) {
-                errorEl.innerText = "Minimal rating yang dapat diberikan adalah 3 bintang.";
-                errorEl.style.display = "block";
-                return;
-            }
-            if (!text) {
-                errorEl.innerText = "Silakan tuliskan ulasan Anda terlebih dahulu.";
-                errorEl.style.display = "block";
-                return;
-            }
-
-            document.getElementById('btnSubmitReview').innerText = "Mengirim...";
-
-            const reviewData = {
-                id: `REV-${Date.now()}`,
-                userId: currentUser.uid,
-                productId: currentReviewProductId,
-                rating: currentStarRating,
-                comment: text,
-                customerName: currentUser.name,
-                userPhoto: currentUser.photo || "",
-                date: new Date().toISOString(),
-                isDemo: false
-            };
-
-            if (isFirebaseActive) {
-                try { await addDoc(collection(db, "reviews"), reviewData); } catch (e) { }
-            } else {
-                REVIEWS.push(reviewData);
-                localStorage.setItem('nugasin_reviews', JSON.stringify(REVIEWS));
-            }
-
-            document.getElementById('btnSubmitReview').innerText = "Kirim Ulasan";
-            window.closeModal('reviewModal');
-            window.showToast("Ulasan berhasil dikirim.");
-
-            currentStarFilter = 0;
-            await loadReviews();
-        };
+        
+        // Simpan ke Supabase
+        try { 
+            await supabase.from('reviews').insert([reviewData]); 
+            REVIEWS.push(reviewData);
+        } catch(e) {
+            console.error("Gagal mengirim ulasan:", e);
+        } 
+        
+        document.getElementById('btnSubmitReview').innerText = "Kirim Ulasan"; 
+        window.closeModal('reviewModal'); 
+        window.showToast("Ulasan berhasil dikirim."); 
+        
+        currentStarFilter = 0;
+        await loadReviews();
+    };
 
         // ==========================================
         // RENDER LAYANAN & HARGA SPESIFIK
