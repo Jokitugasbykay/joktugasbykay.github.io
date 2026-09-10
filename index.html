@@ -2153,14 +2153,14 @@
             notes: order.task.notes || null
         };
 
-        const { data, error } = await supabase
-            .from('orders')
-            .insert(payload)
-            .select('*')
-            .single();
+       const { error } = await supabase
+    .from('orders')
+    .insert(payload);
 
-        if (error) throw error;
-        return mapSupabaseOrder(data);
+if (error) throw error;
+// Data order yang dibuat di frontend sudah memiliki order_code,
+// jadi tidak perlu mengambil ulang data dari server.
+return order;
     }
     let appliedPromoDiscount = 0;
     
