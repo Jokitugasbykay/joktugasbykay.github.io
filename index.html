@@ -445,6 +445,7 @@
         .badge-info { background: #F3E8FF; color: #9333EA; }
         .badge-feature { background: #DCFCE7; color: var(--success); }
         .badge-urgent { background: #FEE2E2; color: var(--error); }
+        .badge-bug { background: #FEF3C7; color: #D97706; } [data-theme="dark"] .badge-bug { background: var(--theme-amber-surface) !important; color: #fcd34d !important; }
         .update-item { border-bottom: 1px dashed var(--border-color); padding-bottom: 20px; margin-bottom: 20px; }
         .update-item:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
         .update-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
@@ -2046,7 +2047,9 @@ header, footer {
     const CONFIG = {
         whatsappAdminNumber: "601155639233", 
         serviceFee: 0, 
-        updates: [
+       updates: [
+            {date: "11 September 2026", title: "Penambahan Fitur Mode Gelap", desc: "Website NUGASIN kini mendukung mode gelap (Dark Mode) untuk memberikan kenyamanan membaca saat malam hari. Aktifkan melalui ikon bulan/matahari di sudut kanan atas.", type: "FITUR BARU", badgeClass: "badge-feature"},
+            {date: "10 September 2026", title: "Perbaikan Fitur Lacak Pesanan", desc: "Telah dilakukan perbaikan (Bug Fix) pada sistem pelacakan pesanan. Kini list pesanan akan otomatis muncul dengan lebih cepat dan akurat setelah memasukkan Order ID.", type: "BUG FIX", badgeClass: "badge-bug"},
             {date: "08 September 2026", title: "Pembaruan Sistem Pemesanan", desc: "Sistem pemesanan NUGASIN telah diperbarui untuk memberikan proses order yang lebih sederhana dan cepat bagi mahasiswa.", type: "UPDATE", badgeClass: "badge-update"},
             {date: "07 September 2026", title: "Jam Operasional Layanan", desc: "Admin NUGASIN tersedia untuk membantu konsultasi dan pemesanan pada jam operasional 08:00 - 22:00 WIB.", type: "INFO", badgeClass: "badge-info"},
             {date: "05 September 2026", title: "Peluncuran Fitur Status Pesanan", desc: "Sekarang pengguna dapat memantau status pesanan secara mandiri dengan lebih mudah langsung dari halaman website.", type: "FITUR BARU", badgeClass: "badge-feature"}
@@ -2055,6 +2058,8 @@ header, footer {
             {date: "06 September 2026", title: "Perubahan Jam Layanan Weekend", desc: "Pada hari Sabtu dan Minggu, waktu respons admin dapat mengalami sedikit keterlambatan. Silakan lakukan pemesanan lebih awal untuk menghindari antrean pengerjaan.", type: "PENTING", badgeClass: "badge-urgent"}
         ],
         changelog: [
+            {date: "11 Sep 2026", desc: "Penambahan fitur Mode Gelap (Dark Mode)."},
+            {date: "10 Sep 2026", desc: "Perbaikan bug pada fitur Lacak Pesanan."},
             {date: "08 Sep 2026", desc: "Pembaruan UI dan sistem pemesanan."},
             {date: "05 Sep 2026", desc: "Penambahan fitur Lacak Pesanan dan Status Pesanan."},
             {date: "01 Sep 2026", desc: "Penyempurnaan tampilan mobile responsive."},
