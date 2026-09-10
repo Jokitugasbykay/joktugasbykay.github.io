@@ -3177,19 +3177,18 @@
                 <p id="ordersSubtitle">Riwayat pesanan kamu di NUGASIN.</p>
             </div>
             <div class="modal-body">
-                <!-- Filter & Search Bar -->
-                <div class="filter-sort-bar" style="margin-bottom: 15px; padding:10px;">
-                    <div class="filter-pills" id="orderFilterContainer">
-                        <button class="filter-pill active" onclick="filterOrders('Semua')">Semua</button>
-                        <button class="filter-pill" onclick="filterOrders('Pending Order')">Pending</button>
-                        <button class="filter-pill" onclick="filterOrders('Sedang Dikerjakan')">Dikerjakan</button>
-                        <button class="filter-pill" onclick="filterOrders('Selesai')">Selesai</button>
-                    </div>
-                    <div style="flex-grow:1; margin-left:10px;">
-                        <input type="text" id="orderSearchInput" class="form-control" placeholder="Cari nomor order..."
-                            style="padding: 6px 12px; font-size:0.85em;" oninput="searchOrders()">
-                    </div>
+               <!-- Filter & Search Bar -->
+            <div class="filter-sort-bar" style="margin-bottom: 15px; padding:10px;">
+                <div class="filter-pills" id="orderFilterContainer">
+                    <button class="filter-pill active" onclick="window.filterOrders('Semua')">Semua</button>
+                    <button class="filter-pill" onclick="window.filterOrders('Pending Order')">Pending</button>
+                    <button class="filter-pill" onclick="window.filterOrders('Sedang Dikerjakan')">Dikerjakan</button>
+                    <button class="filter-pill" onclick="window.filterOrders('Selesai')">Selesai</button>
                 </div>
+                <div style="flex-grow:1; margin-left:10px;">
+                    <input type="text" id="orderSearchInput" class="form-control" placeholder="Cari nomor order..." style="padding: 6px 12px; font-size:0.85em;" oninput="window.searchOrders()">
+                </div>
+            </div>
 
                 <!-- Tempat List Pesanan Muncul -->
                 <div id="orderHistoryContainer" style="max-height: 50vh; overflow-y:auto; padding-right:5px;">
@@ -5174,85 +5173,104 @@ Teman tugas mahasiswa.`;
         window.searchOrders = () => { renderOrdersList(); };
 
         async function renderOrdersList() {
-            const container = document.querySelector('#ordersModal #orderHistoryContainer');
-            if (!container) return;
+        const container = document.querySelector('#ordersModal #orderHistoryContainer');
+        if(!container) return;
 
-            // Ambil data terbaru dari Supabase setiap kali daftar pesanan dibuka.
-            if (currentUser) {
-                await loadMyOrdersFromSupabase();
-            } else if (currentTrackWA) {
-                let query = supabase.from('orders').select('*').order('created_at', { ascending: false });
-                if (currentTrackWA.startsWith('NUG-')) {
-                    query = query.eq('order_code', currentTrackWA);
-                } else {
-                    query = query.contains('customer', { whatsapp: currentTrackWA });
-                }
-                const { data, error } = await query;
-                if (error) {
-                    console.error('Gagal mencari pesanan:', error);
-                    container.innerHTML = '<p style="text-align:center; color:var(--error); padding:30px 0;">Gagal memuat pesanan.</p>';
-                    return;
-                }
-                ORDERS = (data || []).map(mapSupabaseOrder);
+        // Ambil data terbaru dari Supabase setiap kali daftar pesanan dibuka.
+        if(currentUser) {
+            await loadMyOrdersFromSupabase();
+        } else if(currentTrackWA) {
+            let query = supabase.from('orders').select('*').order('created_at', { ascending: false });
+            if(currentTrackWA.startsWith('NUG-')) {
+                query = query.eq('order_code', currentTrackWA);
             } else {
-                ORDERS = [];
+                query = query.contains('customer', { whatsapp: currentTrackWA });
             }
-
-            const searchEl = document.getElementById('orderSearchInput');
-            const searchTerm = searchEl ? searchEl.value.trim().toLowerCase() : '';
-
-            let filtered = ORDERS.filter(o => {
-                const ordStatusStr = o.orderStatus || o.status || 'PENDING_ORDER';
-                let mappedStatus = 'Menunggu Diproses';
-                if (ordStatusStr === 'IN_PROGRESS' || ordStatusStr === 'processing') mappedStatus = 'Sedang Dikerjakan';
-                if (ordStatusStr === 'COMPLETED' || ordStatusStr === 'completed') mappedStatus = 'Selesai';
-                if (ordStatusStr === 'CANCELLED' || ordStatusStr === 'cancelled') mappedStatus = 'Dibatalkan';
-
-                const matchStatus = currentOrderFilter === 'Semua' ? true :
-                    (currentOrderFilter === 'Pending Order' && mappedStatus === 'Menunggu Diproses') ? true :
-                        mappedStatus === currentOrderFilter;
-
-                const matchSearch = (o.id || '').toLowerCase().includes(searchTerm) ||
-                    (o.items || []).some(i => (i.name || '').toLowerCase().includes(searchTerm));
-                return matchStatus && matchSearch;
-            }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-            if (filtered.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:30px 0;">Tidak ada pesanan yang sesuai.</p>';
+            const { data, error } = await query;
+            if(error) {
+                console.error('Gagal mencari pesanan:', error);
+                container.innerHTML = '<p style="text-align:center; color:var(--error); padding:30px 0;">Gagal memuat pesanan.</p>';
                 return;
             }
+            ORDERS = (data || []).map(mapSupabaseOrder);
+        } else {
+            ORDERS = [];
+        }
 
-            container.innerHTML = filtered.map(o => {
-                const ordStatusStr = o.orderStatus || 'PENDING_ORDER';
-                let statusClass = 'status-pending';
-                let mappedStatus = 'Menunggu Diproses';
-                if (ordStatusStr === 'IN_PROGRESS') { statusClass = 'status-processing'; mappedStatus = 'Sedang Dikerjakan'; }
-                if (ordStatusStr === 'COMPLETED') { statusClass = 'status-completed'; mappedStatus = 'Selesai'; }
-                if (ordStatusStr === 'CANCELLED') { statusClass = 'status-cancelled'; mappedStatus = 'Dibatalkan'; }
+        const searchEl = document.getElementById('orderSearchInput');
+        const searchTerm = searchEl ? searchEl.value.trim().toLowerCase() : '';
 
-                const estDate = o.estimatedCompletion ? new Date(o.estimatedCompletion).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-';
-                const estText = (mappedStatus === 'Selesai') ? `✓ Selesai pada ${estDate}` : `Estimasi selesai: ${estDate}`;
+        let filtered = ORDERS.filter(o => {
+            const ordStatusStr = o.orderStatus || o.status || 'PENDING_ORDER';
+            let mappedStatus = 'Menunggu Diproses';
+            if(ordStatusStr === 'IN_PROGRESS' || ordStatusStr === 'processing') mappedStatus = 'Sedang Dikerjakan';
+            if(ordStatusStr === 'COMPLETED' || ordStatusStr === 'completed') mappedStatus = 'Selesai';
+            if(ordStatusStr === 'CANCELLED' || ordStatusStr === 'cancelled') mappedStatus = 'Dibatalkan';
+            if(ordStatusStr === 'paid') mappedStatus = 'Pending Order'; // fallback legacy
 
-                return `
+            const matchStatus = currentOrderFilter === 'Semua' ? true :
+                               (currentOrderFilter === 'Pending Order' && (mappedStatus === 'Menunggu Diproses' || mappedStatus === 'Pending Order')) ? true :
+                               mappedStatus === currentOrderFilter;
+
+            const matchSearch = (o.id || '').toLowerCase().includes(searchTerm) ||
+                (o.items || []).some(i => (i.name || '').toLowerCase().includes(searchTerm));
+            return matchStatus && matchSearch;
+        }).sort((a,b) => {
+            const d1 = new Date(a.createdAt).getTime();
+            const d2 = new Date(b.createdAt).getTime();
+            return (isNaN(d2) ? 0 : d2) - (isNaN(d1) ? 0 : d1);
+        });
+
+        if(filtered.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:30px 0;">Tidak ada pesanan yang sesuai.</p>';
+            return;
+        }
+
+        container.innerHTML = filtered.map(o => {
+            const ordStatusStr = o.orderStatus || o.status || 'PENDING_ORDER';
+            let statusClass = 'status-pending';
+            let mappedStatus = 'Menunggu Diproses';
+            
+            if(ordStatusStr === 'IN_PROGRESS' || ordStatusStr === 'processing') { statusClass = 'status-processing'; mappedStatus = 'Sedang Dikerjakan'; }
+            if(ordStatusStr === 'COMPLETED' || ordStatusStr === 'completed') { statusClass = 'status-completed'; mappedStatus = 'Selesai'; }
+            if(ordStatusStr === 'CANCELLED' || ordStatusStr === 'cancelled') { statusClass = 'status-cancelled'; mappedStatus = 'Dibatalkan'; }
+            if(ordStatusStr === 'paid') { mappedStatus = 'Pending Order'; }
+
+            // PENGAMAN TANGGAL 1 (Estimasi)
+            let estDateStr = '-';
+            if (o.estimatedCompletion) {
+                const d = new Date(o.estimatedCompletion);
+                if (!isNaN(d)) estDateStr = d.toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'});
+            }
+            const estText = (mappedStatus === 'Selesai') ? `✓ Selesai pada ${estDateStr}` : `Estimasi selesai: ${estDateStr}`;
+
+            // PENGAMAN TANGGAL 2 (Tanggal Order)
+            let createDateStr = '-';
+            if (o.createdAt) {
+                const d = new Date(o.createdAt);
+                if (!isNaN(d)) createDateStr = d.toLocaleDateString('id-ID');
+            }
+
+            return `
             <div class="order-history-item" onclick="window.openOrderDetail('${o.id}')">
                 <div class="order-history-header">
-                    <span class="order-id">${o.id}</span>
+                    <span class="order-id">${o.id || '-'}</span>
                     <span class="status-badge ${statusClass}">${mappedStatus}</span>
                 </div>
                 <div style="font-size:0.95em; color:var(--text-main); font-weight:600; margin-bottom:5px;">
                     ${(o.items || []).map(i => `${i.name} (x${i.quantity})`).join(', ')}
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:0.8em; color:var(--text-muted);">${new Date(o.createdAt).toLocaleDateString('id-ID')}</span>
+                    <span style="font-size:0.8em; color:var(--text-muted);">${createDateStr}</span>
                     <span class="order-total">${formatRupiah(o.total)}</span>
                 </div>
                 <div class="order-est-box">
                     ⏳ <span>${estText}</span>
                 </div>
             </div>`;
-            }).join('');
-        }
-
+        }).join('');
+    }
+        
         window.openOrderDetail = (orderId) => {
             const order = ORDERS.find(o => o.id === orderId); if (!order) return;
 
