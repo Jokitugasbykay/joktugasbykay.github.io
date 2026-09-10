@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NUGASIN | Teman Nugas Mahasiswa</title>
+<script id="jokiin-theme-init">
+(function () {
+    let theme = 'light';
+    try { theme = localStorage.getItem('jokiin_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); } catch (_) {}
+    document.documentElement.dataset.theme = theme === 'dark' ? 'dark' : 'light';
+})();
+</script>
     <!-- Font -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -599,6 +606,117 @@
             .info-sidebar { position: static; }
         }
     </style>
+
+<style id="jokiin-glass-theme">
+/* Tambahan visual terisolasi: tema, panel kaca, dan animasi masuk popup. */
+:root {
+    color-scheme: light;
+    --glass-panel: rgba(255,255,255,.78);
+    --glass-modal: rgba(255,255,255,.93);
+    --glass-edge: rgba(255,255,255,.88);
+    --glass-sheen: rgba(255,255,255,.68);
+    --glass-shadow: 0 12px 36px rgba(31,62,105,.08), inset 0 1px 0 rgba(255,255,255,.8);
+    --theme-blue-surface: #eff6ff;
+    --theme-green-surface: #dcfce7;
+    --theme-red-surface: #fee2e2;
+    --theme-amber-surface: #fef3c7;
+}
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --primary: #8ab8ff;
+    --primary-dark: #a9caff;
+    --primary-light: #639eff;
+    --accent: #67e8f9;
+    --bg-color: #0b1220;
+    --card-solid: #152238;
+    --surface-secondary: #1b2b43;
+    --text-main: #edf3ff;
+    --text-secondary: #b2c0d5;
+    --text-muted: #9aaec8;
+    --border-color: #34465f;
+    --border-highlight: #4b6a96;
+    --success: #6ee7a0;
+    --error: #fca5a5;
+    --warning-star: #fbbf24;
+    --glass-panel: rgba(21,34,56,.82);
+    --glass-modal: rgba(18,30,49,.95);
+    --glass-edge: rgba(163,193,240,.22);
+    --glass-sheen: rgba(173,203,255,.08);
+    --glass-shadow: 0 12px 36px rgba(0,0,0,.22), inset 0 1px 0 rgba(193,215,255,.12);
+    --shadow-default: 0 2px 8px rgba(0,0,0,.16);
+    --shadow-card: 0 4px 18px rgba(0,0,0,.2);
+    --shadow-hover: 0 12px 30px rgba(0,0,0,.28);
+    --theme-blue-surface: #203654;
+    --theme-green-surface: #153c30;
+    --theme-red-surface: #46282f;
+    --theme-amber-surface: #43351d;
+}
+body {
+    background-image: radial-gradient(ellipse at 8% 0%, rgba(77,149,255,.14), transparent 48%), radial-gradient(ellipse at 95% 35%, rgba(42,205,207,.10), transparent 42%);
+    background-attachment: fixed;
+}
+:is(.service-card,.step-card,.info-container,.info-card,.help-cat-card,.tip-card,.faq-item,.checkout-card,.order-flow-wrapper,.filter-sort-bar,.search-box) {
+    background: linear-gradient(135deg,var(--glass-sheen),transparent 52%),var(--glass-panel);
+    border-color: var(--glass-edge);
+    box-shadow: var(--glass-shadow);
+    -webkit-backdrop-filter: blur(16px) saturate(135%);
+    backdrop-filter: blur(16px) saturate(135%);
+}
+header, footer {
+    background: var(--glass-panel);
+    -webkit-backdrop-filter: blur(20px) saturate(145%);
+    backdrop-filter: blur(20px) saturate(145%);
+}
+.modal-content,.welcome-wrapper {
+    background: linear-gradient(140deg,var(--glass-sheen),transparent 48%),var(--glass-modal);
+    border-color: var(--glass-edge);
+    box-shadow: var(--glass-shadow),0 24px 64px rgba(0,0,0,.20);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+    backdrop-filter: blur(22px) saturate(140%);
+}
+.welcome-content { background: transparent; }
+#themeToggle { flex: 0 0 40px; width:40px; height:40px; padding:0; justify-content:center; font-size:18px; }
+#themeToggle svg { width:20px; height:20px; }
+#themeToggle .theme-sun { display:none; }
+[data-theme="dark"] #themeToggle .theme-sun { display:block; }
+[data-theme="dark"] #themeToggle .theme-moon { display:none; }
+#themeToggle:focus-visible { outline:3px solid var(--primary); outline-offset:3px; }
+[data-theme="dark"] :is(.hero-box,.help-hero,.track-section) { background:linear-gradient(135deg,#17273e,#10212e); border-color:var(--border-color); }
+[data-theme="dark"] :is(.pill,.track-input-group input) { color:var(--text-main); }
+[data-theme="dark"] :is(.form-control:focus,.help-search-container input:focus,.track-input-group input,.w-benefit-icon,.pay-card.active .pay-card-status) { background:var(--card-solid); }
+[data-theme="dark"] .form-control[disabled] { background:var(--surface-secondary); color:var(--text-muted); }
+[data-theme="dark"] :is(.service-card .category-badge,.link-icon,.btn-outline:hover,.btn-cart:hover,.btn-modal-secondary:hover,.link-item:hover,.help-cat-card:hover,.flow-step:hover .flow-icon,.contact-cta-box,.pay-acc-header.active,.pay-card:hover,.pay-card.active,.payment-summary-box,.status-processing,.badge-update) { background:var(--theme-blue-surface); }
+[data-theme="dark"] :is(.status-completed,.success-icon-wrapper,.badge-feature,.footer-admin-card:hover) { background:var(--theme-green-surface); }
+[data-theme="dark"] :is(.status-cancelled,.badge-urgent) { background:var(--theme-red-surface); }
+[data-theme="dark"] .status-pending { background:var(--theme-amber-surface); color:#fcd34d; }
+[data-theme="dark"] .badge-info { background:#32244b; color:#d8b4fe; }
+/* Warna inline lama, termasuk elemen yang dirender oleh JS. */
+[data-theme="dark"] :is([style*="background:#EFF6FF" i],[style*="background: #EFF6FF" i],[style*="background-color: #EFF6FF" i]) { background:var(--theme-blue-surface) !important; }
+[data-theme="dark"] :is([style*="background:#DCFCE7" i],[style*="background: #DCFCE7" i]) { background:var(--theme-green-surface) !important; }
+[data-theme="dark"] :is([style*="background:#fff;" i],[style*="background: #fff;" i],[style*="background: white" i],[style*="background-color: #fff;" i]) { background:var(--card-solid) !important; }
+[data-theme="dark"] :is(.btn-header,.btn-modal-primary,.w-btn-primary,.track-input-group button,.pill.active,.filter-pill.active,.pay-badge,.compact-social-btn:hover) { background-color:#2863d6; color:#fff; }
+[data-theme="dark"] :is(.btn-header,.btn-modal-primary,.w-btn-primary,.track-input-group button):hover { background-color:#1d4fb5; }
+[data-theme="dark"] .welcome-visual { background:linear-gradient(135deg,#2356b8,#0a6e86); }
+/* translate terpisah agar transform skala welcome mobile tetap utuh. */
+@keyframes jokiinPopupEnter {
+    from { opacity:0; translate:0 32px; }
+    to { opacity:1; translate:0 0; }
+}
+@keyframes jokiinOverlayEnter { from { opacity:0; } to { opacity:1; } }
+.modal-overlay:not(#orderDetailModal) { animation:jokiinOverlayEnter .2s ease-out; }
+.modal-overlay:not(#orderDetailModal) > :is(.modal-content,.welcome-wrapper) {
+    animation:jokiinPopupEnter .38s cubic-bezier(.16,1,.3,1) both;
+}
+@media(max-width:768px) {
+    #themeToggle { flex:0 0 36px !important; width:36px; min-width:36px; height:36px; }
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) {
+    :is(.service-card,.step-card,.info-container,.info-card,.help-cat-card,.tip-card,.faq-item,.checkout-card,.order-flow-wrapper,.filter-sort-bar,.search-box,.modal-content,.welcome-wrapper,header,footer) { background:var(--card-solid); }
+}
+@media(prefers-reduced-motion:reduce) {
+    .modal-overlay:not(#orderDetailModal),.modal-overlay:not(#orderDetailModal) > :is(.modal-content,.welcome-wrapper) { animation:none; }
+}
+</style>
 </head>
 <body>
 
@@ -787,16 +905,37 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2 id="authTitle">Masuk ke NUGASIN</h2>
+            <p style="font-size: 0.9em; color: var(--text-secondary); margin-top: 5px;">Silakan login atau daftar akun baru.</p>
         </div>
         <div class="modal-body">
             <div id="authError" class="error-msg" style="margin-bottom:15px; display:none;"></div>
+            
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" id="authEmail" class="form-control" placeholder="Masukkan alamat email">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" id="authPassword" class="form-control" placeholder="Minimal 6 karakter">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 25px;">
+                <button id="btnLogin" onclick="window.processEmailLogin()" class="btn-modal-primary">Login</button>
+                <button id="btnRegister" onclick="window.processEmailRegister()" class="btn-modal-secondary">Daftar</button>
+            </div>
+
+            <div style="text-align: center; margin: 20px 0; font-size: 0.85em; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">
+                Atau
+            </div>
+
             <button id="btnGoogleLogin" onclick="window.processGoogleLogin()" class="btn-google">
                 <svg viewBox="0 0 24 24" style="width:18px; height:18px;"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
                 Masuk dengan Google
             </button>
         </div>
         <div class="modal-footer" style="flex-direction: column; gap: 15px; margin-top:15px;">
-            <button onclick="window.closeModal('authModal')" class="btn-modal-secondary" style="width: 100%; border: none; box-shadow: none;">Batal / Tutup</button>
+            <button onclick="window.closeModal('authModal')" class="btn-modal-secondary" style="width: 100%; border: none; box-shadow: none;">Batal</button>
         </div>
     </div>
 </div>
@@ -968,6 +1107,10 @@
         </div>
         <div class="checkout-title" id="checkoutHeaderTitle">Penyelesaian Pesanan</div>
         <div class="header-actions" id="mainHeaderActions">
+            <button id="themeToggle" type="button" class="btn-cart" aria-label="Aktifkan mode malam" aria-pressed="false" title="Aktifkan mode malam">
+                <svg class="theme-moon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"/></svg>
+                <svg class="theme-sun" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.4 1.4m11.2 11.2L19 19M5 19l1.4-1.4M17.6 6.4 19 5"/></svg>
+            </button>
             <button id="cartHeaderBtn" class="btn-cart" onclick="window.openCartModal()">🛒 Keranjang</button>
             <button id="ordersHeaderBtn" class="btn-cart" onclick="window.openOrdersModal()">📋 Pesanan Saya</button>
             <button id="authHeaderBtn" class="btn-header" onclick="window.openAuthModal()">Masuk</button>
@@ -1747,16 +1890,19 @@
     // 2. AUTHENTICATION LOGIC (LOGIN/LOGOUT)
     // ==========================================
     
-    // Memantau status login user
+    // Memantau status login user & Session
     supabase.auth.onAuthStateChange(async (event, session) => {
         if (session && session.user) {
+            // Fallback nama jika daftar via email murni (tidak ada full_name)
+            let fallbackName = session.user.user_metadata?.full_name || session.user.email.split('@')[0];
+            
             currentUser = { 
                 uid: session.user.id, 
-                name: session.user.user_metadata.full_name || 'User', 
+                name: fallbackName, 
                 email: session.user.email, 
-                photo: session.user.user_metadata.avatar_url 
+                photo: session.user.user_metadata?.avatar_url || ''
             };
-            await saveUserToSupabase(session.user);
+            await saveUserToSupabase(session.user, fallbackName);
         } else { 
             currentUser = null; 
         }
@@ -1766,18 +1912,92 @@
         }
     });
 
-  // Menyimpan data user ke tabel profiles
-    async function saveUserToSupabase(user) {
+    // Menyimpan data user ke tabel profiles
+    async function saveUserToSupabase(user, userName) {
         const { error } = await supabase.from('profiles').upsert({
             id: user.id,
-            name: user.user_metadata.full_name || 'User',
+            name: userName,
             email: user.email,
-            photo_url: user.user_metadata.avatar_url,
-            created_at: new Date().toISOString()
+            photo_url: user.user_metadata?.avatar_url || null
         }, { onConflict: 'id' });
         
         if (error) console.error("Gagal menyimpan profil:", error);
     }
+
+    // Fungsi Registrasi Email/Password
+    window.processEmailRegister = async () => {
+        const email = document.getElementById('authEmail').value;
+        const password = document.getElementById('authPassword').value;
+        const errEl = document.getElementById('authError');
+        const btn = document.getElementById('btnRegister');
+
+        errEl.style.display = 'none';
+        
+        if (!email || !password) {
+            errEl.innerText = "Email dan password wajib diisi!";
+            errEl.style.display = 'block';
+            return;
+        }
+        if (password.length < 6) {
+            errEl.innerText = "Password minimal 6 karakter!";
+            errEl.style.display = 'block';
+            return;
+        }
+
+        btn.innerText = "Memproses...";
+        btn.disabled = true;
+
+        const { data, error } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+        });
+
+        if (error) {
+            errEl.innerText = error.message;
+            errEl.style.display = 'block';
+        } else {
+            window.closeModal('authModal');
+            if(typeof window.showToast === 'function') window.showToast("Berhasil daftar & login.");
+        }
+        
+        btn.innerText = "Daftar";
+        btn.disabled = false;
+    };
+
+    // Fungsi Login Email/Password
+    window.processEmailLogin = async () => {
+        const email = document.getElementById('authEmail').value;
+        const password = document.getElementById('authPassword').value;
+        const errEl = document.getElementById('authError');
+        const btn = document.getElementById('btnLogin');
+
+        errEl.style.display = 'none';
+
+        if (!email || !password) {
+            errEl.innerText = "Email dan password wajib diisi!";
+            errEl.style.display = 'block';
+            return;
+        }
+
+        btn.innerText = "Memproses...";
+        btn.disabled = true;
+
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password,
+        });
+
+        if (error) {
+            errEl.innerText = "Email atau password salah.";
+            errEl.style.display = 'block';
+        } else {
+            window.closeModal('authModal');
+            if(typeof window.showToast === 'function') window.showToast("Berhasil login.");
+        }
+
+        btn.innerText = "Login";
+        btn.disabled = false;
+    };
 
     // Fungsi tombol Login Google
     window.processGoogleLogin = async () => {
@@ -1794,7 +2014,7 @@
         if (error) {
             const errEl = document.getElementById('authError');
             if(errEl) { errEl.innerText = "Login dibatalkan atau gagal."; errEl.style.display = 'block'; }
-            if(btn) { btn.innerHTML = `<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:18px;" alt="Google"> Masuk dengan Google`; btn.disabled = false; }
+            if(btn) { btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:18px; height:18px;"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Masuk dengan Google`; btn.disabled = false; }
         }
     };
 
@@ -2095,75 +2315,8 @@
 // ==========================================
     // SISTEM CHECKOUT (TERPISAH DIRECT & CART, LOCKED FLOW, GRID UI)
     // ==========================================
-    // PESANAN SEKARANG DISIMPAN DI SUPABASE
-    let ORDERS = [];
+    let ORDERS = JSON.parse(localStorage.getItem('nugasin_orders')) || [];
     let currentOrder = null;
-
-    function mapSupabaseOrder(row) {
-        return {
-            id: row.order_code,
-            userId: row.user_id || 'guest',
-            items: Array.isArray(row.items) ? row.items : [],
-            customer: row.customer && typeof row.customer === 'object' ? row.customer : {},
-            task: row.task && typeof row.task === 'object' ? row.task : {},
-            paymentMethod: row.payment_method || '-',
-            subtotal: Number(row.subtotal || 0),
-            discount: Number(row.discount || 0),
-            serviceFee: Number(row.service_fee || 0),
-            paymentFee: Number(row.payment_fee || 0),
-            total: Number(row.total_price || 0),
-            paymentStatus: row.payment_status || 'PAID',
-            orderStatus: row.status === 'processing' ? 'IN_PROGRESS' : row.status === 'completed' ? 'COMPLETED' : row.status === 'cancelled' ? 'CANCELLED' : 'PENDING_ORDER',
-            estimatedCompletion: row.estimated_completion,
-            createdAt: row.created_at
-        };
-    }
-
-    async function loadMyOrdersFromSupabase() {
-        if (!currentUser) { ORDERS = []; return; }
-        const { data, error } = await supabase
-            .from('orders')
-            .select('*')
-            .eq('user_id', currentUser.uid)
-            .order('created_at', { ascending: false });
-        if (error) {
-            console.error('Gagal memuat pesanan:', error);
-            window.showToast('Gagal memuat pesanan. Coba lagi.');
-            return;
-        }
-        ORDERS = (data || []).map(mapSupabaseOrder);
-    }
-
-    async function saveOrderToSupabase(order) {
-        const payload = {
-            order_code: order.id,
-            user_id: currentUser ? currentUser.uid : null,
-            items: order.items,
-            customer: order.customer,
-            task: order.task,
-            payment_method: order.paymentMethod,
-            subtotal: order.subtotal,
-            discount: order.discount,
-            service_fee: order.serviceFee,
-            payment_fee: order.paymentFee,
-            total_price: order.total,
-            payment_status: order.paymentStatus,
-            status: 'pending',
-            estimated_completion: order.estimatedCompletion,
-            notes: order.task.notes || null
-        };
-
-        const { error } = await supabase
-            .from('orders')
-            .insert(payload);
-
-        if (error) throw error;
-
-        // Tidak melakukan SELECT ulang karena guest tidak diberi akses
-        // untuk membaca seluruh tabel orders. Data order sudah tersedia
-        // dari object order yang dibuat di frontend.
-        return order;
-    }
     let appliedPromoDiscount = 0;
     
     // STATE CHECKOUT
@@ -2425,7 +2578,7 @@
     document.getElementById('tab-checkout').addEventListener('input', window.saveCheckoutState);
     document.getElementById('tab-checkout').addEventListener('change', window.saveCheckoutState);
 
-    window.processCheckout = async () => {
+    window.processCheckout = () => {
         document.querySelectorAll('.error-msg').forEach(e => e.style.display = 'none');
         let isValid = true;
 
@@ -2501,16 +2654,9 @@
             createdAt: new Date().toISOString()
         };
 
-        // SIMPAN KE SUPABASE (bukan localStorage)
-        try {
-            const savedOrder = await saveOrderToSupabase(order);
-            ORDERS.unshift(savedOrder);
-            currentOrder = savedOrder;
-        } catch (error) {
-            console.error('Gagal menyimpan pesanan ke Supabase:', error);
-            window.showToast('Pesanan gagal disimpan ke server. Silakan coba lagi.');
-            return;
-        }
+        ORDERS.push(order);
+        localStorage.setItem('nugasin_orders', JSON.stringify(ORDERS));
+        currentOrder = order;
 
         // TAMBAHKAN BARIS INI UNTUK AUTO-FILL TRACKING:
         localStorage.setItem('nugasin_last_order_id', orderId);
@@ -2650,62 +2796,62 @@ window.filterOrders = (status) => {
 
 window.searchOrders = () => { renderOrdersList(); };
 
-async function renderOrdersList() {
+function renderOrdersList() {
+        // PERBAIKAN 1: Target spesifik ke container di dalam ordersModal (bypass ID ganda)
         const container = document.querySelector('#ordersModal #orderHistoryContainer');
         if(!container) return;
 
-        // Ambil data terbaru dari Supabase setiap kali daftar pesanan dibuka.
+        let userOrders = [];
+        
+        // Tarik data pesanan berdasarkan user (login/guest track)
         if(currentUser) {
-            await loadMyOrdersFromSupabase();
+            userOrders = ORDERS.filter(o => o.userId === currentUser.uid);
         } else if(currentTrackWA) {
-            let query = supabase.from('orders').select('*').order('created_at', { ascending: false });
             if(currentTrackWA.startsWith('NUG-')) {
-                query = query.eq('order_code', currentTrackWA);
+                userOrders = ORDERS.filter(o => o.id === currentTrackWA);
             } else {
-                query = query.contains('customer', { whatsapp: currentTrackWA });
+                userOrders = ORDERS.filter(o => o.customer.whatsapp === currentTrackWA);
             }
-            const { data, error } = await query;
-            if(error) {
-                console.error('Gagal mencari pesanan:', error);
-                container.innerHTML = '<p style="text-align:center; color:var(--error); padding:30px 0;">Gagal memuat pesanan.</p>';
-                return;
-            }
-            ORDERS = (data || []).map(mapSupabaseOrder);
-        } else {
-            ORDERS = [];
         }
 
-        const searchEl = document.getElementById('orderSearchInput');
-        const searchTerm = searchEl ? searchEl.value.trim().toLowerCase() : '';
-
-        let filtered = ORDERS.filter(o => {
+        const searchInput = document.getElementById('orderSearchInput');
+        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+        
+        // Logika Filter & Pencarian
+        let filtered = userOrders.filter(o => {
+            // PERBAIKAN 2: Mendukung format status pesanan versi baru & versi lama
             const ordStatusStr = o.orderStatus || o.status || 'PENDING_ORDER';
             let mappedStatus = 'Menunggu Diproses';
+            
             if(ordStatusStr === 'IN_PROGRESS' || ordStatusStr === 'processing') mappedStatus = 'Sedang Dikerjakan';
             if(ordStatusStr === 'COMPLETED' || ordStatusStr === 'completed') mappedStatus = 'Selesai';
             if(ordStatusStr === 'CANCELLED' || ordStatusStr === 'cancelled') mappedStatus = 'Dibatalkan';
+            if(ordStatusStr === 'paid') mappedStatus = 'Pending Order'; // legacy
 
-            const matchStatus = currentOrderFilter === 'Semua' ? true :
-                               (currentOrderFilter === 'Pending Order' && mappedStatus === 'Menunggu Diproses') ? true :
+            const matchStatus = currentOrderFilter === 'Semua' ? true : 
+                               (currentOrderFilter === 'Pending Order' && (mappedStatus === 'Menunggu Diproses' || mappedStatus === 'Pending Order')) ? true :
                                mappedStatus === currentOrderFilter;
 
-            const matchSearch = (o.id || '').toLowerCase().includes(searchTerm) ||
-                (o.items || []).some(i => (i.name || '').toLowerCase().includes(searchTerm));
+            const matchSearch = o.id.toLowerCase().includes(searchTerm) || o.items.some(i => i.name.toLowerCase().includes(searchTerm));
             return matchStatus && matchSearch;
         }).sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
 
+        // Jika Kosong
         if(filtered.length === 0) {
             container.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:30px 0;">Tidak ada pesanan yang sesuai.</p>';
             return;
         }
 
+        // Tampilkan List
         container.innerHTML = filtered.map(o => {
-            const ordStatusStr = o.orderStatus || 'PENDING_ORDER';
+            const ordStatusStr = o.orderStatus || o.status || 'PENDING_ORDER';
             let statusClass = 'status-pending';
             let mappedStatus = 'Menunggu Diproses';
-            if(ordStatusStr === 'IN_PROGRESS') { statusClass = 'status-processing'; mappedStatus = 'Sedang Dikerjakan'; }
-            if(ordStatusStr === 'COMPLETED') { statusClass = 'status-completed'; mappedStatus = 'Selesai'; }
-            if(ordStatusStr === 'CANCELLED') { statusClass = 'status-cancelled'; mappedStatus = 'Dibatalkan'; }
+            
+            if(ordStatusStr === 'IN_PROGRESS' || ordStatusStr === 'processing') { statusClass = 'status-processing'; mappedStatus = 'Sedang Dikerjakan'; }
+            if(ordStatusStr === 'COMPLETED' || ordStatusStr === 'completed') { statusClass = 'status-completed'; mappedStatus = 'Selesai'; }
+            if(ordStatusStr === 'CANCELLED' || ordStatusStr === 'cancelled') { statusClass = 'status-cancelled'; mappedStatus = 'Dibatalkan'; }
+            if(ordStatusStr === 'paid') { mappedStatus = 'Pending Order'; }
 
             const estDate = o.estimatedCompletion ? new Date(o.estimatedCompletion).toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'}) : '-';
             const estText = (mappedStatus === 'Selesai') ? `✓ Selesai pada ${estDate}` : `Estimasi selesai: ${estDate}`;
@@ -2717,7 +2863,7 @@ async function renderOrdersList() {
                     <span class="status-badge ${statusClass}">${mappedStatus}</span>
                 </div>
                 <div style="font-size:0.95em; color:var(--text-main); font-weight:600; margin-bottom:5px;">
-                    ${(o.items || []).map(i => `${i.name} (x${i.quantity})`).join(', ')}
+                    ${o.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span style="font-size:0.8em; color:var(--text-muted);">${new Date(o.createdAt).toLocaleDateString('id-ID')}</span>
@@ -3232,65 +3378,74 @@ const copyBtn = document.getElementById('btnCopyOrderId');
     };
 
     // Track Order from Help Center
-    window.processHelpTrack = async () => {
+    window.processHelpTrack = () => {
         const input = document.getElementById('helpTrackInput').value.trim();
         const errorEl = document.getElementById('helpTrackError');
         if(!input) {
-            errorEl.innerText = 'Masukkan nomor pesanan atau WhatsApp.';
+            errorEl.innerText = "Masukkan nomor pesanan atau WhatsApp.";
             errorEl.style.display = 'block';
             return;
         }
-
-        let query = supabase.from('orders').select('*').limit(1);
+        
+        let found = false;
         if(input.startsWith('NUG-')) {
-            query = query.eq('order_code', input);
+            found = ORDERS.some(o => o.id === input);
+            if(found) currentTrackWA = input;
         } else {
-            query = query.contains('customer', { whatsapp: normalizeWhatsAppNumber(input) });
-        }
-        const { data, error } = await query;
-        if(error || !data || data.length === 0) {
-            errorEl.innerText = 'Pesanan tidak ditemukan.';
-            errorEl.style.display = 'block';
-            return;
+            const normWA = normalizeWhatsAppNumber(input);
+            found = ORDERS.some(o => o.customer.whatsapp === normWA);
+            if(found) currentTrackWA = normWA; 
         }
 
-        currentTrackWA = input.startsWith('NUG-') ? input : normalizeWhatsAppNumber(input);
-        errorEl.style.display = 'none';
-        window.filterOrders('Semua');
-        document.getElementById('ordersModal').style.display = 'flex';
-        document.body.classList.add('modal-open');
+        if(found) {
+            errorEl.style.display = 'none';
+            window.filterOrders('Semua'); 
+            document.getElementById('ordersModal').style.display = 'flex';
+            document.body.classList.add('modal-open');
+        } else {
+            errorEl.innerText = "Pesanan tidak ditemukan.";
+            errorEl.style.display = 'block';
+        }
     };
     
-window.processGuestTrack = async () => {
+window.processGuestTrack = () => {
         const input = document.getElementById('trackInput').value.trim();
         const errorEl = document.getElementById('trackError');
-
-        if(!input) {
-            errorEl.innerText = 'Silakan masukkan nomor pesanan terlebih dahulu.';
-            errorEl.style.display = 'block';
-            return;
+        
+        if(!input) { 
+            errorEl.innerText = "Silakan masukkan nomor pesanan terlebih dahulu.";
+            errorEl.style.display = 'block'; 
+            return; 
         }
-
-        let query = supabase.from('orders').select('*').limit(1);
+        
+        let found = false;
         if(input.startsWith('NUG-')) {
-            query = query.eq('order_code', input);
+            found = ORDERS.some(o => o.id === input);
+            if(found) currentTrackWA = input;
         } else {
-            query = query.contains('customer', { whatsapp: normalizeWhatsAppNumber(input) });
-        }
-        const { data, error } = await query;
-        if(error || !data || data.length === 0) {
-            errorEl.innerText = 'Pesanan tidak ditemukan. Periksa kembali nomor pesananmu.';
-            errorEl.style.display = 'block';
-            return;
+            const normWA = normalizeWhatsAppNumber(input);
+            found = ORDERS.some(o => o.customer.whatsapp === normWA);
+            if(found) currentTrackWA = normWA;
         }
 
-        currentTrackWA = input.startsWith('NUG-') ? input : normalizeWhatsAppNumber(input);
-        errorEl.style.display = 'none';
-        window.closeModal('guestTrackModal');
-        if(document.getElementById('orderSearchInput')) document.getElementById('orderSearchInput').value = '';
-        window.filterOrders('Semua');
-        document.getElementById('ordersModal').style.display = 'flex';
-        document.body.classList.add('modal-open');
+        if(found) {
+            errorEl.style.display = 'none';
+            // 1. Tutup modal Lacak Pesanan
+            window.closeModal('guestTrackModal');
+            
+            // 2. Tampilkan semua pesanan terkait resi tersebut di List
+            if (document.getElementById('orderSearchInput')) {
+                document.getElementById('orderSearchInput').value = '';
+            }
+            window.filterOrders('Semua'); 
+            
+            // 3. Buka modal Pesanan Saya (Daftar)
+            document.getElementById('ordersModal').style.display = 'flex';
+            document.body.classList.add('modal-open');
+        } else {
+            errorEl.innerText = "Pesanan tidak ditemukan. Periksa kembali nomor pesananmu.";
+            errorEl.style.display = 'block';
+        }
     };
 
     document.addEventListener("DOMContentLoaded", async () => { 
@@ -3303,6 +3458,37 @@ window.processGuestTrack = async () => {
             if(helpTrackEl) helpTrackEl.value = lastOrderId;
         } 
     });
+</script>
+
+<script id="jokiin-theme-controls">
+(function () {
+    const button = document.getElementById('themeToggle');
+    const root = document.documentElement;
+    const preference = window.matchMedia('(prefers-color-scheme: dark)');
+    function syncButton() {
+        const dark = root.dataset.theme === 'dark';
+        const label = dark ? 'Aktifkan mode terang' : 'Aktifkan mode malam';
+        button.setAttribute('aria-pressed', String(dark));
+        button.setAttribute('aria-label', label);
+        button.title = label;
+    }
+    button.addEventListener('click', function () {
+        root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+        try { localStorage.setItem('jokiin_theme', root.dataset.theme); } catch (_) {}
+        syncButton();
+    });
+    preference.addEventListener('change', function (event) {
+        try { if (localStorage.getItem('jokiin_theme')) return; } catch (_) {}
+        root.dataset.theme = event.matches ? 'dark' : 'light';
+        syncButton();
+    });
+    window.addEventListener('storage', function (event) {
+        if (event.key !== 'jokiin_theme') return;
+        root.dataset.theme = event.newValue === 'dark' || (!event.newValue && preference.matches) ? 'dark' : 'light';
+        syncButton();
+    });
+    syncButton();
+})();
 </script>
 </body>
 </html>
