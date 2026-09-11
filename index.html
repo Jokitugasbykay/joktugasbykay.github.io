@@ -718,6 +718,349 @@ header, footer {
     .modal-overlay:not(#orderDetailModal),.modal-overlay:not(#orderDetailModal) > :is(.modal-content,.welcome-wrapper) { animation:none; }
 }
 </style>
+<style id="jokiin-order-reference-wrap">#succOrderId,.order-id,#detOrderId { overflow-wrap:anywhere; min-width:0; } #succOrderId { max-width:65%; text-align:right; }</style>
+<style id="jokiin-ui-fixes">
+/* Header hide-on-scroll */
+header {
+    transform: translate3d(0, 0, 0);
+    transition: transform .52s cubic-bezier(.22,.8,.25,1),
+        background-color .3s ease, box-shadow .3s ease;
+    will-change: transform;
+    backface-visibility: hidden;
+}
+header.header-hidden {
+    transform: translate3d(0, calc(-100% - 24px), 0);
+    pointer-events: none;
+}
+
+/* Full-width desktop header with the existing controls kept intact. */
+.container > header {
+    width: 100vw;
+    max-width: none;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    padding: 18px max(20px, calc((100vw - 1240px) / 2));
+}
+
+/* Checkout title stays centered regardless of left/right header controls. */
+header { position: sticky; }
+.checkout-title {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0 !important;
+    width: max-content;
+    max-width: 48%;
+    text-align: center;
+}
+
+/* Clean focus for the theme control while preserving keyboard accessibility. */
+#themeToggle,
+#themeToggle:hover,
+#themeToggle:focus,
+#themeToggle:active,
+#themeToggle:focus-visible {
+    outline: none !important;
+    border-style: solid !important;
+    box-shadow: none !important;
+    -webkit-tap-highlight-color: transparent;
+}
+#themeToggle:focus-visible { box-shadow: 0 0 0 2px var(--primary-light) !important; }
+
+/* Google button follows the current theme. */
+[data-theme="dark"] #btnGoogleLogin,
+.dark-mode #btnGoogleLogin {
+    background: #17243a !important;
+    color: #f1f5f9 !important;
+    border-color: #40536f !important;
+    box-shadow: none !important;
+}
+[data-theme="dark"] #btnGoogleLogin:hover,
+.dark-mode #btnGoogleLogin:hover { background: #20314d !important; }
+
+/* Footer: only the intended separators and card borders are visible. */
+footer,
+#globalFooter {
+    border: 0 !important;
+    border-top: 1px solid var(--border-color) !important;
+    outline: 0 !important;
+}
+footer :is(.footer-container,.footer-grid,.footer-col,.footer-title,.footer-list),
+#globalFooter :is(.footer-container,.footer-grid,.footer-col,.footer-title,.footer-list) {
+    border: 0 !important;
+    outline: 0 !important;
+}
+footer .footer-admin-card,
+#globalFooter .footer-admin-card {
+    border: 1px solid var(--border-color) !important;
+    outline: 0 !important;
+}
+footer .footer-bottom,
+#globalFooter .footer-bottom {
+    border: 0 !important;
+    border-top: 1px solid var(--border-color) !important;
+    outline: 0 !important;
+}
+
+/* Compact full-width footer based on the supplied reference. */
+#globalFooter {
+    width: 100vw;
+    max-width: none;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    margin-top: 44px;
+}
+#globalFooter .footer-container {
+    max-width: 1240px;
+    padding: 34px 24px 18px;
+}
+#globalFooter .footer-grid {
+    grid-template-columns: 1.45fr repeat(3, minmax(0, 1fr));
+    gap: 48px;
+    margin-bottom: 28px;
+}
+#globalFooter .footer-col:first-child { grid-column: auto; }
+#globalFooter .footer-col h3 { font-size: 1.55rem; }
+#globalFooter .footer-col p { margin-bottom: 18px; }
+#globalFooter .footer-title { margin-bottom: 14px; font-size: .9rem; }
+#globalFooter .footer-list li { margin-bottom: 9px; }
+#globalFooter .footer-list a { font-size: .86rem; }
+#globalFooter .footer-admin-card {
+    min-height: 44px;
+    margin-bottom: 7px;
+    padding: 7px 10px;
+}
+#globalFooter .footer-admin-icon {
+    width: 32px;
+    height: 32px;
+}
+#globalFooter .footer-bottom { padding-top: 18px; }
+footer :is(a,button):focus-visible,
+#globalFooter :is(a,button):focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 2px var(--primary-light) !important;
+}
+
+/* Welcome popup has a distinct entrance and exit animation. */
+@keyframes welcomeOverlayIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes welcomeOverlayOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+@keyframes welcomePanelIn {
+    from { opacity: 0; transform: translate3d(0, 30px, 0) scale(.965); }
+    to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes welcomePanelOut {
+    from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+    to { opacity: 0; transform: translate3d(0, 20px, 0) scale(.98); }
+}
+#welcomeModal .welcome-wrapper { animation: none; transform-origin: center; }
+#welcomeModal.welcome-opening {
+    animation: welcomeOverlayIn .34s ease-out both !important;
+}
+#welcomeModal.welcome-opening .welcome-wrapper {
+    animation: welcomePanelIn .46s cubic-bezier(.16,1,.3,1) both !important;
+}
+#welcomeModal.welcome-closing {
+    animation: welcomeOverlayOut .28s ease-in both !important;
+    pointer-events: none;
+}
+#welcomeModal.welcome-closing .welcome-wrapper {
+    animation: welcomePanelOut .28s cubic-bezier(.4,0,1,1) both !important;
+}
+
+/* Thin themed scrollbar. Firefox + Chromium/WebKit. */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #93c5fd transparent;
+}
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+    background: #93c5fd;
+    border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover { background: #60a5fa; }
+[data-theme="dark"] *, .dark-mode * { scrollbar-color: #1e3a5f transparent; }
+[data-theme="dark"] ::-webkit-scrollbar-thumb,
+.dark-mode ::-webkit-scrollbar-thumb { background: #1e3a5f; }
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover,
+.dark-mode ::-webkit-scrollbar-thumb:hover { background: #294f7c; }
+
+/* Product recommendation carousel */
+.recommendations-section { margin: 0 0 42px; }
+.recommendations-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+.recommendations-heading .section-title { margin: 0; }
+.recommendation-viewport {
+    overflow: hidden;
+    border-radius: var(--radius);
+    touch-action: pan-y;
+}
+.recommendation-track {
+    display: flex;
+    gap: 16px;
+    transition: transform .65s cubic-bezier(.22,1,.36,1);
+    will-change: transform;
+}
+.recommendation-track.is-resetting { transition: none !important; }
+.recommendation-card {
+    flex: 0 0 calc((100% - 32px) / 3);
+    min-width: 0;
+    padding: 22px;
+    border: 1px solid var(--glass-edge, var(--border-color));
+    border-radius: var(--radius);
+    background: linear-gradient(135deg,var(--glass-sheen),transparent 55%),var(--glass-panel);
+    box-shadow: var(--glass-shadow);
+    backdrop-filter: blur(16px) saturate(135%);
+    -webkit-backdrop-filter: blur(16px) saturate(135%);
+}
+.recommendation-card-top { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+.recommendation-card-icon { font-size:1.8rem; }
+.recommendation-card h4 { margin:0; color:var(--text-main); }
+.recommendation-card p { color:var(--text-secondary); font-size:.88rem; margin-bottom:16px; }
+.recommendation-card-footer { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.recommendation-card-price { color:var(--primary); font-weight:800; }
+.recommendation-dots { display:flex; justify-content:center; gap:7px; margin-top:15px; }
+.recommendation-dot {
+    width:7px; height:7px; padding:0; border:0; border-radius:999px;
+    background:var(--border-color); cursor:pointer; transition:width .25s ease,background .25s ease;
+}
+.recommendation-dot.active { width:22px; background:var(--primary); }
+
+@media (max-width: 768px) {
+    /* Full-bleed mobile header: no inset edge or separator line. */
+    .container > header {
+        width: calc(100% + 40px);
+        max-width: none;
+        margin-left: -20px;
+        margin-right: -20px;
+        padding: 16px 20px !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        background: var(--card-solid) !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    #globalFooter .footer-container { padding: 28px 20px 18px; }
+    #globalFooter .footer-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 28px 22px;
+        margin-bottom: 26px;
+    }
+    #globalFooter .footer-col:first-child { grid-column: 1 / -1; }
+    #globalFooter .footer-bottom {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
+    }
+
+    /* Replace forced desktop scaling with a genuine portrait welcome layout. */
+    #welcomeModal { align-items: center; padding: 18px 14px; overflow-y: auto; }
+    #welcomeModal .welcome-wrapper {
+        flex-direction: column !important;
+        width: 100% !important;
+        max-width: 430px !important;
+        max-height: calc(100dvh - 36px);
+        margin: auto !important;
+        border-radius: 22px !important;
+        overflow-y: auto !important;
+    }
+    #welcomeModal .welcome-visual {
+        flex: none !important;
+        width: 100%;
+        min-height: auto;
+        padding: 24px 22px !important;
+        gap: 15px !important;
+    }
+    #welcomeModal .welcome-visual > div:last-child {
+        display: grid;
+        grid-template-columns: repeat(3,minmax(0,1fr));
+        gap: 8px;
+        margin-top: 0 !important;
+    }
+    #welcomeModal .glass-card {
+        min-width: 0;
+        margin: 0 !important;
+        padding: 9px 7px !important;
+        transform: none !important;
+        flex-direction: column;
+        text-align: center;
+    }
+    #welcomeModal .welcome-content {
+        padding: 30px 24px 26px !important;
+        justify-content: flex-start !important;
+    }
+    #welcomeModal .welcome-close { top: 14px !important; right: 14px !important; }
+    #welcomeModal .welcome-content h2 {
+        font-size: 1.4rem !important;
+        margin: 0 34px 12px 0 !important;
+    }
+    #welcomeModal .welcome-content p.subtitle {
+        font-size: .9rem !important;
+        margin-bottom: 20px !important;
+    }
+    #welcomeModal .welcome-benefits { gap: 10px !important; margin-bottom: 22px !important; }
+    #welcomeModal .w-benefit-item { padding: 11px 12px !important; }
+    #welcomeModal .w-benefit-text { font-size: .85rem !important; }
+    #welcomeModal .welcome-ctas { flex-direction: column; gap: 10px !important; }
+    #welcomeModal .w-btn-primary,
+    #welcomeModal .w-btn-wa { min-height: 46px; font-size: .88rem !important; }
+    #welcomeModal .welcome-trust { margin-top: 16px !important; font-size: .7rem !important; }
+
+    /* Compact horizontal WhatsApp cards. */
+    footer .footer-admin-card,
+    #globalFooter .footer-admin-card {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 10px !important;
+        padding: 8px 10px !important;
+        min-height: 48px;
+    }
+    footer .footer-admin-icon,
+    #globalFooter .footer-admin-icon {
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px;
+        border-radius: 8px !important;
+        aspect-ratio: 1;
+    }
+    footer .footer-admin-info,
+    #globalFooter .footer-admin-info { min-width:0; text-align:left; }
+    footer .footer-admin-info h4,
+    #globalFooter .footer-admin-info h4 { white-space:nowrap; }
+
+    .checkout-title { max-width: 58%; font-size: 1rem; }
+    .recommendations-section { margin-bottom: 34px; }
+    .recommendation-card { flex-basis: 82%; padding: 18px; }
+    .recommendations-heading { align-items:center; }
+}
+@media (max-width: 420px) {
+    #welcomeModal .welcome-visual > div:last-child { grid-template-columns: 1fr; }
+    #welcomeModal .glass-card { flex-direction:row; text-align:left; }
+    .recommendation-card { flex-basis: 88%; }
+    #globalFooter .footer-grid { gap: 24px 16px; }
+    #globalFooter .footer-list a { font-size: .82rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    header, .recommendation-track { transition:none !important; }
+    #welcomeModal,
+    #welcomeModal .welcome-wrapper { animation:none !important; }
+}
+</style>
 </head>
 <body>
 
@@ -1041,7 +1384,7 @@ header, footer {
             </div>
         </div>
         <div class="modal-footer">
-            <button onclick="closeModal('ordersModal'); if(!currentUser && currentTrackWA) currentTrackWA=''; " class="btn-modal-secondary" style="width:100%;">Tutup</button>
+            <button onclick="window.closeModal('ordersModal')" class="btn-modal-secondary" style="width:100%;">Tutup</button>
         </div>
     </div>
 </div>
@@ -1103,7 +1446,7 @@ header, footer {
 <!-- CONTAINER UTAMA -->
 <div class="container">
     <header>
-        <div class="logo" onclick="if(currentTab !== 'checkout' && currentTab !== 'order-success') window.switchTab('beranda')">
+        <div class="logo" onclick="window.goHome()">
             <div><h1>NUGASIN</h1><span id="headerSubtitle">Teman nugas mahasiswa.</span></div>
         </div>
         <div class="checkout-title" id="checkoutHeaderTitle">Penyelesaian Pesanan</div>
@@ -1164,6 +1507,18 @@ header, footer {
                 </div>
             </div>
         </div>
+        <section class="recommendations-section" aria-labelledby="recommendationsTitle">
+            <div class="recommendations-heading">
+                <div>
+                    <span class="section-subtitle">Pilihan untuk kamu</span>
+                    <h3 class="section-title" id="recommendationsTitle">Rekomendasi Produk</h3>
+                </div>
+            </div>
+            <div class="recommendation-viewport" id="recommendationViewport">
+                <div class="recommendation-track" id="recommendationTrack"></div>
+            </div>
+            <div class="recommendation-dots" id="recommendationDots" aria-label="Halaman rekomendasi"></div>
+        </section>
         <span class="section-subtitle">Layanan Unggulan</span>
         <h3 class="section-title" style="margin-top:0;">Solusi untuk kebutuhan kuliahmu</h3>
         <div class="services-grid" id="preview-layanan"></div>
@@ -1357,19 +1712,7 @@ header, footer {
                         <div class="status-indicator"><span class="status-dot-small"></span> Normal</div>
                     </div>
                     <div class="status-row">
-                        <span>Detail Pesanan</span>
-                        <div class="status-indicator"><span class="status-dot-small"></span> Normal</div>
-                    </div>
-                    <div class="status-row">
                         <span>Google Drive</span>
-                        <div class="status-indicator" style="color: var(--primary);"><span class="status-dot-small" style="background: var(--primary);"></span> Aktif</div>
-                    </div>
-                    <div class="status-row">
-                        <span>WhatsApp</span>
-                        <div class="status-indicator" style="color: #10B981;"><span class="status-dot-small" style="background: #10B981;"></span> Aktif</div>
-                    </div>
-                    <div class="status-row">
-                        <span>Layanan Admin</span>
                         <div class="status-indicator" style="color: var(--primary);"><span class="status-dot-small" style="background: var(--primary);"></span> Aktif</div>
                     </div>
                 </div>
@@ -1744,7 +2087,7 @@ header, footer {
         <div class="success-icon-wrapper">
             <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
         </div>
-        <h2 style="color:var(--text-main); margin-bottom:10px;">Pembayaran Berhasil</h2>
+        <h2 style="color:var(--text-main); margin-bottom:10px;">Pesanan Berhasil Disimpan</h2>
         <p style="color:var(--text-secondary); margin-bottom:30px;">Pesanan kamu telah kami terima.</p>
         
         <div class="checkout-card" style="text-align:left; background:var(--card-solid); padding:25px; border-radius:var(--radius); box-shadow:var(--shadow-card); border:1px solid var(--border-color);">
@@ -1762,7 +2105,7 @@ header, footer {
             </div>
             <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
                 <span style="color:var(--text-secondary);">Status Pembayaran</span>
-                <strong style="color:var(--success);">BERHASIL</strong>
+                <strong id="succPaymentStatus" style="color:var(--text-main);">MENUNGGU KONFIRMASI</strong>
             </div>
 
            <!-- TOMBOL ORDER SUCCESS -->
@@ -1879,167 +2222,173 @@ header, footer {
     // ==========================================
     // 1. INISIALISASI SUPABASE
     // ==========================================
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/+esm';
 
     const supabaseUrl = 'https://xdbnwjvxqtpkoaigedsk.supabase.co';
     const supabaseAnonKey = 'sb_publishable_WuihnHZo0ZJbVGCMe1sWJg_QVdRKw4z';
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     let currentUser = null;
+    let authVersion = 0;
+    let profileUserId = null;
+    let authSettings = null;
+    let authBusy = false;
 
-    // ==========================================
-    // 2. AUTHENTICATION LOGIC (LOGIN/LOGOUT)
-    // ==========================================
-    
-    // Memantau status login user & Session
-    supabase.auth.onAuthStateChange(async (event, session) => {
-        if (session && session.user) {
-            // Fallback nama jika daftar via email murni (tidak ada full_name)
-            let fallbackName = session.user.user_metadata?.full_name || session.user.email.split('@')[0];
-            
-            currentUser = { 
-                uid: session.user.id, 
-                name: fallbackName, 
-                email: session.user.email, 
-                photo: session.user.user_metadata?.avatar_url || ''
-            };
-            await saveUserToSupabase(session.user, fallbackName);
-        } else { 
-            currentUser = null; 
+    function readStored(storage, key, fallback) {
+        try { const value = storage.getItem(key); return value ? JSON.parse(value) : fallback; }
+        catch (_) { return fallback; }
+    }
+    function writeStored(storage, key, value) {
+        try { storage.setItem(key, JSON.stringify(value)); return true; } catch (_) { return false; }
+    }
+    function removeStored(storage, key) { try { storage.removeItem(key); } catch (_) {} }
+    function validDriveUrl(value) {
+        if (!value) return true;
+        try { const u = new URL(value); return u.protocol === 'https:' && ['drive.google.com','docs.google.com'].includes(u.hostname) && !u.username && !u.password; }
+        catch (_) { return false; }
+    }
+    function showAuthError(message) {
+        const el = document.getElementById('authError'); el.textContent = message; el.style.display = 'block';
+    }
+    async function saveUserToSupabase(user, fallbackName) {
+        const { data: existing, error: readError } = await supabase.from('profiles').select('id,name,email,phone,photo_url,role,created_at').eq('id', user.id).maybeSingle();
+        if (readError) throw readError;
+        if (existing) return existing;
+        const photo = user.user_metadata?.avatar_url || '';
+        const profile = { id:user.id, name:fallbackName, email:user.email || null,
+            photo_url: /^https:\/\//.test(photo) ? photo : null };
+        const { error } = await supabase.from('profiles').insert(profile);
+        if (error && error.code !== '23505') throw error;
+        const { data, error: reloadError } = await supabase.from('profiles').select('id,name,email,phone,photo_url,role,created_at').eq('id',user.id).single();
+        if (reloadError) throw reloadError;
+        return data;
+    }
+    async function syncAuthSession(session) {
+        const version = ++authVersion;
+        const user = session?.user || null;
+        const previousId = currentUser?.uid || null;
+        const nextId = user?.id || null;
+        if (previousId !== nextId) {
+            ORDERS = []; currentOrder = null; currentTrackWA = ''; profileUserId = null;
+            ['profileModal','ordersModal','orderDetailModal','reviewModal'].forEach(id => window.closeModal(id));
+            document.getElementById('chkName').value = '';
+            document.getElementById('chkEmail').value = '';
+            document.getElementById('chkWA').value = '';
         }
-        updateHeaderAuth(); 
-        if(typeof currentTab !== 'undefined' && currentTab === 'checkout') { 
-            if(typeof fillCheckoutGuestData === 'function') fillCheckoutGuestData(); 
+        if (!user) { currentUser = null; updateHeaderAuth(); await loadCart(); return; }
+        const fallbackName = String(user.user_metadata?.full_name || user.email?.split('@')[0] || 'Pengguna').slice(0,120);
+        currentUser = { uid:user.id, name:fallbackName, email:user.email || '', photo:'', phone:'', role:'user', ...(previousId === nextId ? currentUser : {}) };
+        updateHeaderAuth();
+        if(previousId !== nextId)await mergeCartsOnLogin();
+        if (profileUserId !== user.id) {
+            try {
+                const profile = await saveUserToSupabase(user, fallbackName);
+                if (version !== authVersion || currentUser?.uid !== user.id) return;
+                currentUser = { uid:user.id, name:profile.name || fallbackName, email:user.email || '',
+                    photo:profile.photo_url || '', phone:profile.phone || '', role:profile.role };
+                profileUserId = user.id;
+            } catch (error) { console.error('Profil belum dapat dimuat:', error.message); }
         }
+        if (version !== authVersion) return;
+        await loadCart();
+        updateHeaderAuth();
+        if (currentTab === 'checkout') fillCheckoutGuestData();
+    }
+    // Callback tidak menunggu query Supabase; proses sesi berjalan setelah callback selesai.
+    supabase.auth.onAuthStateChange((_event, session) => {
+        setTimeout(() => { syncAuthSession(session).catch(error => console.error('Sinkronisasi sesi:', error.message)); }, 0);
     });
-
-    // Menyimpan data user ke tabel profiles
-    async function saveUserToSupabase(user, userName) {
-        const { error } = await supabase.from('profiles').upsert({
-            id: user.id,
-            name: userName,
-            email: user.email,
-            photo_url: user.user_metadata?.avatar_url || null
-        }, { onConflict: 'id' });
-        
-        if (error) console.error("Gagal menyimpan profil:", error);
+    async function ensureSession() {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        if ((data.session?.user?.id || null) !== (currentUser?.uid || null) || (data.session && !profileUserId)) await syncAuthSession(data.session);
+        return data.session;
+    }
+    async function requireUser() {
+        try { await ensureSession(); } catch (_) { window.showToast('Sesi belum dapat diperiksa. Coba lagi.'); return false; }
+        if (!currentUser) { window.openAuthModal(); return false; }
+        return true;
+    }
+    async function loadAuthSettings() {
+        try {
+            const response = await fetch(`${supabaseUrl}/auth/v1/settings`, { headers:{apikey:supabaseAnonKey} });
+            if (response.ok) authSettings = await response.json();
+        } catch (_) {}
+    }
+    async function runAuthAction(buttonId, action) {
+        if (authBusy) return;
+        authBusy = true;
+        const buttons = ['btnLogin','btnRegister','btnGoogleLogin'].map(id=>document.getElementById(id)).filter(Boolean);
+        const clicked = document.getElementById(buttonId); const original = clicked?.innerHTML;
+        buttons.forEach(b=>b.disabled=true);
+        if (clicked) clicked.textContent='Memproses...';
+        document.getElementById('authError').style.display='none';
+        try { await action(); }
+        catch(error) { showAuthError(error.message || 'Permintaan gagal. Periksa koneksi dan coba lagi.'); }
+        finally { authBusy=false; buttons.forEach(b=>b.disabled=false); if(clicked)clicked.innerHTML=original; }
+    }
+    function emailCredentials() {
+        const email=document.getElementById('authEmail').value.trim().toLowerCase();
+        const password=document.getElementById('authPassword').value;
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !password) throw new Error('Isi email yang valid dan password.');
+        return {email,password};
+    }
+    window.processEmailRegister = () => runAuthAction('btnRegister', async () => {
+        const credentials=emailCredentials();
+        if(credentials.password.length<6)throw new Error('Password minimal 6 karakter.');
+        const {data,error}=await supabase.auth.signUp({...credentials,options:{emailRedirectTo:window.location.origin+window.location.pathname}});
+        if(error)throw error;
+        if(data.session) { await syncAuthSession(data.session); window.closeModal('authModal'); window.showToast('Pendaftaran berhasil. Kamu sudah login.'); }
+        else { showAuthError('Pendaftaran diterima. Periksa email dan folder spam, lalu konfirmasi akun sebelum login.'); }
+    });
+    window.processEmailLogin = () => runAuthAction('btnLogin', async () => {
+        const {data,error}=await supabase.auth.signInWithPassword(emailCredentials());
+        if(error)throw new Error(error.code==='email_not_confirmed'?'Konfirmasi email terlebih dahulu. Periksa inbox dan spam.':'Login gagal. Periksa email dan password.');
+        await syncAuthSession(data.session); window.closeModal('authModal'); window.showToast('Berhasil login.');
+    });
+    window.processGoogleLogin = () => runAuthAction('btnGoogleLogin', async () => {
+        if(!authSettings)await loadAuthSettings();
+        if(authSettings?.external?.google===false)throw new Error('Login Google belum diaktifkan. Gunakan email dan password dahulu.');
+        const {error}=await supabase.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+window.location.pathname}});
+        if(error)throw error;
+    });
+    window.processLogout = async () => {
+        try {
+            const {error}=await supabase.auth.signOut(); if(error)throw error;
+            await syncAuthSession(null);
+            window.closeModal('profileModal');
+            if(currentTab==='checkout'||currentTab==='order-success')window.switchTab('beranda');
+            window.showToast('Berhasil logout.');
+        } catch (_) { window.showToast('Logout belum berhasil. Periksa koneksi dan coba lagi.'); }
+    };
+    async function callBackend(action, payload) {
+        const session=await ensureSession();
+        const controller=new AbortController();
+        const timer=setTimeout(()=>controller.abort(),20000);
+        let response;
+        try {
+            response=await fetch(`${supabaseUrl}/functions/v1/jokiin-api`, {
+                method:'POST', signal:controller.signal, headers:{'Content-Type':'application/json',apikey:supabaseAnonKey,
+                    ...(session?{Authorization:`Bearer ${session.access_token}`}:{})},
+                body:JSON.stringify({action,...payload})
+            });
+        } catch(error) { throw new Error(error.name==='AbortError'?'Server belum merespons. Silakan coba lagi.':'Koneksi terputus. Periksa koneksi lalu coba lagi.'); }
+        finally { clearTimeout(timer); }
+        let body;
+        try { body=await response.json(); } catch (_) { throw new Error('Server belum memberi respons yang valid. Coba lagi.'); }
+        if(!response.ok) { const error=new Error(body.error || 'Data belum dapat diproses. Coba lagi.'); error.status=response.status; throw error; }
+        return body;
     }
 
-    // Fungsi Registrasi Email/Password
-    window.processEmailRegister = async () => {
-        const email = document.getElementById('authEmail').value;
-        const password = document.getElementById('authPassword').value;
-        const errEl = document.getElementById('authError');
-        const btn = document.getElementById('btnRegister');
-
-        errEl.style.display = 'none';
-        
-        if (!email || !password) {
-            errEl.innerText = "Email dan password wajib diisi!";
-            errEl.style.display = 'block';
-            return;
-        }
-        if (password.length < 6) {
-            errEl.innerText = "Password minimal 6 karakter!";
-            errEl.style.display = 'block';
-            return;
-        }
-
-        btn.innerText = "Memproses...";
-        btn.disabled = true;
-
-        const { data, error } = await supabase.auth.signUp({
-            email: email,
-            password: password,
-        });
-
-        if (error) {
-            errEl.innerText = error.message;
-            errEl.style.display = 'block';
-        } else {
-            window.closeModal('authModal');
-            if(typeof window.showToast === 'function') window.showToast("Berhasil daftar & login.");
-        }
-        
-        btn.innerText = "Daftar";
-        btn.disabled = false;
-    };
-
-    // Fungsi Login Email/Password
-    window.processEmailLogin = async () => {
-        const email = document.getElementById('authEmail').value;
-        const password = document.getElementById('authPassword').value;
-        const errEl = document.getElementById('authError');
-        const btn = document.getElementById('btnLogin');
-
-        errEl.style.display = 'none';
-
-        if (!email || !password) {
-            errEl.innerText = "Email dan password wajib diisi!";
-            errEl.style.display = 'block';
-            return;
-        }
-
-        btn.innerText = "Memproses...";
-        btn.disabled = true;
-
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email: email,
-            password: password,
-        });
-
-        if (error) {
-            errEl.innerText = "Email atau password salah.";
-            errEl.style.display = 'block';
-        } else {
-            window.closeModal('authModal');
-            if(typeof window.showToast === 'function') window.showToast("Berhasil login.");
-        }
-
-        btn.innerText = "Login";
-        btn.disabled = false;
-    };
-
-    // Fungsi tombol Login Google
-    window.processGoogleLogin = async () => {
-        const btn = document.getElementById('btnGoogleLogin'); 
-        if(btn) { btn.innerText = "Memproses..."; btn.disabled = true; }
-        
-        const { error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                redirectTo: window.location.origin
-            }
-        });
-        
-        if (error) {
-            const errEl = document.getElementById('authError');
-            if(errEl) { errEl.innerText = "Login dibatalkan atau gagal."; errEl.style.display = 'block'; }
-            if(btn) { btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:18px; height:18px;"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Masuk dengan Google`; btn.disabled = false; }
-        }
-    };
-
-    // Fungsi tombol Logout
-    window.processLogout = async () => {
-        await supabase.auth.signOut();
-        currentUser = null; 
-        if(typeof window.closeModal === 'function') window.closeModal('profileModal'); 
-        updateHeaderAuth(); 
-        if(typeof window.showToast === 'function') window.showToast("Berhasil logout.");
-        if(typeof currentTab !== 'undefined' && (currentTab === 'checkout' || currentTab === 'order-success')) {
-            if(typeof window.switchTab === 'function') window.switchTab('beranda');
-        }
-    };
-
     const PAYMENT_OPTIONS = [
-        { id: "qris", name: "QRIS", category: "qris", fee: 0, autoCheck: true, icon: "📱" },
-        { id: "shopeepay", name: "ShopeePay", category: "ewallet", fee: 1200, autoCheck: true, icon: "🟠" },
-        { id: "dana", name: "DANA", category: "ewallet", fee: 500, autoCheck: true, icon: "🔵" },
-        { id: "gopay", name: "GoPay", category: "ewallet", fee: 1000, autoCheck: true, icon: "🟢" },
-        { id: "ovo", name: "OVO", category: "ewallet", fee: 1500, autoCheck: true, icon: "🟣" },
-        { id: "linkaja", name: "LinkAja", category: "ewallet", fee: 1000, autoCheck: true, icon: "🔴" },
-        { id: "vamandiri", name: "Mandiri VA", category: "va", fee: 4000, autoCheck: true, icon: "🏦" },
-        { id: "vabtn", name: "BTN VA", category: "va", fee: 4000, autoCheck: true, icon: "🏦" },
+        { id: "qris", name: "QRIS", category: "qris", fee: 0, autoCheck: false, icon: "📱" },
+        { id: "shopeepay", name: "ShopeePay", category: "ewallet", fee: 1200, autoCheck: false, icon: "🟠" },
+        { id: "dana", name: "DANA", category: "ewallet", fee: 500, autoCheck: false, icon: "🔵" },
+        { id: "gopay", name: "GoPay", category: "ewallet", fee: 1000, autoCheck: false, icon: "🟢" },
+        { id: "ovo", name: "OVO", category: "ewallet", fee: 1500, autoCheck: false, icon: "🟣" },
+        { id: "linkaja", name: "LinkAja", category: "ewallet", fee: 1000, autoCheck: false, icon: "🔴" },
+        { id: "vamandiri", name: "Mandiri VA", category: "va", fee: 4000, autoCheck: false, icon: "🏦" },
+        { id: "vabtn", name: "BTN VA", category: "va", fee: 4000, autoCheck: false, icon: "🏦" },
         { id: "indomaret", name: "Indomaret", category: "cvs", fee: 2500, autoCheck: false, icon: "🏪" },
         { id: "alfamart", name: "Alfamart", category: "cvs", fee: 2500, autoCheck: false, icon: "🏪" }
     ];
@@ -2057,7 +2406,7 @@ header, footer {
         announcements: [
             {date: "06 September 2026", title: "Perubahan Jam Layanan Weekend", desc: "Pada hari Sabtu dan Minggu, waktu respons admin dapat mengalami sedikit keterlambatan. Silakan lakukan pemesanan lebih awal untuk menghindari antrean pengerjaan.", type: "PENTING", badgeClass: "badge-urgent"}
         ],
-        changelog: [
+       changelog: [
             {date: "11 Sep 2026", desc: "Penambahan fitur Mode Gelap (Dark Mode)."},
             {date: "10 Sep 2026", desc: "Perbaikan bug pada fitur Lacak Pesanan."},
             {date: "08 Sep 2026", desc: "Pembaruan UI dan sistem pemesanan."},
@@ -2165,8 +2514,68 @@ header, footer {
     const STATUS_MAP = { "pending_payment": "Menunggu Pembayaran", "paid": "Pending Order", "processing": "Sedang Dikerjakan", "completed": "Selesai", "cancelled": "Dibatalkan" };
 
     // UTILS
+    // UI metadata stays local; business fields come from active server services.
+    let catalogueReady = false;
+    let servicesBySlug = new Map();
+    const PRODUCT_METADATA = CONFIG.PRODUCTS.map(p=>({...p}));
+    async function loadServices() {
+        const {data,error}=await supabase.from('services').select('id,slug,name,description,price,status').eq('status','active').order('id');
+        if(error) { catalogueReady=false; throw error; }
+        servicesBySlug=new Map(data.filter(s=>s.slug).map(s=>[s.slug,s]));
+        CONFIG.PRODUCTS=data.filter(s=>s.slug && /^[a-z0-9-]+$/.test(s.slug)).map(s=>{
+            const meta=PRODUCT_METADATA.find(p=>p.id===s.slug) || {icon:'📄',category:'Lainnya',popularity:0,benefits:[],features:[],notIncluded:[],target:'',estimatedTime:'Sesuai kesepakatan',revisionTerms:'Sesuai kesepakatan'};
+            return {...meta,id:s.slug,serviceId:s.id,title:s.name,desc:s.description||'',priceNum:Number(s.price),price:formatRupiah(Number(s.price))};
+        });
+        catalogueReady=true;
+        CART=sanitizeCart(CART);
+        if(directCheckoutItem)directCheckoutItem=sanitizeCart([directCheckoutItem])[0]||null;
+        renderApp();
+    }
+    function orderFromDatabase(row) {
+        const statusMap={pending:'PENDING_ORDER',processing:'IN_PROGRESS',revision:'REVISION',completed:'COMPLETED',cancelled:'CANCELLED'};
+        return {id:row.order_code || String(row.id),databaseId:row.id,userId:row.user_id || 'guest',
+            items:Array.isArray(row.items)?row.items.map(i=>({...i,name:String(i.name||'Layanan'),price:Number(i.price)||0,quantity:Number(i.quantity)||0})):[],
+            customer:row.customer||{},task:{title:'',deadline:'',notes:row.notes||'',googleDriveUrl:'',...(row.task||{})},
+            paymentMethod:row.payment_method||'',subtotal:Number(row.subtotal)||0,discount:Number(row.discount)||0,
+            serviceFee:Number(row.service_fee)||0,paymentFee:Number(row.payment_fee)||0,total:Number(row.total_price)||0,
+            paymentStatus:String(row.payment_status||'PENDING').toUpperCase(),orderStatus:statusMap[row.status]||'PENDING_ORDER',
+            estimatedCompletion:row.estimated_completion,createdAt:row.created_at};
+    }
+    const ORDER_SELECT='id,order_code,user_id,items,customer,task,notes,payment_method,subtotal,discount,service_fee,payment_fee,total_price,payment_status,status,estimated_completion,created_at';
+    function cacheServerOrder(order) {
+        const index=ORDERS.findIndex(o=>o.id===order.id);
+        if(index<0)ORDERS.push(order);else ORDERS[index]=order;
+        if(currentOrder?.id===order.id)currentOrder=order;
+        return order;
+    }
+    async function fetchMyOrders() {
+        if(!await requireUser())return false;
+        const owner=currentUser.uid; let offset=0; const rows=[];
+        while(true) {
+            const {data,error}=await supabase.from('orders').select(ORDER_SELECT).eq('user_id',owner).order('created_at',{ascending:false}).order('id',{ascending:false}).range(offset,offset+199);
+            if(error)throw error;
+            if(currentUser?.uid!==owner)return false;
+            rows.push(...data);if(data.length<200)break;offset+=200;
+        }
+        ORDERS=rows.map(orderFromDatabase);return true;
+    }
+    async function fetchOrderByCode(code) {
+        await ensureSession();
+        const version=authVersion;
+        const {order}=await callBackend('track',{orderCode:code});
+        if(version!==authVersion)throw new Error('Sesi berubah. Buka kembali pesanan dari akun pemilik.');
+        return cacheServerOrder(orderFromDatabase(order));
+    }
+    function requestIdentity(storageKey,payload) {
+        const fingerprint=JSON.stringify(payload);
+        const saved=readStored(sessionStorage,storageKey,null);
+        if(saved?.fingerprint===fingerprint && saved.key)return saved.key;
+        const key=crypto.randomUUID();
+        writeStored(sessionStorage,storageKey,{key,fingerprint});return key;
+    }
+
     function formatRupiah(number) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(number); }
-    function escapeHTML(str) { return str.replace(/[&<>'"]/g, tag => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[tag] || tag)); }
+    function escapeHTML(str) { return String(str ?? '').replace(/[&<>'"]/g, tag => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[tag] || tag)); }
     function normalizeWhatsAppNumber(number) { let cleaned = number.replace(/\D/g, ''); if (cleaned.startsWith('0')) { cleaned = '62' + cleaned.substring(1); } return cleaned; }
     
     window.openWhatsApp = (number, msg) => {
@@ -2175,15 +2584,41 @@ header, footer {
     }
     
     // Core function to close Modals and reset body scroll lock safely
-    window.closeModal = (id) => { 
-        document.getElementById(id).style.display = 'none'; 
-        document.body.classList.remove('modal-open');
+    window.closeModal = (id) => {
+        const modal=document.getElementById(id); if(modal)modal.style.display='none';
+        const anyOpen=Array.from(document.querySelectorAll('.modal-overlay')).some(el=>el.style.display!=='none');
+        document.body.classList.toggle('modal-open',anyOpen);
     };
 
-    // Close welcome modal logic
-    window.closeWelcomeModal = () => { 
-        window.closeModal('welcomeModal'); 
-        sessionStorage.setItem('nugasHubPopupTime', new Date().getTime()); 
+    // Welcome modal uses closing animation before it is hidden.
+    let welcomeCloseTimer = null;
+    function openWelcomeModal() {
+        const modal = document.getElementById('welcomeModal');
+        if (!modal) return;
+        if (welcomeCloseTimer) clearTimeout(welcomeCloseTimer);
+        modal.classList.remove('welcome-opening', 'welcome-closing');
+        modal.style.display = 'flex';
+        void modal.offsetWidth;
+        modal.classList.add('welcome-opening');
+        document.body.classList.add('modal-open');
+        window.setTimeout(() => modal.classList.remove('welcome-opening'), 480);
+    }
+
+    window.closeWelcomeModal = () => {
+        const modal = document.getElementById('welcomeModal');
+        if (!modal || modal.style.display === 'none' || modal.classList.contains('welcome-closing')) return;
+        try{sessionStorage.setItem('nugasHubPopupTime',new Date().getTime());}catch(_){}
+        if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+            window.closeModal('welcomeModal');
+            return;
+        }
+        modal.classList.remove('welcome-opening');
+        modal.classList.add('welcome-closing');
+        welcomeCloseTimer = window.setTimeout(() => {
+            modal.classList.remove('welcome-closing');
+            window.closeModal('welcomeModal');
+            welcomeCloseTimer = null;
+        }, 300);
     };
 
     // Close Welcome Modal via ESC key
@@ -2203,12 +2638,11 @@ header, footer {
     // ==========================================
     function checkWelcomePopup() {
         const modal = document.getElementById('welcomeModal');
-        const lastShown = sessionStorage.getItem('nugasHubPopupTime');
+        let lastShown=null;try{lastShown=sessionStorage.getItem('nugasHubPopupTime');}catch(_){}
         const currentTime = new Date().getTime();
         // Cek jika belum pernah dibuka ATAU sudah lebih dari 120 menit (untuk testing bisa dihapus limitnya)
         if (!lastShown || (currentTime - lastShown > (120 * 60 * 1000))) { 
-            modal.style.display = 'flex'; 
-            document.body.classList.add('modal-open'); 
+            openWelcomeModal();
         }
     }
 
@@ -2228,10 +2662,11 @@ header, footer {
         document.body.classList.add('modal-open');
     };
 
-    window.openProfileModal = () => {
+    window.openProfileModal = async () => {
+        if(!await requireUser())return;
         document.getElementById('profileName').innerText = currentUser.name; document.getElementById('profileEmail').innerText = currentUser.email;
         const img = document.getElementById('profilePhotoImg'); const init = document.getElementById('profileInitial');
-        if(currentUser.photo) { img.src = currentUser.photo; img.style.display = 'block'; init.style.display = 'none'; } 
+        if(currentUser.photo) { img.src = /^https:\/\//.test(currentUser.photo) ? currentUser.photo : ''; img.style.display = 'block'; init.style.display = 'none'; } 
         else { img.style.display = 'none'; init.style.display = 'block'; init.innerText = currentUser.name.charAt(0).toUpperCase(); }
         window.showProfileMain(); 
         document.getElementById('profileModal').style.display = 'flex';
@@ -2251,29 +2686,26 @@ header, footer {
     // ==========================================
     let CART = [];
 
+    function cartStorageKey() { return currentUser ? `jokiin_cart_${currentUser.uid}` : 'nugasin_guest_cart'; }
+    function sanitizeCart(value) {
+        if(!Array.isArray(value))return [];
+        return value.filter(i=>i && typeof i.productId==='string' && /^[a-z0-9-]+$/.test(i.productId) && Number.isInteger(i.quantity) && i.quantity>0 && i.quantity<=100)
+            .map(i=>{const p=CONFIG.PRODUCTS.find(p=>p.id===i.productId);return {productId:i.productId,name:p?.title||String(i.name||'Layanan'),price:p?.priceNum||Number(i.price)||0,quantity:i.quantity};});
+    }
     async function loadCart() {
-        if(currentUser && isFirebaseActive) { const snap = await getDoc(doc(db, "carts", currentUser.uid)); CART = snap.exists() ? snap.data().items || [] : []; } 
-        else { const saved = localStorage.getItem('nugasin_guest_cart'); CART = saved ? JSON.parse(saved) : []; }
-        updateCartBadge();
+        CART=sanitizeCart(readStored(localStorage,cartStorageKey(),[])); updateCartBadge();
     }
-
     async function saveCart() {
-        if(currentUser && isFirebaseActive) await setDoc(doc(db, "carts", currentUser.uid), { items: CART });
-        else localStorage.setItem('nugasin_guest_cart', JSON.stringify(CART));
-        updateCartBadge();
+        writeStored(localStorage,cartStorageKey(),CART); updateCartBadge();
     }
-
     async function mergeCartsOnLogin() {
-        const guestJSON = localStorage.getItem('nugasin_guest_cart');
-        if (guestJSON) {
-            const guestCart = JSON.parse(guestJSON);
-            if(guestCart.length > 0 && isFirebaseActive) {
-                const snap = await getDoc(doc(db, "carts", currentUser.uid)); let userCart = snap.exists() ? snap.data().items || [] : [];
-                guestCart.forEach(gItem => { const exist = userCart.find(c => c.productId === gItem.productId); if (exist) exist.quantity += gItem.quantity; else userCart.push(gItem); });
-                CART = userCart; await saveCart();
-            }
-            localStorage.removeItem('nugasin_guest_cart');
-        }
+        if(!currentUser)return loadCart();
+        const userCart=sanitizeCart(readStored(localStorage,cartStorageKey(),[]));
+        const guestCart=sanitizeCart(readStored(localStorage,'nugasin_guest_cart',[]));
+        guestCart.forEach(item=>{const existing=userCart.find(i=>i.productId===item.productId);if(existing)existing.quantity=Math.min(100,existing.quantity+item.quantity);else userCart.push(item);});
+        CART=userCart;
+        if(writeStored(localStorage,cartStorageKey(),CART))removeStored(localStorage,'nugasin_guest_cart');
+        updateCartBadge();
     }
 
     window.addToCart = (productId) => {
@@ -2300,7 +2732,7 @@ header, footer {
         let html = '', total = 0;
         CART.forEach(item => {
             const sub = item.price * item.quantity; total += sub;
-            html += `<div class="cart-item"><div class="cart-item-info"><h4>${item.name}</h4><p>${formatRupiah(item.price)}</p><div style="font-size:0.85em; color:var(--text-secondary); margin-top:5px;">Subtotal: ${formatRupiah(sub)}</div></div><div class="cart-qty-controls"><button class="btn-qty" onclick="window.changeCartQty('${item.productId}', -1)">-</button><span style="font-weight:600; width:20px; text-align:center; color:var(--text-main);">${item.quantity}</span><button class="btn-qty" onclick="window.changeCartQty('${item.productId}', 1)">+</button></div></div>`;
+            html += `<div class="cart-item"><div class="cart-item-info"><h4>${escapeHTML(item.name)}</h4><p>${formatRupiah(item.price)}</p><div style="font-size:0.85em; color:var(--text-secondary); margin-top:5px;">Subtotal: ${formatRupiah(sub)}</div></div><div class="cart-qty-controls"><button class="btn-qty" onclick="window.changeCartQty('${item.productId}', -1)">-</button><span style="font-weight:600; width:20px; text-align:center; color:var(--text-main);">${item.quantity}</span><button class="btn-qty" onclick="window.changeCartQty('${item.productId}', 1)">+</button></div></div>`;
         });
         c.innerHTML = html; document.getElementById('cartTotalPrice').innerText = formatRupiah(total);
     }
@@ -2320,7 +2752,9 @@ header, footer {
 // ==========================================
     // SISTEM CHECKOUT (TERPISAH DIRECT & CART, LOCKED FLOW, GRID UI)
     // ==========================================
-    let ORDERS = JSON.parse(localStorage.getItem('nugasin_orders')) || [];
+    // Arsip nugasin_orders lama dipertahankan; sumber aktif selalu Supabase.
+    let ORDERS = [];
+    let checkoutInFlight = false;
     let currentOrder = null;
     let appliedPromoDiscount = 0;
     
@@ -2338,7 +2772,8 @@ header, footer {
             case 'FAILED': return '<span style="color:var(--error);">🔴 Pembayaran Gagal</span>';
             case 'EXPIRED': return '<span style="color:#D97706;">🟠 Pembayaran Kedaluwarsa</span>';
             case 'CANCELLED': return '<span style="color:var(--text-muted);">⚫ Pembayaran Dibatalkan</span>';
-            default: return status || '<span style="color:var(--success);">🟢 Pembayaran Berhasil</span>';
+            case 'REFUNDED': return '<span style="color:var(--text-secondary);">Pembayaran Dikembalikan</span>';
+            default: return '<span style="color:var(--warning-star);">Pembayaran Menunggu</span>';
         }
     }
 
@@ -2347,7 +2782,9 @@ header, footer {
             case 'PENDING_ORDER': return '<span style="color:var(--primary);">🔵 Menunggu Diproses</span>';
             case 'IN_PROGRESS': return '<span style="color:var(--primary);">⚙️ Sedang Dikerjakan</span>';
             case 'COMPLETED': return '<span style="color:var(--success);">🟢 Selesai</span>';
-            default: return status || '<span style="color:var(--primary);">🔵 Menunggu Diproses</span>';
+            case 'REVISION': return '<span style="color:var(--primary);">Sedang Direvisi</span>';
+            case 'CANCELLED': return '<span style="color:var(--error);">Dibatalkan</span>';
+            default: return '<span style="color:var(--primary);">Menunggu Diproses</span>';
         }
     }
     // ------------------------------------------
@@ -2369,16 +2806,16 @@ header, footer {
             paymentId: selectedPaymentMethod ? selectedPaymentMethod.id : null,
             promoApplied: appliedPromoDiscount
         };
-        sessionStorage.setItem('nugasin_checkout_state', JSON.stringify(state));
+        writeStored(sessionStorage,'nugasin_checkout_state',state);
     };
 
     function restoreCheckoutState() {
-        const stateJSON = sessionStorage.getItem('nugasin_checkout_state');
+        let stateJSON=null;try{stateJSON=sessionStorage.getItem('nugasin_checkout_state');}catch(_){}
         if(stateJSON) {
             try {
                 const state = JSON.parse(stateJSON);
                 if(state.tab === 'checkout') {
-                    checkoutMode = state.mode; directCheckoutItem = state.directItem; appliedPromoDiscount = state.promoApplied || 0;
+                    checkoutMode = state.mode==='direct'?'direct':'cart'; directCheckoutItem = state.directItem?sanitizeCart([state.directItem])[0]||null:null; appliedPromoDiscount = state.promoApplied===0.1?0.1:0;
                     
                     document.getElementById('chkTaskTitle').value = state.form.title || '';
                     document.getElementById('chkTaskDeadline').value = state.form.deadline || '';
@@ -2410,7 +2847,7 @@ header, footer {
 
     window.cancelCheckout = () => {
         if(checkoutMode === 'direct') { directCheckoutItem = null; }
-        sessionStorage.removeItem('nugasin_checkout_state');
+        removeStored(sessionStorage,'nugasin_checkout_state');
         window.switchTab(lastActiveTab || 'beranda');
     };
 
@@ -2436,6 +2873,7 @@ header, footer {
             document.getElementById('checkoutGuestMsg').style.display = 'none';
             if(!document.getElementById('chkName').value) document.getElementById('chkName').value = currentUser.name;
             if(!document.getElementById('chkEmail').value) document.getElementById('chkEmail').value = currentUser.email;
+            if(!document.getElementById('chkWA').value) document.getElementById('chkWA').value=currentUser.phone||'';
         } else { document.getElementById('checkoutGuestMsg').style.display = 'block'; }
     }
 
@@ -2510,7 +2948,7 @@ header, footer {
                     <div class="pay-card-icon">${opt.icon}</div>
                     <div class="pay-card-name">${opt.name}</div>
                     <div class="pay-card-price">${formatRupiah(total)}</div>
-                    <div class="pay-card-status">${opt.autoCheck ? 'Dicek Otomatis' : 'Cek Manual'}</div>
+                    <div class="pay-card-status">${opt.autoCheck ? 'Menunggu Konfirmasi' : 'Konfirmasi Admin'}</div>
                 </div>
                 `;
             }).join('');
@@ -2541,7 +2979,7 @@ header, footer {
             html += `
             <div class="cart-item">
                 <div class="cart-item-info">
-                    <h4>${item.name}</h4>
+                    <h4>${escapeHTML(item.name)}</h4>
                     <p>${formatRupiah(item.price)}</p>
                     <div style="font-size:0.85em; color:var(--text-secondary); margin-top:5px;">Subtotal: ${formatRupiah(sub)}</div>
                 </div>
@@ -2583,13 +3021,14 @@ header, footer {
     document.getElementById('tab-checkout').addEventListener('input', window.saveCheckoutState);
     document.getElementById('tab-checkout').addEventListener('change', window.saveCheckoutState);
 
-    window.processCheckout = () => {
+    window.processCheckout = async () => {
+        if(checkoutInFlight)return;
         document.querySelectorAll('.error-msg').forEach(e => e.style.display = 'none');
         let isValid = true;
 
         const name = document.getElementById('chkName').value.trim();
         const wa = document.getElementById('chkWA').value.trim();
-        const email = document.getElementById('chkEmail').value.trim();
+        const email = document.getElementById('chkEmail').value.trim().toLowerCase();
         const title = document.getElementById('chkTaskTitle').value.trim();
         const deadline = document.getElementById('chkTaskDeadline').value;
         const notes = document.getElementById('chkTaskNotes').value.trim();
@@ -2617,10 +3056,10 @@ header, footer {
         if(!notes) { document.getElementById('errChkNotes').style.display = 'block'; isValid = false; }
         if(!selectedPaymentMethod) { document.getElementById('errChkPayment').style.display = 'block'; isValid = false; }
 
-        let itemsToProcess = checkoutMode === 'direct' ? [{...directCheckoutItem}] : [...CART];
+        let itemsToProcess = checkoutMode === 'direct' ? (directCheckoutItem?[{...directCheckoutItem}]:[]) : CART.map(i=>({...i}));
 
         if(driveUrl) {
-            if(!driveUrl.includes('drive.google.com') && !driveUrl.includes('docs.google.com')) {
+            if(!validDriveUrl(driveUrl)) {
                 document.getElementById('errChkDrive').style.display = 'block'; isValid = false;
             }
         }
@@ -2632,52 +3071,58 @@ header, footer {
             return;
         }
 
-        // JIKA LOLOS SEMUA VALIDASI, LANJUTKAN PROSES:
-        const normWA = normalizeWhatsAppNumber(wa);
-        const dateStr = new Date().toISOString().slice(0,10).replace(/-/g,'');
-        const orderId = `NUG-${dateStr}-${Math.floor(1000+Math.random()*9000)}`;
-        
-        let subtotal = itemsToProcess.reduce((sum, i) => sum + (i.price * i.quantity), 0);
-        let discountAmt = subtotal * appliedPromoDiscount;
-        let finalTotal = subtotal - discountAmt + CONFIG.serviceFee + selectedPaymentFee;
-
-        let estDate = new Date();
-        estDate.setDate(estDate.getDate() + 3);
-
-        const order = {
-            id: orderId, 
-            userId: currentUser ? currentUser.uid : "guest", 
-            items: itemsToProcess,
-            customer: { name, whatsapp: normWA, email },
-            task: { title, deadline, notes, googleDriveUrl: driveUrl },
-            paymentMethod: selectedPaymentMethod.name, 
-            subtotal, discount: discountAmt, 
-            serviceFee: CONFIG.serviceFee, paymentFee: selectedPaymentFee, total: finalTotal, 
-            paymentStatus: "PAID",
-            orderStatus: "PENDING_ORDER", 
-            estimatedCompletion: estDate.toISOString(), 
-            createdAt: new Date().toISOString()
-        };
-
-        ORDERS.push(order);
-        localStorage.setItem('nugasin_orders', JSON.stringify(ORDERS));
-        currentOrder = order;
-
-        // TAMBAHKAN BARIS INI UNTUK AUTO-FILL TRACKING:
-        localStorage.setItem('nugasin_last_order_id', orderId);
-
-
-        if (checkoutMode === 'cart') { CART = []; saveCart(); } 
-        else { directCheckoutItem = null; }
-        
-        sessionStorage.removeItem('nugasin_checkout_state');
-        renderOrderSuccess(order);
-        window.switchTab('order-success');
+        if (!itemsToProcess.length || itemsToProcess.some(i=>!i.productId || !Number.isInteger(i.quantity) || i.quantity<1 || i.quantity>100)) {
+            window.showToast('Keranjang tidak valid. Periksa jumlah layanan.'); return;
+        }
+        if (!validDriveUrl(driveUrl)) { document.getElementById('errChkDrive').style.display='block'; return; }
+        if (checkoutInFlight) return;
+        checkoutInFlight=true;
+        const buyButton=document.querySelector('#tab-checkout button[onclick="window.processCheckout()"]');
+        if(buyButton){buyButton.disabled=true;buyButton.textContent='Menyimpan pesanan...';}
+        try {
+            await ensureSession();
+            if(!catalogueReady)await loadServices();
+            const owner=currentUser?.uid||null;
+            const subtotal=itemsToProcess.reduce((sum,i)=>sum+i.price*i.quantity,0);
+            const payload={
+                customer:{name,whatsapp:normalizeWhatsAppNumber(wa),email:email.toLowerCase()},
+                task:{title,deadline,notes,googleDriveUrl:driveUrl},
+                items:itemsToProcess.map(i=>({productId:i.productId,quantity:i.quantity})),
+                paymentMethod:selectedPaymentMethod.id,
+                promo:appliedPromoDiscount>0?'MAHASISWA10':'',
+                expectedTotal:Math.round((subtotal-subtotal*appliedPromoDiscount+CONFIG.serviceFee+selectedPaymentFee)*100)/100
+            };
+            const requestKey=requestIdentity('jokiin_checkout_request',{owner,...payload});
+            const {order:row}=await callBackend('checkout',{...payload,requestKey});
+            if((currentUser?.uid||null)!==owner) { window.showToast('Pesanan tersimpan. Buka kembali dari akun pemesan.'); return; }
+            const order=cacheServerOrder(orderFromDatabase(row));
+            currentOrder=order;
+            // Hanya nomor acuan disimpan di browser. Data dan status order berasal dari server.
+            try { localStorage.setItem('nugasin_last_order_id',order.id); } catch (_) {}
+            if(checkoutMode==='cart') { CART=[]; await saveCart(); }
+            else { directCheckoutItem=null; }
+            removeStored(sessionStorage,'nugasin_checkout_state');
+            removeStored(sessionStorage,'jokiin_checkout_request');
+            renderOrderSuccess(order); window.switchTab('order-success');
+        } catch(error) {
+            window.showToast(error.message || 'Pesanan belum tersimpan. Periksa koneksi lalu coba lagi.');
+            if(error.status===409) {
+                removeStored(sessionStorage,'jokiin_checkout_request');
+                try { await loadServices(); renderCheckoutSummary(); } catch (_) {}
+            }
+        } finally {
+            checkoutInFlight=false;
+            if(buyButton){buyButton.disabled=false;buyButton.textContent='Beli';}
+        }
     };
 
     function renderOrderSuccess(order) {
-        document.getElementById('succOrderId').innerText = `${order.id}`; 
-        document.getElementById('succTotal').innerText = formatRupiah(order.total);
+        document.getElementById('succOrderId').textContent=order.id;
+        document.getElementById('succTotal').textContent=formatRupiah(order.total);
+        document.getElementById('succMethod').textContent=order.paymentMethod;
+        document.getElementById('succPaymentStatus').innerHTML=getPaymentStatusLabel(order.paymentStatus);
+        document.querySelector('#tab-order-success h2').textContent='Pesanan Berhasil Disimpan';
+        document.querySelector('#tab-order-success > p').textContent=order.paymentStatus==='PAID'?'Pembayaran telah dikonfirmasi.':'Pembayaran menunggu konfirmasi admin. Simpan nomor pesanan dan hubungi Admin Salsa untuk instruksi pembayaran.';
     }
 
     function generateAdminInvoiceMessage(order) {
@@ -2721,7 +3166,7 @@ TOTAL: ${formatRupiah(order.total)}
 ${order.paymentMethod}
 
 🟢 Status Pembayaran:
-${order.paymentStatus || 'PAID'}
+${order.paymentStatus || 'PENDING'}
 
 🔵 Status Pesanan:
 ${order.orderStatus || 'PENDING_ORDER'}
@@ -2767,24 +3212,23 @@ Teman tugas mahasiswa.`;
 let currentTrackWA = ''; 
 let currentOrderFilter = 'Semua';
 
-window.openOrdersModal = () => {
-    if(currentUser) {
-        currentTrackWA = ''; 
-        renderOrdersList();
-        document.getElementById('ordersModal').style.display = 'flex';
-        document.body.classList.add('modal-open');
-    } else {
-        if(currentTrackWA) {
+window.openOrdersModal = async () => {
+    try {
+        await ensureSession();
+        if(currentUser) {
+            currentTrackWA='';
+            if(!await fetchMyOrders())return;
             renderOrdersList();
-            document.getElementById('ordersModal').style.display = 'flex';
+            document.getElementById('ordersModal').style.display='flex';
             document.body.classList.add('modal-open');
-        } else {
-            document.getElementById('trackInput').value = '';
-            document.getElementById('trackError').style.display = 'none';
-            document.getElementById('guestTrackModal').style.display = 'flex';
+        } else if(currentTrackWA) { await window.openOrderDetail(currentTrackWA); }
+        else {
+            document.getElementById('trackInput').value='';
+            document.getElementById('trackError').style.display='none';
+            document.getElementById('guestTrackModal').style.display='flex';
             document.body.classList.add('modal-open');
         }
-    }
+    } catch(error) {window.showToast(error.message||'Pesanan belum dapat dimuat.');}
 };
 
 window.filterOrders = (status) => {
@@ -2831,6 +3275,7 @@ function renderOrdersList() {
             if(ordStatusStr === 'IN_PROGRESS' || ordStatusStr === 'processing') mappedStatus = 'Sedang Dikerjakan';
             if(ordStatusStr === 'COMPLETED' || ordStatusStr === 'completed') mappedStatus = 'Selesai';
             if(ordStatusStr === 'CANCELLED' || ordStatusStr === 'cancelled') mappedStatus = 'Dibatalkan';
+            if(ordStatusStr === 'REVISION') mappedStatus = 'Sedang Direvisi';
             if(ordStatusStr === 'paid') mappedStatus = 'Pending Order'; // legacy
 
             const matchStatus = currentOrderFilter === 'Semua' ? true : 
@@ -2856,19 +3301,20 @@ function renderOrdersList() {
             if(ordStatusStr === 'IN_PROGRESS' || ordStatusStr === 'processing') { statusClass = 'status-processing'; mappedStatus = 'Sedang Dikerjakan'; }
             if(ordStatusStr === 'COMPLETED' || ordStatusStr === 'completed') { statusClass = 'status-completed'; mappedStatus = 'Selesai'; }
             if(ordStatusStr === 'CANCELLED' || ordStatusStr === 'cancelled') { statusClass = 'status-cancelled'; mappedStatus = 'Dibatalkan'; }
+            if(ordStatusStr === 'REVISION') { statusClass = 'status-processing'; mappedStatus = 'Sedang Direvisi'; }
             if(ordStatusStr === 'paid') { mappedStatus = 'Pending Order'; }
 
             const estDate = o.estimatedCompletion ? new Date(o.estimatedCompletion).toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'}) : '-';
             const estText = (mappedStatus === 'Selesai') ? `✓ Selesai pada ${estDate}` : `Estimasi selesai: ${estDate}`;
 
             return `
-            <div class="order-history-item" onclick="window.openOrderDetail('${o.id}')">
+            <div class="order-history-item" data-order-code="${escapeHTML(o.id)}">
                 <div class="order-history-header">
-                    <span class="order-id">${o.id}</span>
+                    <span class="order-id">${escapeHTML(o.id)}</span>
                     <span class="status-badge ${statusClass}">${mappedStatus}</span>
                 </div>
                 <div style="font-size:0.95em; color:var(--text-main); font-weight:600; margin-bottom:5px;">
-                    ${o.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}
+                    ${o.items.map(i => `${escapeHTML(i.name)} (x${i.quantity})`).join(', ')}
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span style="font-size:0.8em; color:var(--text-muted);">${new Date(o.createdAt).toLocaleDateString('id-ID')}</span>
@@ -2879,9 +3325,20 @@ function renderOrdersList() {
                 </div>
             </div>`;
         }).join('');
+        container.querySelectorAll('[data-order-code]').forEach(el=>el.onclick=()=>window.openOrderDetail(el.dataset.orderCode));
     }
     
-    window.openOrderDetail = (orderId) => {
+    let currentDetailCode = '';
+    window.openOrderDetail = async (orderId) => {
+        try {
+            const version=authVersion;
+            const order=await fetchOrderByCode(orderId);
+            if(version!==authVersion)return;
+            renderOrderDetail(order.id);
+        } catch(error) {window.closeModal('orderDetailModal');window.showToast(error.message||'Detail pesanan belum dapat dimuat.');}
+    };
+    function renderOrderDetail(orderId) {
+        currentDetailCode=orderId;
         const order = ORDERS.find(o => o.id === orderId); if(!order) return;
         
         document.getElementById('ordersModal').style.display = 'none';
@@ -2889,9 +3346,9 @@ function renderOrdersList() {
         document.getElementById('detOrderId').innerText = `${order.id}`;
         document.getElementById('detDate').innerText = new Date(order.createdAt).toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'});
         document.getElementById('detTotal').innerText = formatRupiah(order.total);
-        document.getElementById('detService').innerText = order.items.map(i => `${i.name} (x${i.quantity}) - ${formatRupiah(i.price * i.quantity)}`).join(', ');
+        document.getElementById('detService').innerText = order.items.map(i => `${escapeHTML(i.name)} (x${i.quantity}) - ${formatRupiah(i.price * i.quantity)}`).join(', ');
         
-        const payStatusStr = order.paymentStatus || 'PAID';
+        const payStatusStr = order.paymentStatus || 'PENDING';
         const ordStatusStr = order.orderStatus || 'PENDING_ORDER';
 
         const badge = document.getElementById('detStatusBadge');
@@ -2910,7 +3367,7 @@ function renderOrdersList() {
         document.getElementById('detTaskNotes').innerText = order.task.notes;
         
         const driveLink = document.getElementById('detTaskDrive');
-        if(order.task.googleDriveUrl && payStatusStr === 'PAID') {
+        if(order.task.googleDriveUrl && validDriveUrl(order.task.googleDriveUrl) && payStatusStr === 'PAID') {
             driveLink.href = order.task.googleDriveUrl;
             driveLink.style.display = 'inline-block';
         } else {
@@ -2919,16 +3376,16 @@ function renderOrdersList() {
 
         const timeline = document.getElementById('detTimeline');
         const isPaid = (payStatusStr === 'PAID');
-        const isPendingOrd = (ordStatusStr === 'PENDING_ORDER' || ordStatusStr === 'IN_PROGRESS' || ordStatusStr === 'COMPLETED');
-        const isInProgress = (ordStatusStr === 'IN_PROGRESS' || ordStatusStr === 'COMPLETED');
+        const isPendingOrd = (ordStatusStr === 'PENDING_ORDER' || ordStatusStr === 'IN_PROGRESS' || ordStatusStr === 'REVISION' || ordStatusStr === 'COMPLETED');
+        const isInProgress = (ordStatusStr === 'IN_PROGRESS' || ordStatusStr === 'REVISION' || ordStatusStr === 'COMPLETED');
         const isCompleted = (ordStatusStr === 'COMPLETED');
 
         timeline.innerHTML = `
             <div class="timeline-item completed">Pesanan Dibuat</div>
             <div class="timeline-item ${isPaid ? 'completed' : ''}">${isPaid ? 'Pembayaran Diterima' : 'Menunggu Pembayaran'}</div>
             <div class="timeline-item ${isPendingOrd ? (isInProgress ? 'completed' : 'active') : ''}">Menunggu Diproses</div>
-            <div class="timeline-item ${isInProgress ? (isCompleted ? 'completed' : 'active') : ''}">Sedang Dikerjakan</div>
-            <div class="timeline-item ${isCompleted ? 'completed' : ''}">Pesanan Selesai</div>
+            <div class="timeline-item ${isInProgress ? (isCompleted ? 'completed' : 'active') : ''}">${ordStatusStr==='REVISION'?'Sedang Direvisi':'Sedang Dikerjakan'}</div>
+            <div class="timeline-item ${isCompleted ? 'completed' : ''}">${ordStatusStr==='CANCELLED'?'Pesanan Dibatalkan':'Pesanan Selesai'}</div>
         `;
 
 const copyBtn = document.getElementById('btnCopyOrderId');
@@ -3022,30 +3479,25 @@ const copyBtn = document.getElementById('btnCopyOrderId');
     }
 
     async function loadReviews() {
-        if(isFirebaseActive) { 
-            try { 
-                const snap = await getDocs(collection(db, "reviews")); 
-                REVIEWS = snap.docs.map(d => ({ id: d.id, ...d.data() })); 
-            } catch(e) {} 
-        } 
-        else { 
-            REVIEWS = JSON.parse(localStorage.getItem('nugasin_reviews')) || []; 
-        }
-
-        // Hapus otomatis jika sebelumnya sempat ada data bintang 1 atau 2 yang tersimpan
-        REVIEWS = REVIEWS.filter(r => r.rating >= 3);
-
-        if (REVIEWS.length === 0) {
-            REVIEWS = generateDemoReviews();
-            if(!isFirebaseActive) localStorage.setItem('nugasin_reviews', JSON.stringify(REVIEWS));
-        }
-
-        if(currentTab === 'testimoni') { 
-            if(document.getElementById('testimoni-list-view').style.display !== 'none') {
-                window.showTestimoniList(); 
-            } else if(currentReviewProductId) {
-                window.showProductReviews(currentReviewProductId); 
+        try {
+            let offset=0;const rows=[];
+            while(true) {
+                const {data,error}=await supabase.from('reviews').select('id,service_id,rating,comment,created_at,customer_name,user_photo,verified,services(slug)').order('created_at',{ascending:false}).order('id',{ascending:false}).range(offset,offset+199);
+                if(error)throw error;
+                rows.push(...data);if(data.length<200)break;offset+=200;
             }
+            REVIEWS=rows.map(r=>({id:r.id,productId:r.services?.slug||'',rating:r.rating,comment:r.comment||'',date:r.created_at,customerName:r.customer_name,userPhoto:r.user_photo||'',verified:r.verified===true,isDemo:false}));
+            writeStored(localStorage,'jokiin_server_reviews_cache',REVIEWS);
+        } catch(error) {
+            REVIEWS=readStored(localStorage,'jokiin_server_reviews_cache',[]);
+            if(!Array.isArray(REVIEWS))REVIEWS=[];
+            console.error('Ulasan server belum dapat dimuat:',error.message);
+            if(currentTab==='testimoni')window.showToast('Ulasan terbaru belum dapat dimuat. Coba lagi nanti.');
+        }
+        // Data demo/ulasan lama tetap tersimpan pada key lama, tidak diunggah sebagai pembelian asli.
+        if(currentTab==='testimoni') {
+            if(document.getElementById('testimoni-list-view').style.display!=='none')window.showTestimoniList();
+            else if(currentReviewProductId)window.showProductReviews(currentReviewProductId);
         }
     }
 
@@ -3057,9 +3509,9 @@ const copyBtn = document.getElementById('btnCopyOrderId');
 
     function getProductStats(productId) {
         const pr = REVIEWS.filter(r => r.productId === productId); 
-        if (pr.length === 0) return { avg: 0, count: 0, dist: {5:0, 4:0, 3:0} };
+        if (pr.length === 0) return { avg: 0, count: 0, dist: {5:0, 4:0, 3:0, 2:0, 1:0} };
         
-        const dist = {5:0, 4:0, 3:0};
+        const dist = {5:0, 4:0, 3:0, 2:0, 1:0};
         pr.forEach(r => { if(dist[r.rating] !== undefined) dist[r.rating]++; });
 
         return { 
@@ -3085,7 +3537,7 @@ const copyBtn = document.getElementById('btnCopyOrderId');
             const s = getProductStats(p.id); 
             const rText = s.count > 0 ? `<span class="star-icon">⭐</span> <span style="color:var(--text-main); font-weight:700;">${s.avg}</span> <span class="count">(${s.count} ulasan)</span>` : `<span class="count">Belum ada ulasan</span>`;
             
-            return `<div class="service-card"><div class="service-icon" style="font-size:1.5em; margin-bottom:10px;">${p.icon}</div><h3>${p.title}</h3><span class="category-badge" style="margin-bottom:15px;">${p.category}</span><div class="rating-summary">${rText}</div><button class="btn-outline" style="width:100%; margin-top:auto;" onclick="window.showProductReviews('${p.id}')">Lihat Ulasan</button></div>`;
+            return `<div class="service-card"><div class="service-icon" style="font-size:1.5em; margin-bottom:10px;">${p.icon}</div><h3>${escapeHTML(p.title)}</h3><span class="category-badge" style="margin-bottom:15px;">${p.category}</span><div class="rating-summary">${rText}</div><button class="btn-outline" style="width:100%; margin-top:auto;" onclick="window.showProductReviews('${p.id}')">Lihat Ulasan</button></div>`;
         }).join('');
     };
 
@@ -3117,6 +3569,8 @@ const copyBtn = document.getElementById('btnCopyOrderId');
                     <button class="filter-pill ${currentStarFilter === 5 ? 'active' : ''}" onclick="window.filterReviewsByStar(5)">⭐ 5 (${s.dist[5]})</button>
                     <button class="filter-pill ${currentStarFilter === 4 ? 'active' : ''}" onclick="window.filterReviewsByStar(4)">⭐ 4 (${s.dist[4]})</button>
                     <button class="filter-pill ${currentStarFilter === 3 ? 'active' : ''}" onclick="window.filterReviewsByStar(3)">⭐ 3 (${s.dist[3]})</button>
+                    <button class="filter-pill ${currentStarFilter === 2 ? 'active' : ''}" onclick="window.filterReviewsByStar(2)">⭐ 2 (${s.dist[2]})</button>
+                    <button class="filter-pill ${currentStarFilter === 1 ? 'active' : ''}" onclick="window.filterReviewsByStar(1)">⭐ 1 (${s.dist[1]})</button>
                 </div>
             `;
         } else {
@@ -3134,7 +3588,7 @@ const copyBtn = document.getElementById('btnCopyOrderId');
             ? `<div class="service-card" style="grid-column: 1 / -1; text-align: center; padding: 40px;"><h3 style="margin-bottom:10px; color:var(--text-main);">Belum ada ulasan</h3><p style="margin-bottom:20px; color:var(--text-secondary);">Tidak ada ulasan untuk rating ini.</p><button class="btn-outline" onclick="window.filterReviewsByStar(0)">Lihat Semua Rating</button></div>` 
             : pRev.map(r => {
                 const anonName = anonymizeName(r.customerName || r.userName || r.name);
-                const isVerified = (r.orderId || !r.isDemo) ? `<span style="color:var(--success); font-size:0.75em; font-weight:600; background:#DCFCE7; padding:2px 8px; border-radius:12px; margin-left:8px;">✓ Pembeli Terverifikasi</span>` : '';
+                const isVerified = (r.verified === true) ? `<span style="color:var(--success); font-size:0.75em; font-weight:600; background:#DCFCE7; padding:2px 8px; border-radius:12px; margin-left:8px;">✓ Pembeli Terverifikasi</span>` : '';
                 const rDate = new Date(r.date || r.createdAt).toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'});
                 
                 return `
@@ -3162,10 +3616,12 @@ const copyBtn = document.getElementById('btnCopyOrderId');
         star.addEventListener('click', () => { currentStarRating = idx + 1; });
     });
 
-    window.openReviewModal = (pId, pTitle) => {
+    window.openReviewModal = async (pId, pTitle) => {
+        if(!await requireUser())return;
+        currentReviewProductId=pId;
         // PERINGATAN WAJIB LOGIN GOOGLE
         if (!currentUser) { 
-            window.showToast("Silakan masuk dengan akun Google untuk memberikan ulasan."); 
+            window.showToast("Silakan login untuk memberikan ulasan."); 
             window.openAuthModal(); 
             return; 
         }
@@ -3179,54 +3635,30 @@ const copyBtn = document.getElementById('btnCopyOrderId');
         document.body.classList.add('modal-open');
     };
 
+    let reviewInFlight=false;
     window.submitReview = async () => {
-        const text = document.getElementById('revText').value.trim();
-        const errorEl = document.getElementById('revError');
-        
-        // BATASAN MINIMAL BINTANG 3 SAAT USER MENULIS ULASAN BARU
-        if (currentStarRating < 3) {
-            errorEl.innerText = "Minimal rating yang dapat diberikan adalah 3 bintang.";
-            errorEl.style.display = "block";
-            return;
-        }
-        if (!text) {
-            errorEl.innerText = "Silakan tuliskan ulasan Anda terlebih dahulu.";
-            errorEl.style.display = "block";
-            return;
-        }
-
-        document.getElementById('btnSubmitReview').innerText = "Mengirim...";
-        
-        const reviewData = { 
-            id: `REV-${Date.now()}`,
-            userId: currentUser.uid, 
-            productId: currentReviewProductId, 
-            rating: currentStarRating, 
-            comment: text, 
-            customerName: currentUser.name, 
-            userPhoto: currentUser.photo || "", 
-            date: new Date().toISOString(),
-            isDemo: false 
-        };
-        
-        if(isFirebaseActive) { 
-            try { await addDoc(collection(db, "reviews"), reviewData); } catch(e) {} 
-        } else { 
-            REVIEWS.push(reviewData); 
-            localStorage.setItem('nugasin_reviews', JSON.stringify(REVIEWS)); 
-        }
-        
-        document.getElementById('btnSubmitReview').innerText = "Kirim Ulasan"; 
-        window.closeModal('reviewModal'); 
-        window.showToast("Ulasan berhasil dikirim."); 
-        
-        currentStarFilter = 0;
-        await loadReviews();
+        if(reviewInFlight)return;
+        if(!await requireUser())return;
+        const text=document.getElementById('revText').value.trim();
+        const errorEl=document.getElementById('revError');
+        if(currentStarRating<1||currentStarRating>5||!text||text.length>3000){errorEl.textContent='Pilih rating 1–5 dan tulis ulasan maksimal 3.000 karakter.';errorEl.style.display='block';return;}
+        reviewInFlight=true;
+        const button=document.getElementById('btnSubmitReview');button.disabled=true;button.textContent='Mengirim...';
+        try {
+            const payload={productId:currentReviewProductId,rating:currentStarRating,comment:text};
+            const requestKey=requestIdentity('jokiin_review_request',{user:currentUser.uid,...payload});
+            await callBackend('review',{...payload,requestKey});
+            removeStored(sessionStorage,'jokiin_review_request');
+            window.closeModal('reviewModal');window.showToast('Ulasan berhasil disimpan.');
+            currentStarFilter=0;await loadReviews();
+        } catch(error) {errorEl.textContent=error.message||'Ulasan belum terkirim. Silakan coba lagi.';errorEl.style.display='block';}
+        finally {reviewInFlight=false;button.disabled=false;button.textContent='Kirim Ulasan';}
     };
-    
+
     // ==========================================
     // RENDER LAYANAN & HARGA SPESIFIK
     // ==========================================
+    window.consultService = (id) => {const p=CONFIG.PRODUCTS.find(p=>p.id===id);if(p)window.openAdminModal(`Halo NUGASIN, saya butuh layanan ${p.title}.`);};
     window.openServiceDetail = (pId) => {
         const p = CONFIG.PRODUCTS.find(x => x.id === pId); if(!p) return;
         document.getElementById('detailSvcIcon').innerText = p.icon; document.getElementById('detailSvcTitle').innerText = p.title; document.getElementById('detailSvcDesc').innerText = p.desc;
@@ -3256,7 +3688,7 @@ const copyBtn = document.getElementById('btnCopyOrderId');
 
         document.getElementById('full-harga').innerHTML = filtered.map(p => `
             <div class="service-card">
-                <h3>${p.title}</h3>
+                <h3>${escapeHTML(p.title)}</h3>
                 <div class="pricing-category-label">${p.category}</div>
                 <div class="pricing-price-box">
                     <span class="pricing-price-label">Mulai dari</span>
@@ -3302,14 +3734,121 @@ const copyBtn = document.getElementById('btnCopyOrderId');
         `).join('');
     }
 
+    let recommendationIndex = 0;
+    let recommendationTimer = null;
+    let recommendationResetFrame = null;
+
+    function recommendationStep() {
+        const viewport = document.getElementById('recommendationViewport');
+        const firstCard = document.querySelector('#recommendationTrack .recommendation-card');
+        if (!viewport || !firstCard) return { distance: 0, max: 0 };
+        const viewportWidth = viewport.clientWidth || 1100;
+        const cardWidth = firstCard.getBoundingClientRect().width || Math.min(viewportWidth, 340);
+        const distance = cardWidth + 16;
+        const visibleCards = Math.max(1, Math.floor((viewportWidth + 16) / distance));
+        return { distance, visibleCards };
+    }
+
+    function updateRecommendationCarousel() {
+        const track = document.getElementById('recommendationTrack');
+        const dots = document.querySelectorAll('#recommendationDots .recommendation-dot');
+        if (!track) return;
+        const { distance } = recommendationStep();
+        track.style.transform = `translate3d(${-recommendationIndex * distance}px, 0, 0)`;
+        const activeIndex = CONFIG.PRODUCTS.length ? recommendationIndex % CONFIG.PRODUCTS.length : 0;
+        dots.forEach((dot, index) => dot.classList.toggle('active', index === activeIndex));
+    }
+
+    function moveRecommendation() {
+        recommendationIndex += 1;
+        updateRecommendationCarousel();
+    }
+
+    function startRecommendationAutoPlay() {
+        clearInterval(recommendationTimer);
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        recommendationTimer = setInterval(moveRecommendation, 5000);
+    }
+
+    function renderRecommendations() {
+        const track = document.getElementById('recommendationTrack');
+        const dots = document.getElementById('recommendationDots');
+        if (!track || !dots) return;
+        const loopingProducts = [...CONFIG.PRODUCTS, ...CONFIG.PRODUCTS];
+        track.innerHTML = loopingProducts.map(product => `
+            <article class="recommendation-card">
+                <div class="recommendation-card-top">
+                    <span class="recommendation-card-icon" aria-hidden="true">${product.icon}</span>
+                    <div>
+                        <span class="category-badge">${escapeHTML(product.category)}</span>
+                        <h4>${escapeHTML(product.title)}</h4>
+                    </div>
+                </div>
+                <p>${escapeHTML(product.desc)}</p>
+                <div class="recommendation-card-footer">
+                    <span class="recommendation-card-price">${formatRupiah(product.priceNum)}</span>
+                    <button class="btn-header recommendation-order" type="button" data-product-id="${product.id}">Pilih</button>
+                </div>
+            </article>
+        `).join('');
+        track.querySelectorAll('.recommendation-order').forEach(button => {
+            button.addEventListener('click', () => window.directCheckout(button.dataset.productId));
+        });
+        dots.innerHTML = Array.from({ length: CONFIG.PRODUCTS.length }, (_, index) =>
+            `<button class="recommendation-dot${index === 0 ? ' active' : ''}" type="button" data-index="${index}" aria-label="Buka rekomendasi ${index + 1}"></button>`
+        ).join('');
+        dots.querySelectorAll('.recommendation-dot').forEach(dot => {
+            dot.addEventListener('click', () => {
+                const target = Number(dot.dataset.index) || 0;
+                const current = recommendationIndex % CONFIG.PRODUCTS.length;
+                recommendationIndex += (target - current + CONFIG.PRODUCTS.length) % CONFIG.PRODUCTS.length;
+                updateRecommendationCarousel();
+                startRecommendationAutoPlay();
+            });
+        });
+        recommendationIndex = 0;
+        updateRecommendationCarousel();
+        startRecommendationAutoPlay();
+
+        const viewport = document.getElementById('recommendationViewport');
+        if (viewport && !viewport.dataset.carouselBound) {
+            viewport.dataset.carouselBound = 'true';
+            let touchStartX = 0;
+            viewport.addEventListener('mouseenter', () => clearInterval(recommendationTimer));
+            viewport.addEventListener('mouseleave', startRecommendationAutoPlay);
+            viewport.addEventListener('focusin', () => clearInterval(recommendationTimer));
+            viewport.addEventListener('focusout', startRecommendationAutoPlay);
+            viewport.addEventListener('touchstart', event => {
+                touchStartX = event.changedTouches[0].clientX;
+                clearInterval(recommendationTimer);
+            }, { passive: true });
+            viewport.addEventListener('touchend', event => {
+                const distance = event.changedTouches[0].clientX - touchStartX;
+                if (distance < -45) moveRecommendation();
+                startRecommendationAutoPlay();
+            }, { passive: true });
+            window.addEventListener('resize', updateRecommendationCarousel, { passive: true });
+            track.addEventListener('transitionend', event => {
+                if (event.propertyName !== 'transform' || recommendationIndex < CONFIG.PRODUCTS.length) return;
+                recommendationIndex %= CONFIG.PRODUCTS.length;
+                track.classList.add('is-resetting');
+                updateRecommendationCarousel();
+                void track.offsetWidth;
+                if (recommendationResetFrame) cancelAnimationFrame(recommendationResetFrame);
+                recommendationResetFrame = requestAnimationFrame(() => track.classList.remove('is-resetting'));
+            });
+        }
+    }
+
     function renderApp() {
-        document.getElementById('preview-layanan').innerHTML = CONFIG.PRODUCTS.slice(0,3).map(p => `<div class="service-card"><div class="service-icon">${p.icon}</div><h3>${p.title}</h3><span class="category-badge">${p.category}</span><p>${p.desc}</p>
+        document.getElementById('preview-layanan').innerHTML = CONFIG.PRODUCTS.slice(0,3).map(p => `<div class="service-card"><div class="service-icon">${p.icon}</div><h3>${escapeHTML(p.title)}</h3><span class="category-badge">${p.category}</span><p>${escapeHTML(p.desc)}</p>
             <button class="btn-outline" style="width:100%; border:none; padding:0; text-align:left; justify-content:flex-start;" onclick="window.switchTab('layanan')">Lihat Detail →</button></div>`).join('');
         
-        document.getElementById('full-layanan').innerHTML = CONFIG.PRODUCTS.map(p => `<div class="service-card"><div class="service-icon">${p.icon}</div><h3>${p.title}</h3><p style="margin-bottom:10px;">${p.desc}</p><div class="layanan-section-title">Apa yang kamu dapatkan?</div><ul class="layanan-check-list">${p.benefits.slice(0,4).map(b => `<li>${b}</li>`).join('')}</ul><div class="layanan-target"><strong>Cocok untuk:</strong> ${p.target}</div><div style="display:flex; gap:10px; margin-top:auto;"><button class="btn-wa" style="flex:none; padding:12px; box-shadow:none;" onclick="window.openAdminModal('Halo NUGASIN, saya butuh layanan ${p.title}.')">WA</button><button class="btn-outline" style="flex:1; padding:12px;" onclick="window.openServiceDetail('${p.id}')">Lihat Detail</button></div></div>`).join('');
+        document.getElementById('full-layanan').innerHTML = CONFIG.PRODUCTS.map(p => `<div class="service-card"><div class="service-icon">${p.icon}</div><h3>${escapeHTML(p.title)}</h3><p style="margin-bottom:10px;">${escapeHTML(p.desc)}</p><div class="layanan-section-title">Apa yang kamu dapatkan?</div><ul class="layanan-check-list">${p.benefits.slice(0,4).map(b => `<li>${b}</li>`).join('')}</ul><div class="layanan-target"><strong>Cocok untuk:</strong> ${p.target}</div><div style="display:flex; gap:10px; margin-top:auto;"><button class="btn-wa" style="flex:none; padding:12px; box-shadow:none;" onclick="window.consultService('${p.id}')">WA</button><button class="btn-outline" style="flex:1; padding:12px;" onclick="window.openServiceDetail('${p.id}')">Lihat Detail</button></div></div>`).join('');
 
         renderHargaGrid();
         renderInformationCenter();
+        renderRecommendations();
         
         document.getElementById('full-carapesan').innerHTML = CONFIG.steps.map(st => `<div class="step-card"><span class="step-num">${st.num}</span><h4>${st.title}</h4><p style="color:var(--text-secondary); font-size:0.9em; margin:0;">${st.desc}</p></div>`).join('');
         
@@ -3323,6 +3862,7 @@ const copyBtn = document.getElementById('btnCopyOrderId');
     // NAVIGATION & SEARCH
     // ==========================================
     let lastActiveTab = 'beranda'; let currentTab = 'beranda';
+    window.goHome = () => {if(currentTab!=='checkout' && currentTab!=='order-success')window.switchTab('beranda');};
     window.switchTab = (tabId) => {
         if(tabId !== 'checkout' && tabId !== 'order-success') lastActiveTab = tabId;
         
@@ -3356,7 +3896,7 @@ const copyBtn = document.getElementById('btnCopyOrderId');
             document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active')); searchTab.classList.add('active');
             document.getElementById('searchKeyword').innerText = `"${e.target.value}"`;
             const filtered = CONFIG.PRODUCTS.filter(p => p.title.toLowerCase().includes(keyword) || p.category.toLowerCase().includes(keyword) || p.desc.toLowerCase().includes(keyword));
-            document.getElementById('searchResultsGrid').innerHTML = filtered.map(p => `<div class="service-card"><div class="service-icon">${p.icon}</div><h3>${p.title}</h3><span class="category-badge">${p.category}</span><p>${p.desc}</p><div style="display:flex; gap:10px; margin-top:auto;"><button class="btn-outline" style="flex:1; padding:10px; font-size:0.85em;" onclick="window.directCheckout('${p.id}')">Checkout</button><button class="btn-header" style="flex:1; padding:10px; font-size:0.85em; box-shadow:none;" onclick="window.addToCart('${p.id}')">🛒 Tambah</button></div></div>`).join('') || '<p style="color:var(--text-muted);">Layanan tidak ditemukan.</p>';
+            document.getElementById('searchResultsGrid').innerHTML = filtered.map(p => `<div class="service-card"><div class="service-icon">${p.icon}</div><h3>${escapeHTML(p.title)}</h3><span class="category-badge">${p.category}</span><p>${escapeHTML(p.desc)}</p><div style="display:flex; gap:10px; margin-top:auto;"><button class="btn-outline" style="flex:1; padding:10px; font-size:0.85em;" onclick="window.directCheckout('${p.id}')">Checkout</button><button class="btn-header" style="flex:1; padding:10px; font-size:0.85em; box-shadow:none;" onclick="window.addToCart('${p.id}')">🛒 Tambah</button></div></div>`).join('') || '<p style="color:var(--text-muted);">Layanan tidak ditemukan.</p>';
         } else { searchTab.classList.remove('active'); document.getElementById('tab-' + lastActiveTab).classList.add('active'); }
     });
 
@@ -3382,86 +3922,42 @@ const copyBtn = document.getElementById('btnCopyOrderId');
         document.getElementById('helpFaqListSection').scrollIntoView({behavior: 'smooth', block: 'start'});
     };
 
-    // Track Order from Help Center
-    window.processHelpTrack = () => {
-        const input = document.getElementById('helpTrackInput').value.trim();
-        const errorEl = document.getElementById('helpTrackError');
-        if(!input) {
-            errorEl.innerText = "Masukkan nomor pesanan atau WhatsApp.";
-            errorEl.style.display = 'block';
-            return;
-        }
-        
-        let found = false;
-        if(input.startsWith('NUG-')) {
-            found = ORDERS.some(o => o.id === input);
-            if(found) currentTrackWA = input;
-        } else {
-            const normWA = normalizeWhatsAppNumber(input);
-            found = ORDERS.some(o => o.customer.whatsapp === normWA);
-            if(found) currentTrackWA = normWA; 
-        }
+    let trackingInFlight=false;
+    async function processTracking(inputId,errorId,closeGuest) {
+        if(trackingInFlight)return;
+        const code=document.getElementById(inputId).value.trim().toUpperCase().replace(/^#/,'');
+        const errorEl=document.getElementById(errorId);
+        if(!code){errorEl.textContent='Masukkan nomor order lengkap.';errorEl.style.display='block';return;}
+        trackingInFlight=true;errorEl.style.display='none';
+        try {
+            const order=await fetchOrderByCode(code);
+            currentTrackWA=order.id;
+            if(closeGuest)window.closeModal('guestTrackModal');
+            // Detail dibuka langsung, sesuai alur tracking yang diminta.
+            renderOrderDetail(order.id);
+        } catch(error) {errorEl.textContent=error.message||'Pesanan belum dapat diperiksa.';errorEl.style.display='block';}
+        finally {trackingInFlight=false;}
+    }
+    window.processHelpTrack = () => processTracking('helpTrackInput','helpTrackError',false);
+    window.processGuestTrack = () => processTracking('trackInput','trackError',true);
 
-        if(found) {
-            errorEl.style.display = 'none';
-            window.filterOrders('Semua'); 
-            document.getElementById('ordersModal').style.display = 'flex';
-            document.body.classList.add('modal-open');
-        } else {
-            errorEl.innerText = "Pesanan tidak ditemukan.";
-            errorEl.style.display = 'block';
-        }
-    };
-    
-window.processGuestTrack = () => {
-        const input = document.getElementById('trackInput').value.trim();
-        const errorEl = document.getElementById('trackError');
-        
-        if(!input) { 
-            errorEl.innerText = "Silakan masukkan nomor pesanan terlebih dahulu.";
-            errorEl.style.display = 'block'; 
-            return; 
-        }
-        
-        let found = false;
-        if(input.startsWith('NUG-')) {
-            found = ORDERS.some(o => o.id === input);
-            if(found) currentTrackWA = input;
-        } else {
-            const normWA = normalizeWhatsAppNumber(input);
-            found = ORDERS.some(o => o.customer.whatsapp === normWA);
-            if(found) currentTrackWA = normWA;
-        }
-
-        if(found) {
-            errorEl.style.display = 'none';
-            // 1. Tutup modal Lacak Pesanan
-            window.closeModal('guestTrackModal');
-            
-            // 2. Tampilkan semua pesanan terkait resi tersebut di List
-            if (document.getElementById('orderSearchInput')) {
-                document.getElementById('orderSearchInput').value = '';
-            }
-            window.filterOrders('Semua'); 
-            
-            // 3. Buka modal Pesanan Saya (Daftar)
-            document.getElementById('ordersModal').style.display = 'flex';
-            document.body.classList.add('modal-open');
-        } else {
-            errorEl.innerText = "Pesanan tidak ditemukan. Periksa kembali nomor pesananmu.";
-            errorEl.style.display = 'block';
-        }
-    };
-
-    document.addEventListener("DOMContentLoaded", async () => { 
-        renderApp(); checkWelcomePopup(); await loadReviews(); restoreCheckoutState();
-
-        // Auto-fill Help Track Input
-        const lastOrderId = localStorage.getItem('nugasin_last_order_id');
-        if(lastOrderId) {
-            const helpTrackEl = document.getElementById('helpTrackInput');
-            if(helpTrackEl) helpTrackEl.value = lastOrderId;
-        } 
+    async function initializeApp() {
+        renderApp(); checkWelcomePopup();
+        try { await ensureSession(); } catch (_) { window.showToast('Sesi belum dapat dipulihkan. Silakan login kembali.'); }
+        await loadCart();
+        const results=await Promise.allSettled([loadServices(),loadReviews(),loadAuthSettings()]);
+        if(results[0].status==='rejected')window.showToast('Layanan server belum dapat dimuat. Checkout menunggu koneksi pulih.');
+        restoreCheckoutState();
+        let lastOrderId='';try{lastOrderId=localStorage.getItem('nugasin_last_order_id')||'';}catch(_){}
+        if(lastOrderId)document.getElementById('helpTrackInput').value=lastOrderId;
+    }
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>initializeApp().catch(console.error),{once:true});
+    else initializeApp().catch(console.error);
+    // Saat kembali dari tab lain, status pesanan yang sedang dilihat diperbarui dari server.
+    document.addEventListener('visibilitychange',()=>{
+        if(document.hidden)return;
+        if(document.getElementById('orderDetailModal').style.display==='flex' && currentDetailCode)window.openOrderDetail(currentDetailCode);
+        else if(document.getElementById('ordersModal').style.display==='flex' && currentUser)window.openOrdersModal();
     });
 </script>
 
@@ -3493,6 +3989,49 @@ window.processGuestTrack = () => {
         syncButton();
     });
     syncButton();
+})();
+</script>
+<script id="jokiin-header-scroll">
+(function () {
+    const header = document.querySelector('.container > header');
+    if (!header) return;
+    let previousY = Math.max(0, window.scrollY);
+    let direction = 0;
+    let travelled = 0;
+    let ticking = false;
+
+    function updateHeader() {
+        const currentY = Math.max(0, window.scrollY);
+        const delta = currentY - previousY;
+        const nextDirection = Math.sign(delta);
+        const modalOpen = document.body.classList.contains('modal-open');
+
+        if (nextDirection && nextDirection !== direction) {
+            direction = nextDirection;
+            travelled = 0;
+        }
+        travelled += Math.abs(delta);
+
+        if (currentY <= 20 || modalOpen) {
+            header.classList.remove('header-hidden');
+            travelled = 0;
+        } else if (direction > 0 && currentY > 90 && travelled >= 42) {
+            header.classList.add('header-hidden');
+            travelled = 0;
+        } else if (direction < 0 && travelled >= 24) {
+            header.classList.remove('header-hidden');
+            travelled = 0;
+        }
+        previousY = currentY;
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', function () {
+        if (!ticking) {
+            window.requestAnimationFrame(updateHeader);
+            ticking = true;
+        }
+    }, { passive: true });
 })();
 </script>
 </body>
