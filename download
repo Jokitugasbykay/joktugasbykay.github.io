@@ -1,4 +1,0 @@
-RewriteEngine On
-
-# Semua halaman aplikasi memakai index.html, tetapi memiliki URL yang rapi.
-RewriteRule ^(payment|services|prices|testimonials|information|how-to-order|help|home)/?$ /index.html [L]
