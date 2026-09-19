@@ -1,11 +1,104 @@
 <?php
 declare(strict_types=1);
+
 const APP_ROOT = __DIR__ . '/..';
-function load_env_file(string $path): array { if (!is_file($path) || !is_readable($path)) return []; $v=[]; foreach (file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) { $line=trim($line); if ($line==='' || str_starts_with($line,'#')) continue; $parts=explode('=',$line,2); if (count($parts)!==2) continue; [$k,$value]=$parts; $k=trim($k); $value=trim($value); if ($k==='' || !preg_match('/^[A-Z][A-Z0-9_]*$/',$k)) continue; if (strlen($value)>=2 && (($value[0]==='"' && substr($value,-1)==='"') || ($value[0]==="'" && substr($value,-1)==="'"))) $value=substr($value,1,-1); $v[$k]=$value; } return $v; }
-function env(string $key, ?string $default=null): ?string { static $v=null; $v ??= load_env_file(APP_ROOT.'/.env'); $value=$_ENV[$key] ?? getenv($key) ?: ($v[$key] ?? $default); return is_string($value) ? $value : $default; }
-function json_response(int $status,array $body): never { http_response_code($status); header('Content-Type: application/json; charset=utf-8'); header('Cache-Control: no-store'); echo json_encode($body,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE); exit; }
-function require_method(string $method): void { if (($_SERVER['REQUEST_METHOD'] ?? '')!==$method) { header('Allow: '.$method); json_response(405,['error'=>'Method not allowed']); } }
-function request_json(int $maxBytes=16384): array { $raw=file_get_contents('php://input',false,null,0,$maxBytes+1); if (!is_string($raw)||strlen($raw)>$maxBytes) json_response(413,['error'=>'Request body too large']); try {$data=json_decode($raw,true,32,JSON_THROW_ON_ERROR);} catch(JsonException) {json_response(400,['error'=>'Invalid JSON']);} if (!is_array($data)) json_response(400,['error'=>'JSON object expected']); return $data; }
-function db(): PDO { static $pdo=null; if ($pdo instanceof PDO) return $pdo; if (env('DB_DRIVER','sqlite')!=='sqlite') throw new RuntimeException('Only SQLite is configured in this starter.'); $relative=env('DB_PATH','storage/jokiin.sqlite'); if ($relative===null || str_contains($relative,"\0")) throw new RuntimeException('Invalid DB_PATH'); $path=APP_ROOT.'/'.ltrim(str_replace('\\','/',$relative),'/'); $dir=dirname($path); if (!is_dir($dir)&&!mkdir($dir,0750,true)&&!is_dir($dir)) throw new RuntimeException('Cannot create database directory'); $pdo=new PDO('sqlite:'.$path,null,null,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC,PDO::ATTR_EMULATE_PREPARES=>false]); $pdo->exec('PRAGMA busy_timeout = 5000; PRAGMA foreign_keys = ON;'); $schema=APP_ROOT.'/database/schema.sql'; if (!is_file($schema)) throw new RuntimeException('Database schema is missing'); $pdo->exec((string)file_get_contents($schema)); return $pdo; }
-function new_order_id(): string { return 'ord_'.bin2hex(random_bytes(16)); }
-function dot_get(array $data,string $path): mixed { if ($path==='') return null; foreach(explode('.',$path) as $segment) { if (!is_array($data)||!array_key_exists($segment,$data)) return null; $data=$data[$segment]; } return $data; }
+
+function load_env_file(string $path): array { 
+    if (!is_file($path) || !is_readable($path)) return []; 
+    $v=[]; 
+    foreach (file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) { 
+        $line=trim($line); 
+        if ($line==='' || str_starts_with($line,'#')) continue; 
+        $parts=explode('=',$line,2); 
+        if (count($parts)!==2) continue; 
+        [$k,$value]=$parts; 
+        $k=trim($k); 
+        $value=trim($value); 
+        if ($k==='' || !preg_match('/^[A-Z][A-Z0-9_]*$/',$k)) continue; 
+        if (strlen($value)>=2 && (($value[0]==='"' && substr($value,-1)==='"') || ($value[0]==="'" && substr($value,-1)==="'"))) $value=substr($value,1,-1); 
+        $v[$k]=$value; 
+    } 
+    return $v; 
+}
+
+function env(string $key, ?string $default=null): ?string { 
+    static $v=null; 
+    $v ??= load_env_file(APP_ROOT.'/.env'); 
+    $value=$_ENV[$key] ?? getenv($key) ?: ($v[$key] ?? $default); 
+    return is_string($value) ? $value : $default; 
+}
+
+function json_response(int $status,array $body): never { 
+    http_response_code($status); 
+    header('Content-Type: application/json; charset=utf-8'); 
+    header('Cache-Control: no-store'); 
+    echo json_encode($body,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE); 
+    exit; 
+}
+
+function require_method(string $method): void { 
+    if (($_SERVER['REQUEST_METHOD'] ?? '')!==$method) { 
+        header('Allow: '.$method); 
+        json_response(405,['error'=>'Method not allowed']); 
+    } 
+}
+
+function request_json(int $maxBytes=16384): array { 
+    $raw=file_get_contents('php://input',false,null,0,$maxBytes+1); 
+    if (!is_string($raw)||strlen($raw)>$maxBytes) json_response(413,['error'=>'Request body too large']); 
+    try { $data=json_decode($raw,true,32,JSON_THROW_ON_ERROR); } 
+    catch(JsonException) { json_response(400,['error'=>'Invalid JSON']); } 
+    if (!is_array($data)) json_response(400,['error'=>'JSON object expected']); 
+    return $data; 
+}
+
+function db(): PDO { 
+    static $pdo=null; 
+    if ($pdo instanceof PDO) return $pdo; 
+    if (env('DB_DRIVER','sqlite')!=='sqlite') throw new RuntimeException('Only SQLite is configured in this starter.'); 
+    
+    $relative=env('DB_PATH','storage/jokiin.sqlite'); 
+    if ($relative===null || str_contains($relative,"\0")) throw new RuntimeException('Invalid DB_PATH'); 
+    
+    $path=APP_ROOT.'/'.ltrim(str_replace('\\','/',$relative),'/'); 
+    $dir=dirname($path); 
+    if (!is_dir($dir)&&!mkdir($dir,0750,true)&&!is_dir($dir)) throw new RuntimeException('Cannot create database directory'); 
+    
+    $pdo=new PDO('sqlite:'.$path,null,null,[
+        PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES=>false
+    ]); 
+    $pdo->exec('PRAGMA busy_timeout = 5000; PRAGMA foreign_keys = ON;'); 
+    
+    // REVISI: Skema tabel di-hardcode di sini agar tidak perlu file eksternal schema.sql
+    $schema = "
+    CREATE TABLE IF NOT EXISTS orders (
+        order_id TEXT PRIMARY KEY,
+        mayar_transaction_id TEXT,
+        amount INTEGER NOT NULL,
+        payment_status TEXT DEFAULT 'PENDING',
+        customer_name TEXT,
+        customer_email TEXT,
+        payment_link TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );";
+    
+    $pdo->exec($schema); 
+    return $pdo; 
+}
+
+function new_order_id(): string { 
+    // Format NUG-YYYYMMDD-XXXX
+    return 'NUG-'.date('Ymd').'-'.random_int(1000, 9999); 
+}
+
+function dot_get(array $data,string $path): mixed { 
+    if ($path==='') return null; 
+    foreach(explode('.',$path) as $segment) { 
+        if (!is_array($data)||!array_key_exists($segment,$data)) return null; 
+        $data=$data[$segment]; 
+    } 
+    return $data; 
+}
