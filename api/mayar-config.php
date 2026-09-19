@@ -7,7 +7,7 @@ require_once __DIR__ . '/bootstrap.php';
 
 function mayar_config(): array
 {
-    $environment = env('MAYAR_ENV', 'sandbox');
+    $environment = env('MAYAR_ENV', 'production');
     if (!in_array($environment, ['sandbox', 'production'], true)) throw new RuntimeException('Invalid MAYAR_ENV');
     $key = env('MAYAR_API_KEY');
     if ($key === null || $key === '' || str_starts_with($key, 'replace_')) throw new RuntimeException('MAYAR_API_KEY is not configured');
