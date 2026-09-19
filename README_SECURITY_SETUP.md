@@ -7,6 +7,10 @@
 5. Copy the exact webhook signature header, HMAC algorithm, payload paths, transaction-detail path, and paid status from Mayar's current V2 documentation/dashboard into `.env`. Until every mapping is present, successful webhooks are rejected or cannot mark an order as `PAID`.
 6. Configure Mayar's return URL through the payment request as `/status-pesanan?order_id=<opaque-order-id>` and register the HTTPS endpoint `/api/mayar-webhook.php` in the Mayar dashboard.
 
+## Frontend cleanup already applied
+
+`index.html` now loads `/assets/favicon.png`, exposes only Mayar choices in `PAYMENT_OPTIONS`, and sends checkout requests only to `/api/create-mayar-payment.php`. Before committing your own future edits, remove any remaining legacy Midtrans remnants by searching for `midtrans`, `create-midtrans-qris.php`, and `midtransQrisBox`; none of those may remain in active checkout code. Keep a single root `index.html`; routes such as `/layanan`, `/payment`, and `/status-pesanan` are handled by `.htaccess` plus `assets/js/jokiin-spa.js`.
+
 ## Hosting requirement
 
 These PHP files and `.htaccess` rules require an Apache-compatible PHP host. Cloudflare Workers does not execute PHP and does not process `.htaccess`; if JOKIIN remains on Workers, port the server endpoints to a Worker and use D1 or another database before deploying.

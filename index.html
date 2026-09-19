@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JOKI.IN | Teman Nugas Mahasiswa</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <link rel="apple-touch-icon" href="/assets/favicon.png">
     <script id="jokiin-theme-init">
         (function () {
             let theme = 'light';
@@ -5324,16 +5326,6 @@
                     <strong id="succPaymentStatus" style="color:var(--text-main);">MENUNGGU KONFIRMASI</strong>
                 </div>
 
-                <div id="midtransQrisBox"
-                    style="display:none; text-align:center; margin:22px 0; padding:18px; border-radius:18px; background:var(--surface-secondary); border:1px solid var(--border-color);">
-                    <p style="margin:0 0 12px; color:var(--text-secondary);">Scan QRIS di bawah ini untuk membayar. Pesanan baru masuk ke admin setelah pembayaran berhasil.</p>
-                    <img id="midtransQrisImage" src="" alt="QRIS Midtrans"
-                        style="width:min(280px, 100%); max-width:100%; border-radius:14px; background:#fff; padding:12px;">
-                    <div id="midtransQrisExpiry" style="margin-top:12px; color:var(--text-muted); font-size:0.9em;"></div>
-                    <a id="midtransQrisDownload" class="btn-outline" href="#" target="_blank" rel="noopener"
-                        style="width:100%; padding:13px; margin-top:16px; justify-content:center; display:flex;">Unduh QR</a>
-                </div>
-
                 <!-- TOMBOL ORDER SUCCESS -->
                 <button class="btn-outline"
                     style="width:100%; padding:15px; margin-top:20px; font-size: 1.05em; justify-content:center; display:flex;"
@@ -5688,22 +5680,24 @@
             return body;
         }
 
-        async function startMidtransQrisPayment(paymentDraft) {
-            const response = await fetch('/api/create-midtrans-qris.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(paymentDraft)
+        const PAYMENT_OPTIONS = [
+            { id: "mayar_qris", name: "QRIS", category: "qris", fee: 0, autoCheck: true, icon: '<img src="/assets/icon/Qris icon.png" alt="QRIS">' },
+            { id: "mayar_shopeepay", name: "ShopeePay", category: "ewallet", fee: 0, autoCheck: true, icon: '<img src="/assets/icon/Shopy pay icon.png" alt="ShopeePay">' },
+            { id: "mayar_dana", name: "DANA", category: "ewallet", fee: 0, autoCheck: true, icon: '<img src="/assets/icon/DANA icon.webp" alt="DANA">' },
+            { id: "mayar_gopay", name: "GoPay", category: "ewallet", fee: 0, autoCheck: true, icon: '<img src="/assets/icon/GOPAY icon.webp" alt="GoPay">' },
+            { id: "mayar_bni", name: "BNI Virtual Account", category: "va", fee: 0, autoCheck: true, icon: '<img src="/assets/icon/bni.png" alt="BNI">' },
+            { id: "mayar_bri", name: "BRI Virtual Account", category: "va", fee: 0, autoCheck: true, icon: '<img src="/assets/icon/bri.png" alt="BRI">' }
+        ];
+
+        async function startMayarPayment(serviceId, customer) {
+            const response = await fetch('/api/create-mayar-payment.php', {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({ service_id: serviceId, customer_name: customer.name, customer_email: customer.email })
             });
             const result = await response.json().catch(() => ({}));
-            if (!response.ok || !result.qrCodeUrl) {
-                throw new Error(result.error || 'QRIS Midtrans belum dapat dibuat.');
-            }
-            return result;
+            if (!response.ok || typeof result.paymentUrl !== 'string') throw new Error(result.error || 'Tautan pembayaran Mayar belum dapat dibuat.');
+            window.location.assign(result.paymentUrl);
         }
-
-        const PAYMENT_OPTIONS = [
-            { id: "midtrans_qris", name: "QRIS", category: "qris", fee: 0, autoCheck: true, icon: '<img src="assets/icon/Qris icon.png" alt="QRIS">' }
-        ];
 
         const CONFIG = {
             whatsappAdminNumber: "601155639233",
@@ -6441,6 +6435,16 @@
                 window.showToast('Keranjang tidak valid. Periksa jumlah layanan.'); return;
             }
             if (!validDriveUrl(driveUrl)) { document.getElementById('errChkDrive').style.display = 'block'; return; }
+            // Mayar is the only checkout provider. One service is paid per checkout request.
+            if (!selectedPaymentMethod.id.startsWith('mayar_')) { window.showToast('Pilih metode pembayaran Mayar.'); return; }
+            if (itemsToProcess.length !== 1) { window.showToast('Pilih satu layanan per pembayaran.'); return; }
+            checkoutInFlight = true;
+            const mayarButton = document.querySelector('#tab-checkout button[onclick="window.processCheckout()"]');
+            if (mayarButton) { mayarButton.disabled = true; mayarButton.textContent = 'Mengarahkan ke Mayar...'; }
+            try { await startMayarPayment(itemsToProcess[0].productId, { name, email }); }
+            catch (error) { window.showToast(error.message || 'Pembayaran Mayar belum dapat dimulai.'); }
+            finally { checkoutInFlight = false; if (mayarButton) { mayarButton.disabled = false; mayarButton.textContent = 'Beli'; } }
+            return;
             if (checkoutInFlight) return;
             checkoutInFlight = true;
             const buyButton = document.querySelector('#tab-checkout button[onclick="window.processCheckout()"]');
