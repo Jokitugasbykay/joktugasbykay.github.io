@@ -1,4 +1,4 @@
-<?php
+z<?php
 declare(strict_types=1);
 
 // Include-only. Direct HTTP access is denied here and again in .htaccess.

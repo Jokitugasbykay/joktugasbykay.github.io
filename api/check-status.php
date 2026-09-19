@@ -3,7 +3,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/bootstrap.php';
 require_method('GET');
 $orderId = (string) ($_GET['order_id'] ?? '');
-if (!preg_match('/^ord_[a-f0-9]{32}$/', $orderId)) json_response(422, ['error' => 'Invalid order_id']);
+if (!preg_match('/^[A-Za-z0-9_-]{6,80}$/', $orderId)) json_response(422, ['error' => 'Invalid order_id']);
 try {
     $stmt = db()->prepare('SELECT order_id, payment_status FROM orders WHERE order_id = ? LIMIT 1');
     $stmt->execute([$orderId]); $order = $stmt->fetch();

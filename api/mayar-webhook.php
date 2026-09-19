@@ -42,7 +42,7 @@ $eventPath = (string) env('MAYAR_WEBHOOK_EVENT_PATH'); $statusPath = (string) en
 if (!$txPath || !$orderPath || !$eventPath || !$statusPath) json_response(503, ['error' => 'Webhook field mapping is not configured']);
 $transactionId = (string) dot_get($payload, $txPath); $orderId = (string) dot_get($payload, $orderPath);
 $event = strtolower((string) dot_get($payload, $eventPath)); $status = strtolower((string) dot_get($payload, $statusPath));
-if ($transactionId === '' || !preg_match('/^ord_[a-f0-9]{32}$/', $orderId)) json_response(422, ['error' => 'Webhook identifiers are invalid']);
+if ($transactionId === '' || !preg_match('/^[A-Za-z0-9_-]{6,80}$/', $orderId)) json_response(422, ['error' => 'Webhook identifiers are invalid']);
 $paidEvent = in_array($event, ['payment.received', 'success', 'paid'], true) || $status === 'paid';
 $canceledEvent = in_array($event, ['canceled', 'cancelled', 'failed', 'expired'], true) || in_array($status, ['canceled', 'cancelled', 'failed', 'expired'], true);
 if (!$paidEvent && !$canceledEvent) json_response(200, ['received' => true, 'ignored' => true]);
