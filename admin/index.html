@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin Pesanan · JOKI.IN</title>
+<style>
+  :root { color-scheme: light dark; --bg:#f6f7f9; --card:#fff; --text:#1c2230; --muted:#667085; --line:#e4e7ec; --ok:#067647; --warn:#b54708; --bad:#b42318; --accent:#2563eb; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f1420; --card:#171d2b; --text:#e8ecf4; --muted:#98a2b3; --line:#2a3245; --ok:#47cd89; --warn:#fdb022; --bad:#f97066; --accent:#6ea0ff; } }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--text); }
+  main { max-width:900px; margin:0 auto; padding:20px 16px 60px; }
+  h1 { font-size:1.3rem; margin:0 0 14px; }
+  .bar { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  input, select, button { font:inherit; padding:9px 12px; border:1px solid var(--line); border-radius:10px; background:var(--card); color:var(--text); }
+  input { flex:1 1 220px; min-width:0; }
+  button { cursor:pointer; background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600; }
+  #msg { color:var(--muted); margin:8px 0 16px; min-height:1.4em; }
+  #msg.err { color:var(--bad); }
+  .order { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:12px; }
+  .head { display:flex; flex-wrap:wrap; justify-content:space-between; gap:6px 12px; align-items:baseline; }
+  .id { font:12px ui-monospace,Menlo,Consolas,monospace; color:var(--muted); word-break:break-all; }
+  .badge { font-size:12px; font-weight:700; padding:2px 10px; border-radius:99px; border:1px solid currentColor; }
+  .PAID { color:var(--ok); } .PENDING { color:var(--warn); } .CANCELED { color:var(--bad); }
+  dl { display:grid; grid-template-columns:max-content 1fr; gap:4px 14px; margin:12px 0 0; }
+  dt { color:var(--muted); } dd { margin:0; word-break:break-word; white-space:pre-wrap; }
+  a { color:var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Pesanan JOKI.IN</h1>
+  <div class="bar">
+    <input id="token" type="password" placeholder="Token admin (ADMIN_TOKEN)" autocomplete="off">
+    <select id="status">
+      <option value="paid">Sudah dibayar</option>
+      <option value="pending">Menunggu pembayaran</option>
+      <option value="canceled">Dibatalkan/kedaluwarsa</option>
+      <option value="all">Semua</option>
+    </select>
+    <button id="load" type="button">Muat</button>
+  </div>
+  <div id="msg" role="status">Masukkan token lalu tekan Muat. Token hanya disimpan di memori halaman ini.</div>
+  <div id="list"></div>
+</main>
+<script>
+// Semua data pesanan berasal dari pelanggan, jadi SELALU dirender dengan textContent (tidak pernah innerHTML).
+const $ = (id) => document.getElementById(id);
+const rupiah = (n) => 'Rp' + Number(n || 0).toLocaleString('id-ID');
+const when = (s) => { if (!s) return '-'; const d = new Date(String(s).replace(' ', 'T') + (/[zZ]|[+-]\d\d:?\d\d$/.test(s) ? '' : 'Z')); return isNaN(d) ? String(s) : d.toLocaleString('id-ID'); };
+
+function row(dl, label, value) {
+  const dt = document.createElement('dt'); dt.textContent = label;
+  const dd = document.createElement('dd');
+  if (value instanceof Node) dd.appendChild(value); else dd.textContent = value || '-';
+  dl.append(dt, dd);
+}
+function safeLink(href, text, allowed) {
+  try {
+    const u = new URL(href);
+    if (!allowed.includes(u.protocol)) return document.createTextNode(text || href);
+    const a = document.createElement('a'); a.href = u.href; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = text || u.href; return a;
+  } catch (_) { return document.createTextNode(href || '-'); }
+}
+function render(orders) {
+  const list = $('list'); list.replaceChildren();
+  if (!orders.length) { $('msg').textContent = 'Belum ada pesanan pada filter ini.'; return; }
+  $('msg').textContent = orders.length + ' pesanan.';
+  for (const o of orders) {
+    const card = document.createElement('article'); card.className = 'order';
+    const head = document.createElement('div'); head.className = 'head';
+    const badge = document.createElement('span'); badge.className = 'badge ' + o.payment_status; badge.textContent = o.payment_status;
+    const id = document.createElement('span'); id.className = 'id'; id.textContent = o.order_id;
+    head.append(badge, id); card.appendChild(head);
+    const dl = document.createElement('dl');
+    row(dl, 'Total', rupiah(o.amount) + (o.promo ? ' (promo ' + o.promo + ')' : ''));
+    row(dl, o.paid_at ? 'Dibayar' : 'Dibuat', when(o.paid_at || o.created_at));
+    row(dl, 'Layanan', (o.items || []).map(i => (i.name || i.slug) + ' × ' + i.quantity).join('\n'));
+    row(dl, 'Nama', o.customer.name);
+    const wa = String(o.customer.whatsapp || '').replace(/\D/g, '');
+    row(dl, 'WhatsApp', wa ? safeLink('https://wa.me/' + wa, o.customer.whatsapp, ['https:']) : '-');
+    row(dl, 'Email', o.customer.email);
+    row(dl, 'NIM', o.customer.nim);
+    row(dl, 'Judul tugas', o.task.title);
+    row(dl, 'Deadline', o.task.deadline);
+    row(dl, 'Catatan', o.task.notes);
+    row(dl, 'Link Drive', o.task.drive_url ? safeLink(o.task.drive_url, o.task.drive_url, ['https:']) : '-');
+    card.appendChild(dl); list.appendChild(card);
+  }
+}
+async function load() {
+  const token = $('token').value.trim();
+  if (!token) { $('msg').className = 'err'; $('msg').textContent = 'Token admin wajib diisi.'; return; }
+  $('msg').className = ''; $('msg').textContent = 'Memuat…';
+  try {
+    const r = await fetch('/api/admin-orders.php?status=' + encodeURIComponent($('status').value), { headers: { 'X-Admin-Token': token }, cache: 'no-store' });
+    const body = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(body.error || ('Galat ' + r.status));
+    render(body.orders || []);
+  } catch (e) { $('list').replaceChildren(); $('msg').className = 'err'; $('msg').textContent = e.message; }
+}
+$('load').addEventListener('click', load);
+$('token').addEventListener('keydown', (e) => { if (e.key === 'Enter') load(); });
+</script>
+</body>
+</html>

@@ -1,99 +1,169 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/mayar-config.php';
+require_once __DIR__ . '/order-lib.php';
 
 require_method('POST');
 
-function mayar_post(string $path, array $payload): array
+/** Validasi dan normalisasi isi checkout dari browser. Semua string dibersihkan dan dibatasi panjangnya. */
+function parse_checkout_input(array $in): array
 {
-    $config = mayar_config();
-    $curl = curl_init(rtrim($config['base_url'], '/') . '/' . ltrim($path, '/'));
-    curl_setopt_array($curl, [
-        CURLOPT_POST => true, 
-        CURLOPT_RETURNTRANSFER => true, 
-        CURLOPT_CONNECTTIMEOUT => 8, 
-        CURLOPT_TIMEOUT => 20, 
-        CURLOPT_HTTPHEADER => [
-            'Authorization: Bearer ' . $config['api_key'], 
-            'Content-Type: application/json', 
-            'Accept: application/json'
-        ], 
-        CURLOPT_POSTFIELDS => json_encode($payload, JSON_THROW_ON_ERROR)
-    ]);
-    
-    $raw = curl_exec($curl); 
-    $status = (int) curl_getinfo($curl, CURLINFO_RESPONSE_CODE); 
-    $error = curl_error($curl); 
-    curl_close($curl);
-    
-    if (!is_string($raw) || $status < 200 || $status >= 300) { 
-        error_log('Mayar create-payment failed: HTTP '.$status.' '.$error. ' Response: '.$raw); 
-        throw new RuntimeException('Mayar payment-link request failed'); 
+    $line = static function (mixed $v, int $max): string {
+        $s = is_string($v) ? (preg_replace('/[\p{C}\s]+/u', ' ', $v) ?? '') : '';
+        return str_clip(trim($s), $max);
+    };
+    $text = static function (mixed $v, int $max): string {
+        $s = is_string($v) ? (preg_replace('/[^\P{C}\n]+/u', '', $v) ?? '') : '';
+        return str_clip(trim($s), $max);
+    };
+
+    $customer = is_array($in['customer'] ?? null) ? $in['customer'] : [];
+    $name = $line($customer['name'] ?? '', 100);
+    $email = strtolower($line($customer['email'] ?? '', 120));
+    $whatsapp = preg_replace('/\D+/', '', is_string($customer['whatsapp'] ?? null) ? $customer['whatsapp'] : '') ?? '';
+    if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) throw new ApiException('Nama atau email tidak valid.');
+    if (strlen($whatsapp) < 8 || strlen($whatsapp) > 16) throw new ApiException('Nomor WhatsApp tidak valid.');
+
+    $task = is_array($in['task'] ?? null) ? $in['task'] : [];
+    $title = $line($task['title'] ?? '', 200);
+    $drive = $line($task['googleDriveUrl'] ?? '', 500);
+    if ($title === '') throw new ApiException('Judul tugas wajib diisi.');
+    // Hanya https: link ini nanti ditampilkan ke admin sebagai tautan yang bisa diklik.
+    if ($drive !== '' && (!filter_var($drive, FILTER_VALIDATE_URL) || strtolower((string) parse_url($drive, PHP_URL_SCHEME)) !== 'https')) {
+        throw new ApiException('Link Google Drive harus diawali https://');
     }
-    
-    try { 
-        $body = json_decode($raw, true, 32, JSON_THROW_ON_ERROR); 
-    } catch (JsonException) { 
-        throw new RuntimeException('Mayar returned invalid JSON'); 
+
+    $rawItems = $in['items'] ?? null;
+    if (!is_array($rawItems) || !$rawItems || count($rawItems) > 20) throw new ApiException('Keranjang tidak valid.');
+    $items = [];
+    foreach ($rawItems as $row) {
+        $slug = is_array($row) && is_string($row['productId'] ?? null) ? $row['productId'] : '';
+        $quantity = is_array($row) && is_int($row['quantity'] ?? null) ? $row['quantity'] : 0;
+        if (!preg_match('/^[a-z0-9-]{1,80}$/', $slug) || $quantity < 1 || $quantity > 100) throw new ApiException('Keranjang tidak valid.');
+        $items[$slug] = ($items[$slug] ?? 0) + $quantity;
+        if ($items[$slug] > 100) throw new ApiException('Keranjang tidak valid.');
     }
-    
-    if (!is_array($body) || (isset($body['statusCode']) && (int) $body['statusCode'] >= 400)) {
-        throw new RuntimeException('Mayar rejected the payment-link request');
-    }
-    
-    return $body;
+
+    $promo = strtoupper($line($in['promo'] ?? '', 40));
+    if ($promo !== '' && $promo !== 'MAHASISWA10') throw new ApiException('Kode promo tidak valid.');
+
+    $draftKey = is_string($in['draftKey'] ?? null) && preg_match('/^[A-Za-z0-9_-]{6,80}$/', $in['draftKey']) ? $in['draftKey'] : null;
+    $claimed = is_numeric($in['amount'] ?? null) ? (float) $in['amount'] : null;
+
+    return [
+        'draftKey' => $draftKey, 'claimedTotal' => $claimed, 'items' => $items, 'promo' => $promo,
+        'name' => $name, 'email' => $email, 'whatsapp' => $whatsapp, 'nim' => $line($customer['nim'] ?? '', 30),
+        'title' => $title, 'deadline' => $line($task['deadline'] ?? '', 40), 'notes' => $text($task['notes'] ?? '', 3000), 'drive' => $drive,
+    ];
 }
 
-try {
-    // The browser may send a draft, but the server owns the final amount.
-    $input = request_json();
-    $orderCode = is_string($input['orderCode'] ?? null) && preg_match('/^[A-Za-z0-9_-]{6,80}$/', $input['orderCode']) ? $input['orderCode'] : new_order_id();
-    $customer = is_array($input['customer'] ?? null) ? $input['customer'] : [];
-    $customerName = trim((string) ($customer['name'] ?? ''));
-    $customerEmail = strtolower(trim((string) ($customer['email'] ?? '')));
-    $description = trim((string) ($input['description'] ?? 'Pesanan JOKI.IN'));
-    $serviceId = trim((string) ($input['service_id'] ?? $input['serviceId'] ?? 'custom'));
-    $amount = is_numeric($input['amount'] ?? null) ? (int) $input['amount'] : 0;
+function payment_response(array $order, int $status): never
+{
+    json_response($status, [
+        'order_id' => $order['order_id'],
+        'paymentUrl' => $order['payment_link'],
+        'payment_status' => $order['payment_status'],
+        'expires_at' => $order['expires_at'],
+        'transaction_id' => $order['mayar_transaction_id'],
+        'total' => (int) $order['amount'],
+    ]);
+}
 
-    // Validasi dasar
-    if ($amount < 1000 || $customerName === '' || !filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
-        json_response(422, ['error' => 'Data pelanggan atau jumlah pembayaran tidak valid.']);
+/** Hapus baris pesanan yang gagal mendapat link pembayaran, supaya tidak ada pesanan yatim. */
+function discard_unlinked_order(?string $orderId): void
+{
+    if ($orderId === null) return;
+    try {
+        db()->prepare('DELETE FROM orders WHERE order_id = ? AND payment_link IS NULL')->execute([$orderId]);
+    } catch (Throwable) {
+    }
+}
+
+$orderId = null;
+try {
+    if (!rate_limit_allow('create:' . client_ip(), 30, 600)) {
+        json_response(429, ['error' => 'Terlalu banyak percobaan. Coba lagi beberapa menit lagi.']);
     }
 
-    // Insert before the external request. This gives the webhook a binding target.
-    $insert = db()->prepare('INSERT OR IGNORE INTO orders (order_id, service_id, amount, payment_status, customer_name, customer_email) VALUES (?, ?, ?, "PENDING", ?, ?)');
-    $insert->execute([$orderCode, $serviceId, $amount, $customerName, $customerEmail]);
+    $in = parse_checkout_input(request_json());
 
-    // 3. Konfigurasi Request Mayar
-    // Endpoint pembuatan payment link Mayar (Pastikan di .env terisi, contoh: payment/create)
-    $path = env('MAYAR_CREATE_PAYMENT_PATH', 'payments/create');
-    $appUrl = rtrim((string) env('APP_URL', 'https://jokiin.my.id'), '/');
-    $expiredAt = (new DateTimeImmutable('+24 hours'))->format(DateTimeInterface::ATOM);
+    // Harga dihitung ulang di server dari katalog. Angka dari browser hanya dipakai untuk mendeteksi harga yang berubah.
+    $pricing = compute_order($in['items'], $in['promo']);
+    if ($in['claimedTotal'] !== null && abs($in['claimedTotal'] - $pricing['total']) > 1) {
+        throw new ApiException('Harga layanan berubah. Muat ulang halaman untuk melihat harga terbaru.', 409, ['total' => $pricing['total']]);
+    }
+    $total = $pricing['total'];
+    $pdo = db();
 
-    // 4. Tembak API Mayar
-    $result = mayar_post($path, [
-        'name' => $customerName,
-        'email' => $customerEmail,
-        'amount' => $amount,
-        'referenceId' => $orderCode,
-        'description' => $description,
-        'expiredAt' => $expiredAt,
-        'redirectUrl' => $appUrl . '/?payment=complete&order_id=' . rawurlencode($orderCode),
+    // Kirim ulang dengan draftKey yang sama (klik ganda, koneksi putus) memakai lagi pesanan yang sudah ada.
+    if ($in['draftKey'] !== null) {
+        $existing = $pdo->prepare('SELECT * FROM orders WHERE idempotency_key = ? ORDER BY created_at DESC, rowid DESC LIMIT 1');
+        $existing->execute([$in['draftKey']]);
+        $row = $existing->fetch();
+        if ($row && $row['payment_link'] && (int) $row['amount'] === $total
+            && ($row['payment_status'] === 'PAID' || ($row['payment_status'] === 'PENDING' && strtotime((string) $row['expires_at']) > time() + 60))) {
+            payment_response($row, 200);
+        }
+    }
+
+    $orderId = new_order_id();
+    $serviceIds = implode(',', array_keys($in['items']));
+    $pdo->prepare(
+        'INSERT INTO orders (order_id, idempotency_key, service_id, amount, payment_status, customer_name, customer_email, customer_nim, customer_whatsapp, task_title, task_deadline, task_notes, task_drive_url, items_json, promo)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    )->execute([
+        $orderId, $in['draftKey'], $serviceIds, $total, 'PENDING', $in['name'], $in['email'], $in['nim'], $in['whatsapp'],
+        $in['title'], $in['deadline'], $in['notes'], $in['drive'],
+        json_encode($pricing['lines'], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE), $in['promo'],
     ]);
 
-    $link = $result['data']['link'] ?? $result['data']['paymentUrl'] ?? $result['link'] ?? null;
-    
-    if (!is_string($link) || !filter_var($link, FILTER_VALIDATE_URL)) {
-        throw new RuntimeException('Mayar response has no valid data.link');
+    $appUrl = rtrim((string) env('APP_URL', 'https://jokiin.my.id'), '/');
+    $expiresAt = (new DateTimeImmutable('+24 hours', new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s.000\Z');
+    $summary = implode(', ', array_map(fn($l) => $l['name'] . ' x' . $l['quantity'], $pricing['lines']));
+    $payload = [
+        'name' => str_clip('JOKI.IN - ' . $pricing['lines'][0]['name'], 100),
+        'amount' => $total,
+        'email' => $in['email'],
+        'mobile' => $in['whatsapp'],
+        'description' => str_clip('Pesanan ' . $orderId . ': ' . $summary, 250),
+        'expiredAt' => $expiresAt,
+        'redirectUrl' => $appUrl . '/?payment=complete&order_id=' . $orderId,
+    ];
+
+    $res = mayar_request('POST', env('MAYAR_CREATE_PAYMENT_PATH', 'payments/create'), $payload);
+    // Untuk payment request, Mayar bisa menolak redirectUrl dengan 400. Ulangi tanpa itu:
+    // halaman sukses tetap memantau status sendiri lewat check-status.php.
+    if ($res['status'] === 400 && stripos($res['raw'], 'redirectUrl') !== false) {
+        unset($payload['redirectUrl']);
+        $res = mayar_request('POST', env('MAYAR_CREATE_PAYMENT_PATH', 'payments/create'), $payload);
     }
 
-    // 5. Update Database dengan Link Pembayaran
-    db()->prepare('UPDATE orders SET payment_link = ?, updated_at = CURRENT_TIMESTAMP WHERE order_id = ?')->execute([$link, $orderCode]);
-    
-    // 6. Kembalikan Response ke Javascript
-    json_response(201, ['order_id' => $orderCode, 'paymentUrl' => $link, 'payment_status' => 'PENDING', 'expires_at' => $expiredAt]);
+    $data = is_array($res['body']['data'] ?? null) ? $res['body']['data'] : [];
+    $link = $data['link'] ?? null;
+    $transactionId = $data['transactionId'] ?? $data['transaction_id'] ?? null;
+    $paymentId = $data['id'] ?? null;
+    $envelopeOk = !isset($res['body']['statusCode']) || (int) $res['body']['statusCode'] < 400;
 
+    if ($res['status'] < 200 || $res['status'] >= 300 || !$envelopeOk
+        || !is_string($link) || !filter_var($link, FILTER_VALIDATE_URL)
+        || !is_string($transactionId) || $transactionId === '') {
+        error_log('create-mayar-payment: Mayar menolak/balasan tak lengkap: HTTP ' . $res['status'] . ' ' . $res['error'] . ' ' . str_clip($res['raw'], 500));
+        throw new ApiException('Layanan pembayaran sedang sibuk, silakan coba lagi.', 503);
+    }
+
+    $pdo->prepare('UPDATE orders SET payment_link = ?, mayar_transaction_id = ?, mayar_payment_id = ?, expires_at = ?, updated_at = CURRENT_TIMESTAMP WHERE order_id = ?')
+        ->execute([$link, $transactionId, is_string($paymentId) ? $paymentId : null, $expiresAt, $orderId]);
+
+    payment_response([
+        'order_id' => $orderId, 'payment_link' => $link, 'payment_status' => 'PENDING', 'expires_at' => $expiresAt,
+        'mayar_transaction_id' => $transactionId, 'amount' => $total,
+    ], 201);
+
+} catch (ApiException $e) {
+    discard_unlinked_order($orderId);
+    json_response($e->status, ['error' => $e->getMessage()] + $e->extra);
 } catch (Throwable $e) {
+    discard_unlinked_order($orderId);
     error_log('create-mayar-payment: ' . $e->getMessage());
     json_response(503, ['error' => 'Layanan pembayaran sedang sibuk, silakan coba lagi.']);
 }

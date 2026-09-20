@@ -5796,8 +5796,8 @@
 
                 <div id="midtransQrisBox"
                     style="display:none; text-align:center; margin:22px 0; padding:18px; border-radius:18px; background:var(--surface-secondary); border:1px solid var(--border-color);">
-                    <p style="margin:0 0 12px; color:var(--text-secondary);">Scan QRIS di bawah ini untuk membayar.
-                        Pesanan baru masuk ke admin setelah pembayaran berhasil.</p>
+                    <p style="margin:0 0 12px; color:var(--text-secondary);">Selesaikan pembayaran di halaman Mayar yang terbuka di tab baru.
+                        Status di halaman ini diperbarui otomatis; biarkan halaman ini tetap terbuka sampai pembayaran terkonfirmasi.</p>
                     <img id="midtransQrisImage" src="" alt="QRIS Midtrans"
                         style="width:min(280px, 100%); max-width:100%; border-radius:14px; background:#fff; padding:12px;">
                     <div id="midtransQrisExpiry" style="margin-top:12px; color:var(--text-muted); font-size:0.9em;">
@@ -6174,7 +6174,9 @@
             });
             const result = await response.json().catch(() => ({}));
             if (!response.ok || !result.paymentUrl) {
-                throw new Error(result.error || 'Link pembayaran Mayar belum dapat dibuat.');
+                const error = new Error(result.error || 'Link pembayaran Mayar belum dapat dibuat.');
+                error.status = response.status;
+                throw error;
             }
             return result;
         }
@@ -6939,22 +6941,19 @@
                 if (selectedPaymentMethod.id === 'midtrans_qris') {
                     if (buyButton) buyButton.textContent = 'Membuat pembayaran...';
                     const draftKey = requestIdentity('jokiin_mayar_draft', { owner, ...payload });
+                    // Server menghitung sendiri total dari katalog; 'amount' hanya untuk mendeteksi harga yang berubah.
                     const payment = await startMayarPayment({
-                        orderCode: draftKey,
+                        draftKey,
                         amount: payload.expectedTotal,
                         customer: payload.customer,
-                        service_id: itemsToProcess.map(i => i.productId).join(','),
-                        description: `Pesanan JOKI.IN ${draftKey}`,
-                        items: itemsToProcess.map(i => ({
-                            productId: i.productId,
-                            name: i.name,
-                            price: Math.round(Number(i.price)),
-                            quantity: i.quantity
-                        })),
-                        draftKey
+                        task: payload.task,
+                        items: payload.items,
+                        promo: payload.promo
                     });
                     const order = {
-                        id: payment.orderId,
+                        id: payment.order_id,
+                        gateway: 'mayar',
+                        mode: checkoutMode,
                         userId: owner || 'guest',
                         items: itemsToProcess,
                         customer: payload.customer,
@@ -6964,7 +6963,7 @@
                         discount: appliedPromoDiscount > 0 ? subtotal * appliedPromoDiscount : 0,
                         serviceFee: CONFIG.serviceFee,
                         paymentFee: selectedPaymentFee,
-                        total: payload.expectedTotal,
+                        total: Number(payment.total) || payload.expectedTotal,
                         paymentStatus: 'PENDING',
                         orderStatus: 'WAITING_PAYMENT',
                         paymentUrl: payment.paymentUrl,
@@ -6976,6 +6975,7 @@
                     removeStored(sessionStorage, 'nugasin_checkout_state');
                     removeStored(sessionStorage, 'jokiin_checkout_request');
                     renderOrderSuccess(order); window.switchTab('order-success');
+                    startPaymentPolling(order.id);
                     return;
                 }
                 const requestKey = requestIdentity('jokiin_checkout_request', { owner, ...payload });
@@ -6994,6 +6994,7 @@
                 window.showToast(error.message || 'Pesanan belum tersimpan. Periksa koneksi lalu coba lagi.');
                 if (error.status === 409) {
                     removeStored(sessionStorage, 'jokiin_checkout_request');
+                    removeStored(sessionStorage, 'jokiin_mayar_draft');
                     try { await loadServices(); renderCheckoutSummary(); } catch (_) { }
                 }
             } finally {
@@ -7016,7 +7017,7 @@
                 qrisImage.style.display = 'none';
                 qrisDownload.href = order.paymentUrl;
                 qrisDownload.textContent = 'Lanjutkan Pembayaran Mayar';
-                qrisExpiry.textContent = order.expiryTime ? `Batas pembayaran: ${order.expiryTime}` : '';
+                qrisExpiry.textContent = order.expiryTime ? `Batas pembayaran: ${(() => { const d = new Date(order.expiryTime); return isNaN(d) ? order.expiryTime : d.toLocaleString('id-ID', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }); })()}` : '';
             } else {
                 qrisBox.style.display = 'none';
                 qrisImage.style.display = '';
@@ -7027,6 +7028,108 @@
             }
             document.querySelector('#tab-order-success h2').textContent = order.paymentUrl ? 'Menunggu Pembayaran Mayar' : 'Pesanan Berhasil Disimpan';
             document.querySelector('#tab-order-success > p').textContent = order.paymentUrl ? 'Klik tombol di bawah untuk membuka halaman pembayaran Mayar.' : (order.paymentStatus === 'PAID' ? 'Pembayaran telah dikonfirmasi.' : 'Pembayaran menunggu konfirmasi admin. Simpan nomor pesanan dan hubungi Admin Salsa untuk instruksi pembayaran.');
+            applyMayarStatusView(order);
+        }
+
+        // ==========================================
+        // STATUS PEMBAYARAN MAYAR (pemantauan + kembali dari halaman Mayar)
+        // ==========================================
+        let paymentPollTimer = null;
+        let paymentPollToken = 0;
+        let paymentPollTick = null;
+        const PAYMENT_ORDER_ID_RE = /^[A-Za-z0-9_-]{6,80}$/;
+
+        function stopPaymentPolling() {
+            paymentPollToken++;
+            paymentPollTick = null;
+            if (paymentPollTimer) { clearTimeout(paymentPollTimer); paymentPollTimer = null; }
+        }
+
+        async function fetchPaymentStatus(orderId) {
+            try {
+                const response = await fetch('/api/check-status.php?order_id=' + encodeURIComponent(orderId), { cache: 'no-store' });
+                return response.ok ? await response.json() : null;
+            } catch (_) { return null; }
+        }
+
+        // Tab ini tetap terbuka saat Mayar dibuka di tab baru, jadi status dipantau dari sini.
+        // Server sendiri yang menanyakan ke Mayar (maks. 1x per 8 detik per pesanan), jadi tidak bergantung pada webhook.
+        function startPaymentPolling(orderId) {
+            stopPaymentPolling();
+            if (!PAYMENT_ORDER_ID_RE.test(String(orderId || ''))) return;
+            const token = paymentPollToken;
+            const startedAt = Date.now();
+            const tick = async () => {
+                paymentPollTimer = null;
+                if (token !== paymentPollToken) return;
+                const status = await fetchPaymentStatus(orderId);
+                if (token !== paymentPollToken) return;
+                if (status && status.payment_status) {
+                    if (currentOrder && currentOrder.id === orderId) currentOrder.paymentStatus = status.payment_status;
+                    applyMayarStatusView({ ...(currentOrder || {}), id: orderId, gateway: 'mayar', paymentStatus: status.payment_status });
+                    if (status.payment_status !== 'PENDING') { stopPaymentPolling(); return; }
+                }
+                const elapsed = Date.now() - startedAt;
+                if (elapsed > 30 * 60 * 1000) { stopPaymentPolling(); return; }
+                paymentPollTimer = setTimeout(tick, elapsed < 120000 ? 4000 : 10000);
+            };
+            paymentPollTick = tick;
+            paymentPollTimer = setTimeout(tick, 2500);
+        }
+
+        // Kembali dari tab Mayar: cek status seketika, tanpa menunggu jadwal berikutnya.
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden || !paymentPollTimer || !paymentPollTick) return;
+            clearTimeout(paymentPollTimer); paymentPollTimer = null; paymentPollTick();
+        });
+
+        function applyMayarStatusView(order) {
+            if (!order || order.gateway !== 'mayar') return;
+            const status = String(order.paymentStatus || 'PENDING').toUpperCase();
+            const title = document.querySelector('#tab-order-success h2');
+            const lead = document.querySelector('#tab-order-success > p');
+            const box = document.getElementById('midtransQrisBox');
+            // Server memakai 'CANCELED'; label yang sudah ada di getPaymentStatusLabel bernama 'CANCELLED'.
+            document.getElementById('succPaymentStatus').innerHTML = getPaymentStatusLabel(status === 'CANCELED' ? 'CANCELLED' : status);
+            if (status === 'PAID') {
+                title.textContent = 'Pembayaran Berhasil';
+                lead.textContent = 'Terima kasih! Pesanan kamu sudah kami terima dan akan segera diproses. Admin akan menghubungi kamu lewat WhatsApp.';
+                box.style.display = 'none';
+                // Keranjang baru dikosongkan setelah pembayaran benar-benar berhasil (bukan saat link dibuat).
+                if (order.mode) {
+                    try {
+                        if (order.mode === 'direct') directCheckoutItem = null;
+                        else { CART = []; Promise.resolve(saveCart()).catch(() => { }); }
+                    } catch (_) { }
+                }
+            } else if (status === 'CANCELED') {
+                title.textContent = 'Pembayaran Tidak Berhasil';
+                lead.textContent = 'Pembayaran dibatalkan atau sudah kedaluwarsa. Silakan buat pesanan baru.';
+                box.style.display = 'none';
+            }
+        }
+
+        // Dipanggil saat halaman dibuka dengan ?payment=complete&order_id=... (redirect dari Mayar).
+        async function handlePaymentReturn() {
+            const params = new URLSearchParams(window.location.search);
+            const orderId = params.get('order_id');
+            if (params.get('payment') !== 'complete' || !PAYMENT_ORDER_ID_RE.test(orderId || '')) return false;
+            try { history.replaceState(null, '', window.location.pathname); } catch (_) { }
+
+            let saved = null;
+            try { saved = JSON.parse(sessionStorage.getItem('jokiin_pending_mayar_order') || 'null'); } catch (_) { }
+            const status = await fetchPaymentStatus(orderId);
+            let order = saved && saved.id === orderId ? saved : null;
+            if (!order) {
+                if (!status) { window.showToast('Pesanan tidak ditemukan. Periksa kembali link pembayaran kamu.'); return false; }
+                order = { id: orderId, items: [], customer: {}, task: {}, total: status.amount, paymentUrl: status.payment_url, expiryTime: status.expires_at };
+            }
+            order = { ...order, gateway: 'mayar', paymentMethod: 'Mayar', paymentStatus: (status && status.payment_status) || order.paymentStatus || 'PENDING' };
+            if (status && status.payment_url && !order.paymentUrl) order.paymentUrl = status.payment_url;
+            currentOrder = order;
+            renderOrderSuccess(order); window.switchTab('order-success');
+            if (order.paymentStatus === 'PENDING') startPaymentPolling(orderId);
+            return true;
         }
 
         function generateAdminInvoiceMessage(order) {
@@ -7845,6 +7948,7 @@ Teman tugas mahasiswa.`;
             const results = await Promise.allSettled([loadServices(), loadReviews(), loadAuthSettings()]);
             if (results[0].status === 'rejected') window.showToast('Layanan server belum dapat dimuat. Checkout menunggu koneksi pulih.');
             restoreCheckoutState();
+            await handlePaymentReturn().catch(console.error);
             let lastOrderId = ''; try { lastOrderId = localStorage.getItem('nugasin_last_order_id') || ''; } catch (_) { }
             if (lastOrderId) document.getElementById('helpTrackInput').value = lastOrderId;
         }
