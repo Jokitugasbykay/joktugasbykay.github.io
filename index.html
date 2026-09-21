@@ -322,6 +322,9 @@
         }
 
         @media (max-width: 760px) {
+            .container > header { overflow: hidden; }
+            .header-actions { min-width: 0; }
+            .header-actions button { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
             #full-harga { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             #full-harga .service-card { min-height: 430px; padding: 16px; }
             #full-harga .service-photo { flex-basis: 118px; height: 118px; }
@@ -5021,8 +5024,7 @@
             <div class="checkout-title" id="checkoutHeaderTitle">Penyelesaian Pesanan</div>
             <div class="header-actions" id="mainHeaderActions">
                 <button id="cartHeaderBtn" class="btn-cart" onclick="window.openCartModal()">🛒 Keranjang</button>
-                <button id="ordersHeaderBtn" class="btn-cart" onclick="window.openOrdersModal()">📋 Pesanan
-                    Saya</button>
+                <button id="ordersHeaderBtn" class="btn-cart" onclick="window.openOrdersModal()">Pesanan Saya</button>
                 <button id="authHeaderBtn" class="btn-header" onclick="window.openAuthModal()">Masuk</button>
             </div>
         </header>
@@ -5070,7 +5072,6 @@
         <div id="tab-beranda" class="tab-content active">
             <div class="hero-box">
                 <div class="hero-content">
-                    <span class="hero-eyebrow">#TemanTugasKuliahmu</span>
                     <h2>Tugas Kamu,<br>Serahkan ke <span>JOKI.IN</span></h2>
                     <p>Solusi tugas kuliah yang aman, cepat, dan berkualitas. Fokus pada hal penting, biar kami yang
                         bantu selesaikan.</p>
@@ -8075,6 +8076,10 @@ Teman tugas mahasiswa.`;
 
         async function initializeApp() {
             renderApp(); checkWelcomePopup();
+            // GitHub Pages memakai 404.html untuk fallback SPA; pulihkan rute aslinya setelah redirect.
+            let fallbackPath = '';
+            try { fallbackPath = sessionStorage.getItem('jokiin_spa_fallback_path') || ''; sessionStorage.removeItem('jokiin_spa_fallback_path'); } catch (_) { }
+            if (fallbackPath && fallbackPath.startsWith('/')) history.replaceState(null, '', fallbackPath);
             const initialTab = TAB_BY_ROUTE[window.location.pathname] || 'beranda';
             if (initialTab !== 'beranda') window.switchTab(initialTab);
             else requestAnimationFrame(() => updateLiquidIndicator(false));
