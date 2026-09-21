@@ -227,7 +227,10 @@
         .nav-pills {
             display: flex;
             gap: 10px;
-            margin: 25px 0;
+            width: fit-content;
+            max-width: 100%;
+            margin: 25px auto;
+            justify-content: center;
             overflow-x: auto;
             padding: 6px;
             position: relative;
@@ -3119,7 +3122,9 @@
             }
 
             .nav-pills {
+                width: 100%;
                 margin: 10px 0 20px 0 !important;
+                justify-content: flex-start;
                 -webkit-overflow-scrolling: touch;
             }
 
