@@ -563,6 +563,14 @@
             box-shadow: 0 12px 22px rgba(20, 96, 65, .12);
         }
 
+        /* Tilt ringan untuk kartu kategori: hanya desktop ber-pointer presisi, tidak aktif di mobile. */
+        @media (hover:hover) and (pointer:fine) {
+            .home-category { transform-style:preserve-3d; transition:transform .32s cubic-bezier(.16,1,.3,1), box-shadow .32s ease; }
+            .home-category:hover { transform:perspective(760px) rotateX(3deg) rotateY(-3deg) translateY(-5px); box-shadow:18px 18px 30px rgba(7,45,32,.16); }
+            .home-category:nth-child(even):hover { transform:perspective(760px) rotateX(3deg) rotateY(3deg) translateY(-5px); }
+            .home-category:hover span { transform:translateZ(16px); }
+        }
+
         .home-category span {
             width: 40px;
             height: 40px;
@@ -4623,6 +4631,150 @@
                 animation: none !important;
             }
         }
+
+        /* Batch UI additions — header/nav intentionally excluded. */
+        #bn-04-slot { position:fixed; right:20px; bottom:20px; z-index:3000; display:grid; gap:10px; width:min(360px,calc(100vw - 32px)); pointer-events:none; }
+        .bn-04__toast { pointer-events:auto; display:flex; gap:12px; align-items:flex-start; padding:14px; border:1px solid var(--border-color); border-radius:14px; color:var(--text-main); background:var(--card-solid); box-shadow:0 18px 48px rgba(0,0,0,.18); animation:bn-04-in .55s cubic-bezier(.34,1.56,.64,1) both; }
+        .bn-04__toast.is-out { animation:bn-04-out .22s ease-in forwards; }
+        @keyframes bn-04-in { from { opacity:0; transform:translateY(22px) scale(.92) } to { opacity:1; transform:translateY(0) scale(1) } }
+        @keyframes bn-04-out { to { opacity:0; transform:translateY(12px) scale(.96) } }
+        .bn-04__toast-icon { display:grid; place-items:center; width:28px; height:28px; flex:0 0 28px; color:#fff; border-radius:50%; background:var(--primary); }
+        .bn-04__toast--error .bn-04__toast-icon { background:var(--error); }.bn-04__toast--warn .bn-04__toast-icon{background:#d97706}.bn-04__toast--info .bn-04__toast-icon{background:#2563eb}
+        .bn-04__toast-body{min-width:0;flex:1}.bn-04__toast-title,.bn-04__toast-desc,.bn-04__toast-time{margin:0}.bn-04__toast-title{font-weight:800;font-size:.9rem}.bn-04__toast-desc{margin-top:2px;color:var(--text-secondary);font-size:.82rem}.bn-04__toast-time{margin-top:5px;color:var(--text-muted);font:600 .7rem ui-monospace,monospace}.bn-04__toast-x{border:0;background:transparent;color:var(--text-muted);cursor:pointer;font-size:1rem}
+        .bn-08-cart-shake{animation:bn-08-cart-shake .55s ease-out!important}@keyframes bn-08-cart-shake{20%,60%{transform:rotate(-12deg) scale(1.08)}40%,80%{transform:rotate(12deg) scale(1.08)}100%{transform:none}}.bn-08-badge-pop{animation:bn-08-badge-pop .4s cubic-bezier(.34,1.56,.64,1)!important}@keyframes bn-08-badge-pop{0%{transform:scale(0)}100%{transform:scale(1)}}
+        .cart-header-badge{display:inline-grid;place-items:center;min-width:18px;height:18px;margin-left:4px;padding:0 5px;border-radius:999px;background:var(--error);color:#fff;font-size:.7rem;font-weight:800}
+        .modal-close-btn-left{position:absolute;left:14px;top:14px;border:0;border-radius:8px;width:34px;height:34px;color:var(--text-secondary);background:var(--surface-secondary);cursor:pointer;font-size:1rem}.modal-close-btn-left:hover{color:var(--error)}
+        .ba-03__banner{margin:0 0 16px;padding:13px;border:1px solid var(--border-color);border-radius:12px;background:var(--surface-secondary)}.ba-03__msg{display:flex;gap:8px;align-items:center;margin:0 0 10px;color:var(--text-secondary);font-size:.84rem}.ba-03__msg strong{color:var(--primary)}.ba-03__track{height:8px;overflow:hidden;border-radius:999px;background:rgba(16,185,129,.16)}.ba-03__fill{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--primary),#52e89a);transition:width .45s cubic-bezier(.16,1,.3,1)}.ba-03__scale{display:flex;justify-content:space-between;margin-top:6px;color:var(--text-muted);font-size:.7rem}.ba-03__banner[data-state="unlocked"]{border-color:var(--primary);background:rgba(16,185,129,.1)}
+        .ba-14__summary{display:flex;gap:10px;margin-bottom:14px;padding:12px;border:1px solid rgba(239,68,68,.45);border-radius:10px;background:rgba(239,68,68,.08);color:var(--error)}.ba-14__summary[hidden]{display:none}.ba-14__summary h4,.ba-14__summary ul{margin:0}.ba-14__summary ul{padding-left:18px;font-size:.82rem}.ba-14__msg{display:none;margin:6px 0 0;color:var(--error);font-size:.78rem}.ba-14__f.has-error .form-control{border-color:var(--error);box-shadow:0 0 0 3px rgba(239,68,68,.12)}
+        .lb-13__btn{display:inline-flex;align-items:center;justify-content:center;gap:8px}.lb-13__spin{display:none;width:15px;height:15px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%}.lb-13__btn[data-state="pending"] .lb-13__spin{display:inline-block;animation:lb-13-spin .66s linear infinite}@keyframes lb-13-spin{to{transform:rotate(360deg)}}
+        .tr-01__wall{column-count:3;column-gap:18px}.tr-01__card{break-inside:avoid;display:block;margin:0 0 18px;padding:18px;border:1px solid var(--border-color);border-radius:16px;background:var(--card-solid);box-shadow:var(--shadow-card)}@media(max-width:760px){.tr-01__wall{column-count:1}.tgl-19__item{flex-basis:220px}}
+        .tgl-19{margin:42px 0;contain:layout paint}.tgl-19__mask{overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent)}.tgl-19__track{display:flex;gap:16px;width:max-content;animation:tgl19-marquee 42s linear infinite;will-change:transform}.tgl-19__track:hover{animation-play-state:paused}.tgl-19__item{position:relative;overflow:hidden;flex:0 0 270px;height:170px;border-radius:16px;background:var(--surface-secondary);cursor:default}.tgl-19__item img,.tgl-19__overlay{pointer-events:none}.tgl-19__item img{width:100%;height:100%;object-fit:cover}.tgl-19__overlay{position:absolute;inset:auto 0 0;padding:28px 14px 12px;background:linear-gradient(transparent,rgba(0,0,0,.8));color:#fff}.tgl-19__overlay h4,.tgl-19__overlay span{margin:0;font-size:.85rem}@keyframes tgl19-marquee{to{transform:translate3d(-50%,0,0)}}@media(prefers-reduced-motion:reduce){.tgl-19__track{animation:none}}
+        .promo-strip{box-sizing:border-box;width:100%;display:flex;align-items:center;justify-content:center;gap:16px;min-height:60px;padding:10px 22px!important;border-radius:0!important;background:linear-gradient(90deg,#075c43,#066548)!important;text-align:left!important}.promo-strip__badge{padding:6px 11px;border-radius:999px;background:#dfff34;color:#07533b;font-size:.72rem;font-weight:900;letter-spacing:.05em;white-space:nowrap}.promo-strip__text{min-width:0;flex:0 1 560px;color:#fff;font-size:.92rem}.promo-strip__countdown{display:flex;gap:5px}.promo-strip__time{display:grid;place-items:center;min-width:38px;padding:4px 6px;border:1px solid rgba(255,255,255,.25);border-radius:7px;background:rgba(0,0,0,.14);color:#fff;font-size:.85rem;font-weight:900}.promo-strip__time small{font-size:.54rem;font-weight:700;opacity:.75}.promo-strip__coupon{padding:6px 10px;border:1px dashed rgba(255,255,255,.55);border-radius:7px;color:#fff;font-size:.75rem;white-space:nowrap}.promo-strip__claim{border:0;border-radius:7px;padding:9px 13px;background:#dfff34;color:#07533b;font-weight:900;white-space:nowrap;cursor:pointer}.promo-strip__close{border:0;background:transparent;color:#fff;font-size:1.2rem;cursor:pointer}@media(max-width:760px){.promo-strip{display:grid;grid-template-columns:auto 1fr auto;gap:8px;padding:10px 14px!important;min-height:0}.promo-strip__badge{grid-column:1}.promo-strip__text{grid-column:2;min-width:0;font-size:.8rem;line-height:1.3}.promo-strip__close{grid-column:3;grid-row:1}.promo-strip__countdown{grid-column:1/4;grid-row:2;justify-content:center}.promo-strip__coupon{grid-column:1/3;grid-row:3;justify-self:center}.promo-strip__claim{grid-column:3;grid-row:3;font-size:.74rem;padding:9px}.promo-strip__time{min-width:36px}}
+        .logo.brand-fallback{min-width:150px}.logo.brand-fallback::after{content:'JOKI.IN';color:var(--text-main);font-weight:900;font-size:1.4rem;letter-spacing:-.04em}.logo.brand-fallback::first-letter{color:var(--primary)}.logo.brand-fallback .header-brand-lockup{display:none!important}
+        /* CodeFronts-inspired additions, scoped to JOKI.IN components. */
+        .cf-upload{position:relative;display:grid;place-items:center;min-height:210px;padding:28px 20px;border-radius:18px;background:var(--surface-secondary);cursor:pointer;text-align:center;isolation:isolate}.cf-upload:focus-visible{outline:2px solid var(--primary);outline-offset:4px}.cf-upload__outline{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.cf-upload__outline rect{fill:none;stroke:var(--border-color);stroke-width:2;stroke-dasharray:12 10;transition:stroke .2s}.cf-upload.is-over{transform:scale(1.01);box-shadow:0 20px 50px rgba(16,185,129,.14)}.cf-upload.is-over .cf-upload__outline rect{stroke:var(--primary);animation:cf-upload-march 1.3s linear infinite}.cf-upload__icon{display:grid;place-items:center;width:52px;height:52px;margin-bottom:9px;border-radius:15px;background:rgba(16,185,129,.14);color:var(--primary);font-size:1.55rem}.cf-upload__title{margin:0;color:var(--text-main);font-weight:800}.cf-upload__help{margin:6px 0 0;color:var(--text-secondary);font-size:.82rem}.cf-upload__browse{color:var(--primary);font-weight:800;text-decoration:underline;text-underline-offset:3px}.cf-upload input{position:absolute;width:1px;height:1px;opacity:0;clip-path:inset(50%)}.cf-upload-files{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}.cf-upload-files:empty{display:none}.cf-upload-file{padding:6px 9px;border-radius:999px;background:rgba(16,185,129,.12);color:var(--text-main);font-size:.76rem}.cf-upload-status{margin:8px 0 0;min-height:18px;color:var(--text-muted);font-size:.78rem}@keyframes cf-upload-march{to{stroke-dashoffset:-44}}
+        .service-card.cf-price-card{position:relative;overflow:hidden}.cf-price-card .cf-card-actions{display:flex;gap:10px;margin-top:auto;transform:translateY(0);transition:transform .3s cubic-bezier(.16,1,.3,1)}@media (hover:hover){.cf-price-card .cf-card-actions{transform:translateY(116%)}.cf-price-card:hover .cf-card-actions,.cf-price-card:focus-within .cf-card-actions{transform:translateY(0)}}.cf-sale-ribbon{position:absolute;z-index:3;top:14px;right:-34px;min-width:132px;padding:7px 12px;transform:rotate(35deg);background:linear-gradient(135deg,#ffcf4a,#ff7f50);color:#392000;text-align:center;font-size:.72rem;font-weight:900;box-shadow:0 6px 16px rgba(0,0,0,.25)}.cf-price-original{display:block;margin-top:3px;color:var(--text-muted);font-size:.8rem;text-decoration:line-through}.cf-price-sale{color:var(--primary);font-weight:900}
+        .tr-01__card.cf-review{gap:14px;padding:20px;background:linear-gradient(155deg,rgba(32,47,73,.96),var(--card-solid));border-color:rgba(81,116,163,.32)}.cf-review__top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.cf-review__rating{display:inline-flex;gap:3px;padding:6px 10px;border:1px solid rgba(245,158,11,.35);border-radius:999px;background:rgba(245,158,11,.1);color:#fbbf24;font-size:.78rem;font-weight:800}.cf-review__quote{margin:0;color:var(--text-main);font-size:1rem;font-weight:650;line-height:1.55}.cf-review__line{height:4px;border-radius:999px;background:linear-gradient(90deg,#24d6a1,#5aa6ff,#ee4ca6)}.cf-review__identity{display:flex;align-items:center;gap:10px}.cf-review__avatar{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--primary);color:#fff;font-weight:900}.cf-review__verified{display:flex;justify-content:space-between;gap:8px;padding:9px 11px;border:1px solid rgba(16,185,129,.3);border-radius:8px;background:rgba(16,185,129,.09);color:var(--primary);font-size:.78rem;font-weight:700}.cf-review__footer{display:flex;justify-content:space-between;gap:8px;padding-top:10px;border-top:1px dashed var(--border-color);color:var(--text-muted);font-size:.76rem}.cf-review__helpful{border:1px solid var(--border-color);border-radius:999px;padding:5px 10px;background:transparent;color:inherit;cursor:pointer}
+        .recommendation-card{overflow:hidden}.recommendation-card::after{content:'';position:absolute;inset:0;pointer-events:none;opacity:0;background:linear-gradient(100deg,transparent 20%,rgba(255,255,255,.16) 45%,transparent 70%);transform:translateX(-120%)}.recommendation-card.is-shimmer::after{opacity:1;animation:cf-shimmer 1.1s ease-out both}@keyframes cf-shimmer{to{transform:translateX(120%);opacity:0}}.payment-success-pop{display:grid;place-items:center;width:80px;height:80px;margin:0 auto 18px;border-radius:50%;background:var(--primary);color:#fff;animation:payment-success-pop .6s cubic-bezier(.18,1.55,.47,1) both}.payment-success-pop svg{width:40px;height:40px;stroke-dasharray:60;stroke-dashoffset:60;animation:payment-success-draw .45s .24s ease forwards}@keyframes payment-success-pop{0%{transform:scale(.3);opacity:0}65%{transform:scale(1.14)}100%{transform:scale(1);opacity:1}}@keyframes payment-success-draw{to{stroke-dashoffset:0}}
+
+        /* Revision: compact 3:4 catalog cards without stretching when a list is short. */
+        #full-harga, #full-layanan { grid-template-columns:repeat(auto-fit, minmax(238px, 280px)); justify-content:center; align-items:start; grid-auto-rows:auto; }
+        #full-harga .service-card, #full-layanan .service-card { box-sizing:border-box; width:100%; min-height:0!important; height:auto!important; aspect-ratio:3 / 4; padding:18px; overflow:hidden; }
+        #full-harga .service-photo, #full-layanan .service-photo { height:122px; flex:0 0 122px; margin:-4px -4px 13px; }
+        #full-harga .service-card h3, #full-layanan .service-card h3 { font-size:1.08rem; line-height:1.25; }
+        #full-harga .service-card .pricing-price-value { font-size:clamp(1.15rem, 1.9vw, 1.5rem); line-height:1.12; }
+        #full-layanan .service-card > p { display:block; }
+        #full-layanan .layanan-target { display:none; }
+        #full-layanan .layanan-section-title { margin:8px 0 6px; font-size:.74rem; }
+        #full-layanan .layanan-check-list { margin:0 0 12px; }
+        #full-layanan .layanan-check-list li { margin-bottom:6px; font-size:.78rem; }
+        #full-layanan .layanan-check-list li:nth-child(n+4) { display:none; }
+        #full-layanan .service-card > div:last-child { gap:8px!important; }
+        #full-layanan .service-card > div:last-child button { min-width:0; padding:10px 8px!important; font-size:.78rem; }
+        .cf-price-card .cf-card-actions { transform:none!important; }
+
+        /* Header controls remain centered while the brand stays on the left. */
+        .container > header:not(.checkout-mode) { position:relative; }
+        .container > header:not(.checkout-mode) .header-actions { position:absolute; left:50%; transform:translateX(-50%); justify-content:center; flex-wrap:nowrap; }
+
+        /* The selected category no longer receives a different permanent green fill. */
+        .home-category:first-child, :is(:root[data-theme="dark"], .dark-mode) .home-category:first-child { background:var(--card-solid); color:var(--text-main); border-color:var(--border-color); }
+        :is(:root[data-theme="dark"], .dark-mode) .home-category:first-child span { background:#1d3028; }
+
+        /* Testimonial product cards use a lightweight desktop-only tilt; touch devices stay static. */
+        .testimonial-product-card { isolation:isolate; overflow:hidden; min-height:250px; }
+        .testimonial-product-card__glow { position:absolute; z-index:-1; width:150px; height:150px; border-radius:50%; right:-60px; top:-60px; background:radial-gradient(circle, rgba(45,212,160,.2), transparent 68%); }
+        @media (hover:hover) and (pointer:fine) { .testimonial-product-card { transform-style:preserve-3d; transition:transform .32s cubic-bezier(.16,1,.3,1), box-shadow .32s ease; } .testimonial-product-card:hover { transform:perspective(760px) rotateX(3deg) rotateY(-3deg) translateY(-6px); box-shadow:20px 24px 38px rgba(0,0,0,.2); } .testimonial-product-card:nth-child(even):hover { transform:perspective(760px) rotateX(3deg) rotateY(3deg) translateY(-6px); } .testimonial-product-card:hover :is(h3,.category-badge,.rating-summary,.btn-outline) { transform:translateZ(14px); } }
+        .review-back-button { width:max-content; margin:32px 0 20px; padding:10px 16px; border-radius:999px; background:color-mix(in srgb, var(--glass-panel, var(--card-solid)) 88%, transparent); box-shadow:none; }
+        .detail-review-header { min-height:0!important; }
+        .detail-review-header .hero-content { width:100%; max-width:none; }
+        .review-summary-card { display:grid; grid-template-columns:auto minmax(220px, 360px); gap:24px; align-items:center; margin:12px 0 20px; padding:16px; border:1px solid var(--border-color); border-radius:16px; background:var(--surface-secondary); }
+        .review-summary-score { display:grid; grid-template-columns:auto auto; column-gap:6px; align-items:baseline; }
+        .review-summary-score strong { font-size:2.5rem; line-height:1; color:var(--text-main); }.review-summary-score span { color:#fbbf24; font-size:1.4rem; }.review-summary-score small { grid-column:1/-1; margin-top:6px; color:var(--text-secondary); font-size:.8rem; }
+        .review-rating-bars { display:grid; gap:6px; }.review-rating-bar { display:grid; grid-template-columns:34px 1fr 24px; align-items:center; gap:8px; border:0; padding:0; background:transparent; color:var(--text-secondary); font:inherit; font-size:.76rem; cursor:pointer; text-align:left; }.review-rating-bar i { display:block; height:7px; overflow:hidden; border-radius:999px; background:color-mix(in srgb, var(--border-color) 70%, transparent); }.review-rating-bar i b { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#fbbf24,#f59e0b); }.review-rating-bar.active { color:var(--primary); font-weight:800; }.review-filter-pills { margin-bottom:0!important; }
+
+        /* Compact mobile promo and centered action row; no clipping or three-row banner. */
+        @media (max-width:760px) {
+            .promo-strip { display:flex!important; min-height:72px!important; height:72px; gap:8px; padding:8px 12px!important; overflow:hidden; }
+            .promo-strip__badge { flex:0 0 auto; padding:6px 9px; font-size:.64rem; }.promo-strip__text { flex:1 1 auto; font-size:.76rem; line-height:1.22; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }.promo-strip__countdown,.promo-strip__coupon { display:none!important; }.promo-strip__claim { flex:0 0 auto; padding:8px 9px; font-size:.7rem; }.promo-strip__close { flex:0 0 18px; padding:0; font-size:1.05rem; }
+            .container > header:not(.checkout-mode) { display:grid!important; grid-template-columns:1fr; justify-items:center; align-items:center!important; gap:9px; padding:12px 16px!important; overflow:visible!important; }
+            .container > header:not(.checkout-mode) .logo { width:auto!important; justify-content:center!important; }.container > header:not(.checkout-mode) .header-brand-lockup { height:44px; }
+            .container > header:not(.checkout-mode) .header-actions { position:static; left:auto; transform:none; width:auto!important; max-width:100%; justify-content:center!important; gap:7px!important; overflow:visible!important; }
+            .container > header:not(.checkout-mode) .header-actions button { flex:0 1 auto!important; min-width:0!important; overflow:visible!important; text-overflow:clip!important; padding:9px 10px!important; font-size:.74rem!important; }
+            #full-harga, #full-layanan { grid-template-columns:minmax(0, 382px); gap:16px; }.services-grid#full-harga, .services-grid#full-layanan { justify-content:center; }
+            #full-harga .service-card, #full-layanan .service-card { aspect-ratio:3 / 4; padding:16px; }.review-summary-card { grid-template-columns:1fr; gap:16px; }.review-back-button { width:100%; }
+        }
+        @media (max-width:370px) { .promo-strip__claim { padding:8px 7px; font-size:.64rem; }.promo-strip__badge { font-size:.59rem; }.container > header:not(.checkout-mode) .header-actions button { padding:8px 7px!important; font-size:.68rem!important; } }
+        @media(prefers-reduced-motion:reduce){.cf-upload.is-over,.cf-price-card .cf-card-actions,.testimonial-product-card{transform:none!important}.cf-upload.is-over .cf-upload__outline rect,.recommendation-card.is-shimmer::after,.payment-success-pop,.payment-success-pop svg{animation:none}}
+
+        /* Final catalog, header, gallery, and review corrections. */
+        @keyframes tgl19-marquee { to { transform:translate3d(calc(-50% - 8px),0,0); } }
+        .container > header:not(.checkout-mode) .header-actions { position:static; left:auto; transform:none; margin-left:auto; }
+        .cf-price-card .cf-card-actions { opacity:0; transform:translateY(12px)!important; pointer-events:none; transition:opacity .24s ease,transform .24s ease; }
+        .cf-price-card:hover .cf-card-actions, .cf-price-card:focus-within .cf-card-actions { opacity:1; transform:translateY(0)!important; pointer-events:auto; }
+        .cf-price-card .cf-card-actions .btn-header { white-space:nowrap; }
+
+        .detail-review-header { display:grid; grid-template-columns:minmax(220px,.7fr) minmax(0,1.3fr); align-items:stretch; gap:26px; }
+        .detail-review-media { min-height:240px; overflow:hidden; border-radius:16px; background:var(--surface-secondary); }
+        .detail-review-media img { display:block; width:100%; height:100%; object-fit:cover; }
+        .detail-review-media span { display:grid; place-items:center; width:100%; height:100%; font-size:4rem; }
+        .detail-review-header .hero-content { display:flex; flex-direction:column; justify-content:center; }
+        .detail-review-header #btn-tulis-ulasan { width:max-content; }
+        .tr-01__card.cf-review { background:var(--card-solid); border-color:var(--border-color); box-shadow:var(--shadow-card); }
+        .cf-review__rating { color:#d8ad3c; border-color:rgba(216,173,60,.48); background:rgba(216,173,60,.10); }
+        .cf-review__line { height:2px; background:var(--border-color); }
+        .cf-review__avatar { background:var(--primary); }
+        .cf-review__verified { color:var(--primary); border-color:color-mix(in srgb,var(--primary) 30%,var(--border-color)); background:color-mix(in srgb,var(--primary) 8%,transparent); }
+        .review-summary-card { border-color:var(--border-color); background:var(--surface-secondary); }
+        .review-rating-bar i b { background:var(--primary); }
+
+        @media (max-width:760px) {
+            .container > header:not(.checkout-mode) .logo { width:100%!important; justify-content:flex-start!important; }
+            .container > header:not(.checkout-mode) .header-actions { width:100%!important; margin-left:0; justify-content:center!important; }
+            .cf-price-card .cf-card-actions { opacity:1; transform:none!important; pointer-events:auto; }
+            .cf-price-card .cf-card-actions .btn-header { font-size:.72rem!important; padding-left:7px!important; padding-right:7px!important; }
+            .detail-review-header { grid-template-columns:minmax(116px,.78fr) minmax(0,1.22fr); gap:12px; padding:12px!important; }
+            .detail-review-media { min-height:190px; }.detail-review-header #btn-tulis-ulasan { width:100%; }
+            .detail-review-header .hero-content { min-width:0; }
+            .detail-review-header h2 { font-size:1.35rem!important; line-height:1.12; overflow-wrap:anywhere; }
+            .detail-review-header .review-summary-card { margin:8px 0 10px; padding:9px; gap:7px; }
+            .detail-review-header .review-summary-score strong { font-size:1.7rem; }
+            .detail-review-header .review-summary-score span { font-size:1rem; }
+            .detail-review-header .review-rating-bars { gap:4px; }
+            .detail-review-header .review-rating-bar { grid-template-columns:24px 1fr 15px; gap:4px; font-size:.58rem; }
+            .detail-review-header .review-rating-bar i { height:5px; }
+            .detail-review-header .review-filter-pills { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:5px; }
+            .detail-review-header .review-filter-pills .filter-pill { min-width:0; padding:6px 4px; font-size:.59rem; }
+        }
+
+        /* Compact catalog: small cards that retain normal vertical-page scrolling. */
+        #full-harga, #full-layanan { grid-template-columns:repeat(auto-fit, minmax(210px, 250px)); gap:16px; }
+        #full-harga .service-card, #full-layanan .service-card { padding:14px; }
+        #full-harga .service-photo, #full-layanan .service-photo { height:104px; flex-basis:104px; margin:-2px -2px 11px; }
+        #full-harga .service-card h3, #full-layanan .service-card h3 { font-size:1rem; }
+        #full-harga .pricing-category-label { font-size:.68rem; }
+        #full-harga .pricing-price-box { margin-top:4px; }
+        #full-harga .pricing-price-value { font-size:1.08rem!important; }
+        #full-harga .cf-card-actions button { font-size:.74rem; padding:10px 7px!important; }
+
+        @media (max-width:760px) {
+            #full-harga, #full-layanan { display:grid!important; grid-template-columns:repeat(3,minmax(0,1fr))!important; grid-auto-flow:row!important; grid-auto-columns:auto!important; justify-content:stretch!important; overflow:visible!important; overscroll-behavior:auto!important; scroll-snap-type:none!important; padding:2px 0 14px!important; gap:9px!important; }
+            #full-harga .service-card, #full-layanan .service-card { min-width:0; min-height:250px!important; height:250px!important; aspect-ratio:auto!important; scroll-snap-align:none!important; padding:9px!important; }
+            #full-harga .service-photo, #full-layanan .service-photo { height:76px; flex-basis:76px; margin:0 0 8px; border-radius:9px; }
+            #full-harga .service-card h3, #full-layanan .service-card h3 { min-height:2.35em; overflow:hidden; font-size:.78rem; line-height:1.16; }
+            #full-harga .pricing-category-label { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-size:.58rem; }
+            #full-harga .pricing-price-value { display:-webkit-box; overflow:hidden; -webkit-box-orient:vertical; -webkit-line-clamp:2; font-size:.73rem!important; line-height:1.1; }
+            #full-harga .cf-card-actions { flex-direction:column; gap:5px; }
+            #full-harga .cf-card-actions button { min-width:0; min-height:29px; font-size:.58rem!important; line-height:1!important; padding:7px 3px!important; }
+            #full-layanan .layanan-section-title, #full-layanan .layanan-check-list { display:none; }
+            #full-layanan .service-card > p { display:-webkit-box!important; overflow:hidden; -webkit-box-orient:vertical; -webkit-line-clamp:3; margin:0 0 7px; color:var(--text-secondary); font-size:.61rem; line-height:1.28; }
+            #full-layanan .service-card > div:last-child { margin-top:auto!important; }
+            #full-layanan .service-card > div:last-child { flex-direction:column!important; gap:5px!important; }
+            #full-layanan .service-card > div:last-child button { min-width:0; font-size:.58rem!important; line-height:1!important; padding:7px 3px!important; }
+        }
+        .cf-review__helpful { display:inline-flex; align-items:center; justify-content:center; gap:5px; }
+        .cf-review__helpful svg { width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+        .cf-review__helpful.voted { color:var(--primary); }
     </style>
 </head>
 
@@ -4639,8 +4791,8 @@
         window.openAdminModal = window.scrollToAdminContacts;
     </script>
 
-    <!-- TOAST NOTIFICATION -->
-    <div id="toastNotification" class="toast-notification">Pesan notifikasi.</div>
+    <!-- Toast Sonner-style -->
+    <div id="bn-04-slot" role="status" aria-live="polite" aria-atomic="true"></div>
 
     <!-- ============================================== -->
     <!-- NEW WELCOME POPUP (REDESIGNED) -->
@@ -4751,6 +4903,7 @@
     <!-- MODAL REVIEW -->
     <div id="reviewModal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
+            <button onclick="window.closeModal('reviewModal')" class="modal-close-btn-left" aria-label="Tutup">✕</button>
             <div class="modal-header">
                 <h2>Tulis Ulasan</h2>
                 <p id="reviewProductName">Nama Produk</p>
@@ -4782,6 +4935,7 @@
     <!-- MODAL AUTH -->
     <div id="authModal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
+            <button onclick="window.closeModal('authModal')" class="modal-close-btn-left" aria-label="Tutup">✕</button>
             <div class="modal-header">
                 <h2 id="authTitle">Masuk ke JOKI.IN</h2>
                 <p style="font-size: 0.9em; color: var(--text-secondary); margin-top: 5px;">Silakan login atau daftar
@@ -4789,21 +4943,24 @@
             </div>
             <div class="modal-body">
                 <div id="authError" class="error-msg" style="margin-bottom:15px; display:none;"></div>
+                <div class="ba-14__summary" id="authValidationSummary" hidden><div><strong>Periksa kembali data Anda</strong><ul id="authValidationList"></ul></div></div>
 
-                <div class="form-group">
+                <div class="form-group ba-14__f" id="authEmailGroup">
                     <label class="form-label">Email</label>
                     <input type="email" id="authEmail" class="form-control" placeholder="Masukkan alamat email">
+                    <p class="ba-14__msg" id="authEmailMsg">Masukkan alamat email yang valid.</p>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group ba-14__f" id="authPasswordGroup">
                     <label class="form-label">Password</label>
                     <input type="password" id="authPassword" class="form-control" placeholder="Minimal 6 karakter">
+                    <p class="ba-14__msg" id="authPasswordMsg">Password minimal 6 karakter.</p>
                 </div>
 
                 <div style="display: flex; gap: 10px; margin-top: 25px;">
-                    <button id="btnLogin" onclick="window.processEmailLogin()" class="btn-modal-primary">Login</button>
+                    <button id="btnLogin" onclick="window.processEmailLogin()" class="btn-modal-primary lb-13__btn" data-state="idle"><span class="lb-13__spin"></span><span>Login</span></button>
                     <button id="btnRegister" onclick="window.processEmailRegister()"
-                        class="btn-modal-secondary">Daftar</button>
+                        class="btn-modal-secondary lb-13__btn" data-state="idle"><span class="lb-13__spin"></span><span>Daftar</span></button>
                 </div>
 
                 <div
@@ -4877,8 +5034,14 @@
     <!-- MODAL KERANJANG -->
     <div id="cartModal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
+            <button onclick="window.closeModal('cartModal')" class="modal-close-btn-left" aria-label="Tutup">✕</button>
             <div class="modal-header">
                 <h2>Keranjang Saya</h2>
+            </div>
+            <div class="ba-03__banner" id="cartThresholdBanner" data-state="locked">
+                <p class="ba-03__msg" id="cartThresholdText">Tambah pesanan <strong>Rp150.000</strong> lagi untuk bebas biaya admin.</p>
+                <div class="ba-03__track" id="cartThresholdTrack" role="progressbar" aria-valuemin="0" aria-valuemax="100"><span class="ba-03__fill" id="cartThresholdFill"></span></div>
+                <div class="ba-03__scale"><span>Rp0</span><span>Rp150.000</span></div>
             </div>
             <div class="modal-body" id="cartItemsContainer"
                 style="margin-bottom: 10px; max-height:40vh; overflow-y:auto;">
@@ -5014,16 +5177,31 @@
         </div>
     </div>
 
+    <!-- PROMO UTAMA -->
+    <aside class="promo-strip" id="promoStrip" aria-label="Promo terbatas">
+            <span class="promo-strip__badge" id="promoBadge">PROMO TERBATAS</span>
+            <span class="promo-strip__text" id="promoText">Diskon s.d 30% semua pengerjaan tugas & makalah kuliah.</span>
+            <span class="promo-strip__countdown" aria-label="Sisa waktu promo">
+                <span class="promo-strip__time"><b id="promoDays">00</b><small>HARI</small></span>
+                <span class="promo-strip__time"><b id="promoHours">00</b><small>JAM</small></span>
+                <span class="promo-strip__time"><b id="promoMinutes">00</b><small>MNT</small></span>
+                <span class="promo-strip__time"><b id="promoSeconds">00</b><small>DTK</small></span>
+            </span>
+            <span class="promo-strip__coupon">Kupon: <strong id="promoCoupon">JOKIHEMAT</strong></span>
+            <button class="promo-strip__claim" id="promoClaim" type="button">Klaim Promo →</button>
+            <button class="promo-strip__close" id="promoClose" type="button" aria-label="Tutup promo">×</button>
+    </aside>
+
     <!-- CONTAINER UTAMA -->
     <div class="container">
         <header>
             <div class="logo" onclick="window.goHome()">
-                <img class="header-brand-lockup header-brand-light" src="assets/brand-light-lockup.png" alt="JOKI.IN">
-                <img class="header-brand-lockup header-brand-dark" src="assets/brand-dark-lockup.png" alt="JOKI.IN">
+                <img class="header-brand-lockup header-brand-light" src="assets/brand-light-lockup.png" alt="JOKI.IN" onerror="this.closest('.logo').classList.add('brand-fallback')">
+                <img class="header-brand-lockup header-brand-dark" src="assets/brand-dark-lockup.png" alt="JOKI.IN" onerror="this.closest('.logo').classList.add('brand-fallback')">
             </div>
             <div class="checkout-title" id="checkoutHeaderTitle">Penyelesaian Pesanan</div>
             <div class="header-actions" id="mainHeaderActions">
-                <button id="cartHeaderBtn" class="btn-cart" onclick="window.openCartModal()">🛒 Keranjang</button>
+                <button id="cartHeaderBtn" class="btn-cart" onclick="window.openCartModal()"><span id="cartIconWrapper">🛒</span> Keranjang <span id="cartHeaderBadge" class="cart-header-badge" style="display:none;">0</span></button>
                 <button id="ordersHeaderBtn" class="btn-cart" onclick="window.openOrdersModal()">Pesanan Saya</button>
                 <button id="authHeaderBtn" class="btn-header" onclick="window.openAuthModal()">Masuk</button>
             </div>
@@ -5137,6 +5315,19 @@
                 <a onclick="window.switchTab('layanan')">Lihat Semua Layanan →</a>
             </div>
             <div class="services-grid popular-grid" id="preview-layanan"></div>
+            <section class="tgl-19" aria-label="Galeri portofolio">
+                <span class="section-subtitle">Portofolio</span><h3 class="section-title">Hasil Tugas Mahasiswa Se-Indonesia</h3>
+                <div class="tgl-19__mask"><div class="tgl-19__track">
+                    <div class="tgl-19__item"><img src="assets/hero-jokiin-light.png" alt="Contoh hasil tugas" loading="lazy"><div class="tgl-19__overlay"><span>Akademik</span><h4>Makalah & Laporan</h4></div></div>
+                    <div class="tgl-19__item"><img src="assets/hero-jokiin-dark.png" alt="Contoh hasil presentasi" loading="lazy"><div class="tgl-19__overlay"><span>Desain</span><h4>Presentasi & Visual</h4></div></div>
+                    <div class="tgl-19__item"><img src="assets/hero-jokiin-light.png" alt="Contoh hasil analisis" loading="lazy"><div class="tgl-19__overlay"><span>Data</span><h4>Olah Data</h4></div></div>
+                    <div class="tgl-19__item"><img src="assets/hero-jokiin-dark.png" alt="Contoh hasil tugas" loading="lazy"><div class="tgl-19__overlay"><span>Akademik</span><h4>Skripsi & Revisi</h4></div></div>
+                    <div class="tgl-19__item"><img src="assets/hero-jokiin-light.png" alt="Contoh hasil tugas" loading="lazy"><div class="tgl-19__overlay"><span>Akademik</span><h4>Makalah & Laporan</h4></div></div>
+                    <div class="tgl-19__item"><img src="assets/hero-jokiin-dark.png" alt="Contoh hasil presentasi" loading="lazy"><div class="tgl-19__overlay"><span>Desain</span><h4>Presentasi & Visual</h4></div></div>
+                    <div class="tgl-19__item"><img src="assets/hero-jokiin-light.png" alt="Contoh hasil analisis" loading="lazy"><div class="tgl-19__overlay"><span>Data</span><h4>Olah Data</h4></div></div>
+                    <div class="tgl-19__item"><img src="assets/hero-jokiin-dark.png" alt="Contoh hasil tugas" loading="lazy"><div class="tgl-19__overlay"><span>Akademik</span><h4>Skripsi & Revisi</h4></div></div>
+                </div></div>
+            </section>
             <div style="text-align: center; margin-top: 30px;">
                 <button class="btn-outline" onclick="window.switchTab('layanan')">Lihat Semua Layanan →</button>
             </div>
@@ -5201,26 +5392,24 @@
 
         <!-- TAB 4: TESTIMONI -->
         <div id="tab-testimoni" class="tab-content">
-            <span class="section-subtitle">Ulasan Pelanggan</span>
             <div id="testimoni-list-view">
                 <h3 class="section-title" style="margin-top:0;">Lihat pengalaman pelanggan yang telah menggunakan
                     layanan JOKI.IN.</h3>
                 <div class="services-grid" id="testimoni-products-grid"></div>
             </div>
             <div id="testimoni-detail-view" style="display: none;">
-                <button class="btn-outline"
-                    style="margin-bottom: 20px; border:none; padding:0; background: transparent; box-shadow: none;"
-                    onclick="window.showTestimoniList()">Kembali ke Daftar Produk</button>
-                <div class="hero-box" style="padding: 30px; margin-bottom: 30px; background: var(--card-solid);">
+                <button class="btn-outline review-back-button" onclick="window.showTestimoniList()">← Kembali ke Daftar Produk</button>
+                <div class="hero-box detail-review-header" style="padding: 30px; margin-bottom: 30px; background: var(--card-solid);">
+                    <div class="detail-review-media" id="detailProductMedia" aria-hidden="true"></div>
                     <div class="hero-content">
                         <h2 id="detail-product-title" style="margin-bottom: 5px;">Nama Produk</h2>
                         <div id="detail-product-stats" class="rating-summary"
                             style="font-size: 1.2em; margin-bottom: 20px;"></div>
-                        <button class="btn-outline" id="btn-tulis-ulasan">✍️ Tulis Ulasan</button>
+                        <button class="btn-outline" id="btn-tulis-ulasan">Tulis Ulasan</button>
                     </div>
                 </div>
                 <h3 class="section-title" style="font-size: 1.2em; margin-top:0;">Daftar Ulasan</h3>
-                <div class="services-grid" id="detail-reviews-grid"></div>
+                <div class="tr-01__wall" id="detail-reviews-grid"></div>
             </div>
         </div>
 
@@ -5678,6 +5867,19 @@
                         <div id="errChkNotes" class="error-msg" style="text-align:left;">Catatan wajib diisi.</div>
                     </div>
                     <div class="form-group">
+                        <label class="form-label">Upload File Lampiran / Tugas <span
+                                style="font-weight:normal; font-size:0.85em; color:var(--text-muted);">(Opsional)</span></label>
+                        <div class="cf-upload" id="checkoutFileDropzone" role="button" tabindex="0" aria-label="Pilih atau letakkan file tugas" aria-describedby="checkoutFileStatus">
+                            <svg class="cf-upload__outline" aria-hidden="true" preserveAspectRatio="none"><rect x="1" y="1" rx="16" ry="16" width="calc(100% - 2px)" height="calc(100% - 2px)"></rect></svg>
+                            <span class="cf-upload__icon" aria-hidden="true">⇧</span>
+                            <p class="cf-upload__title">Tarik & letakkan file di sini, atau <span class="cf-upload__browse">pilih file</span></p>
+                            <p class="cf-upload__help">PDF, DOCX, ZIP, JPG, PNG · Maksimal 100 MB</p>
+                            <input id="chkTaskFiles" type="file" multiple accept=".pdf,.doc,.docx,.zip,.jpg,.jpeg,.png">
+                        </div>
+                        <div class="cf-upload-files" id="checkoutFileList"></div>
+                        <p class="cf-upload-status" id="checkoutFileStatus" role="status" aria-live="polite">File disimpan sementara di perangkat; sertakan link Google Drive untuk mengirimkannya ke admin.</p>
+                    </div>
+                    <div class="form-group">
                         <label class="form-label">File / Keterangan Tugas (Google Drive) <span
                                 style="font-weight:normal; font-size:0.85em; color:var(--text-muted);">(Opsional)</span></label>
                         <div
@@ -6065,15 +6267,16 @@
     <!-- ============================================== -->
     <!-- FIREBASE & LOGIKA JAVASCRIPT -->
     <!-- ============================================== -->
+    <script src="./config.js"></script>
     <script type="module">
 
         // ==========================================
         // 1. INISIALISASI SUPABASE
         // ==========================================
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/+esm';
-
-        const supabaseUrl = 'https://xdbnwjvxqtpkoaigedsk.supabase.co';
-        const supabaseAnonKey = 'sb_publishable_WuihnHZo0ZJbVGCMe1sWJg_QVdRKw4z';
+        const supabaseUrl = window.JOKIIN_PUBLIC_CONFIG?.SUPABASE_URL;
+        const supabaseAnonKey = window.JOKIIN_PUBLIC_CONFIG?.SUPABASE_ANON_KEY;
+        if (!supabaseUrl || !supabaseAnonKey) throw new Error('config.js belum dimuat.');
         const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
         let currentUser = null;
@@ -6081,6 +6284,34 @@
         let profileUserId = null;
         let authSettings = null;
         let authBusy = false;
+
+        const PROMO_API_URL = 'https://jokiin-payment-api.gamingyoga14.workers.dev/api/promo';
+        const DEFAULT_PROMO = {
+            label: 'PROMO TERBATAS',
+            text: 'Diskon s.d 30% semua pengerjaan tugas & makalah kuliah.',
+            coupon: 'JOKIHEMAT',
+            ends_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+        };
+        let promoTimer = null;
+        function renderPromo(promo = DEFAULT_PROMO) {
+            const strip = document.getElementById('promoStrip'); if (!strip) return;
+            document.getElementById('promoBadge').textContent = promo.label || DEFAULT_PROMO.label;
+            document.getElementById('promoText').textContent = promo.text || DEFAULT_PROMO.text;
+            document.getElementById('promoCoupon').textContent = promo.coupon || DEFAULT_PROMO.coupon;
+            const target = new Date(promo.ends_at || DEFAULT_PROMO.ends_at).getTime();
+            clearInterval(promoTimer);
+            const tick = () => {
+                const left = Math.max(0, target - Date.now());
+                const totalSeconds = Math.floor(left / 1000);
+                const parts = [Math.floor(totalSeconds / 86400), Math.floor(totalSeconds / 3600) % 24, Math.floor(totalSeconds / 60) % 60, totalSeconds % 60];
+                ['promoDays', 'promoHours', 'promoMinutes', 'promoSeconds'].forEach((id, index) => { const el = document.getElementById(id); if (el) el.textContent = String(parts[index]).padStart(2, '0'); });
+            };
+            tick(); promoTimer = setInterval(tick, 1000);
+        }
+        async function loadPromo() {
+            try { const response = await fetch(PROMO_API_URL, { cache: 'no-store' }); if (!response.ok) throw new Error('promo'); const data = await response.json(); renderPromo(data?.promo || DEFAULT_PROMO); }
+            catch (_) { renderPromo(DEFAULT_PROMO); }
+        }
 
         function readStored(storage, key, fallback) {
             try { const value = storage.getItem(key); return value ? JSON.parse(value) : fallback; }
@@ -6168,17 +6399,35 @@
                 if (response.ok) authSettings = await response.json();
             } catch (_) { }
         }
+        function validateAuthInputs() {
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value;
+            const emailInvalid = !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            const passwordInvalid = password.length < 6;
+            const problems = [];
+            [['authEmailGroup', 'authEmailMsg', emailInvalid, 'Masukkan email yang valid.'], ['authPasswordGroup', 'authPasswordMsg', passwordInvalid, 'Password minimal 6 karakter.']].forEach(([groupId, msgId, invalid, message]) => {
+                document.getElementById(groupId)?.classList.toggle('has-error', invalid);
+                const messageEl = document.getElementById(msgId); if (messageEl) messageEl.style.display = invalid ? 'block' : 'none';
+                if (invalid) problems.push(message);
+            });
+            const summary = document.getElementById('authValidationSummary');
+            if (summary) { summary.hidden = problems.length === 0; document.getElementById('authValidationList').innerHTML = problems.map(escapeHTML).map(item => `<li>${item}</li>`).join(''); }
+            return problems.length === 0;
+        }
+        function clearAuthFieldError() { validateAuthInputs(); }
+        ['authEmail', 'authPassword'].forEach(id => document.getElementById(id)?.addEventListener('input', clearAuthFieldError));
         async function runAuthAction(buttonId, action) {
             if (authBusy) return;
+            if (buttonId !== 'btnGoogleLogin' && !validateAuthInputs()) return;
             authBusy = true;
             const buttons = ['btnLogin', 'btnRegister', 'btnGoogleLogin'].map(id => document.getElementById(id)).filter(Boolean);
-            const clicked = document.getElementById(buttonId); const original = clicked?.innerHTML;
+            const clicked = document.getElementById(buttonId);
             buttons.forEach(b => b.disabled = true);
-            if (clicked) clicked.textContent = 'Memproses...';
+            if (clicked) { clicked.dataset.state = 'pending'; clicked.setAttribute('aria-busy', 'true'); }
             document.getElementById('authError').style.display = 'none';
             try { await action(); }
             catch (error) { showAuthError(error.message || 'Permintaan gagal. Periksa koneksi dan coba lagi.'); }
-            finally { authBusy = false; buttons.forEach(b => b.disabled = false); if (clicked) clicked.innerHTML = original; }
+            finally { authBusy = false; buttons.forEach(b => b.disabled = false); if (clicked) { clicked.dataset.state = 'idle'; clicked.setAttribute('aria-busy', 'false'); } }
         }
         function emailCredentials() {
             const email = document.getElementById('authEmail').value.trim().toLowerCase();
@@ -6426,13 +6675,14 @@
             'bimbingan-parafrase': { priceLabel: 'Mulai dari Rp50.000' }
         };
         async function loadServices() {
-            const { data, error } = await supabase.from('services').select('id,slug,name,description,price,status').eq('status', 'active').order('id');
+            const { data, error } = await supabase.from('services').select('id,slug,name,description,price,status,sale_percent,sale_label').eq('status', 'active').order('id');
             if (error) { catalogueReady = false; throw error; }
             servicesBySlug = new Map(data.filter(s => s.slug).map(s => [s.slug, s]));
             CONFIG.PRODUCTS = data.filter(s => s.slug && /^[a-z0-9-]+$/.test(s.slug)).map(s => {
                 const defaultMeta = { icon: '📄', category: 'Lainnya', popularity: 0, benefits: ['Pendampingan sesuai kebutuhan', 'Review dan arahan yang jelas', 'Penjelasan langkah kerja'], features: ['Konsultasi', 'Review', 'Pendampingan'], notIncluded: [], target: 'Mahasiswa yang membutuhkan pendampingan akademik.', estimatedTime: 'Sesuai kesepakatan', revisionTerms: 'Sesuai kesepakatan' };
                 const meta = { ...defaultMeta, ...(PRODUCT_METADATA.find(p => p.id === s.slug) || SAFE_CATALOGUE_METADATA[s.slug] || {}) };
-                return { ...meta, ...(PRICE_RULES[s.slug] || {}), image: meta.image || SAFE_CATALOGUE_IMAGES[s.slug] || '', id: s.slug, serviceId: s.id, title: s.name, desc: s.description || '', priceNum: Number(s.price), price: formatRupiah(Number(s.price)) };
+                const originalPrice = Number(s.price); const salePercent = Math.max(0, Math.min(100, Number(s.sale_percent) || 0)); const salePrice = Math.round(originalPrice * (1 - salePercent / 100));
+                return { ...meta, ...(PRICE_RULES[s.slug] || {}), image: meta.image || SAFE_CATALOGUE_IMAGES[s.slug] || '', id: s.slug, serviceId: s.id, title: s.name, desc: s.description || '', originalPrice, salePercent, saleLabel: String(s.sale_label || ''), priceNum: salePrice, price: formatRupiah(salePrice) };
             });
             catalogueReady = true;
             CART = sanitizeCart(CART);
@@ -6544,7 +6794,15 @@
             }
         });
 
-        window.showToast = (msg) => { const t = document.getElementById('toastNotification'); t.innerText = msg; t.style.display = 'block'; setTimeout(() => t.style.opacity = '1', 10); setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.style.display = 'none', 300); }, 3000); };
+        window.showToast = (msg, title = 'Informasi', type = 'success') => {
+            const slot = document.getElementById('bn-04-slot'); if (!slot) return;
+            const kind = ['success', 'info', 'warn', 'error'].includes(type) ? type : 'success';
+            const icons = { success: '✓', info: 'i', warn: '!', error: '×' };
+            const toast = document.createElement('div'); toast.className = `bn-04__toast bn-04__toast--${kind}`;
+            toast.innerHTML = `<span class="bn-04__toast-icon">${icons[kind]}</span><div class="bn-04__toast-body"><p class="bn-04__toast-title">${escapeHTML(title)}</p><p class="bn-04__toast-desc">${escapeHTML(msg)}</p><p class="bn-04__toast-time">baru saja</p></div><button class="bn-04__toast-x" aria-label="Tutup">✕</button>`;
+            const dismiss = () => { if (toast.classList.contains('is-out')) return; toast.classList.add('is-out'); setTimeout(() => toast.remove(), 240); };
+            toast.querySelector('button').addEventListener('click', dismiss); slot.append(toast); setTimeout(dismiss, 3500);
+        };
 
         // ==========================================
         // WELCOME POPUP
@@ -6599,12 +6857,34 @@
         // ==========================================
         let CART = [];
 
+        function triggerCartBounce() { ['cartIconWrapper', 'cartHeaderBtn'].forEach(id => { const el = document.getElementById(id); if (!el) return; el.classList.remove('bn-08-cart-shake'); void el.offsetWidth; el.classList.add('bn-08-cart-shake'); }); const badge = document.getElementById('cartHeaderBadge'); if (badge) { badge.classList.remove('bn-08-badge-pop'); void badge.offsetWidth; badge.classList.add('bn-08-badge-pop'); } }
+        function updateThresholdProgress(totalAmount) { const total = typeof totalAmount === 'number' ? totalAmount : CART.reduce((sum, item) => sum + item.price * item.quantity, 0); const target = 150000; const percent = Math.min(100, Math.round(total / target * 100)); const fill = document.getElementById('cartThresholdFill'); const banner = document.getElementById('cartThresholdBanner'); const text = document.getElementById('cartThresholdText'); if (fill) fill.style.width = `${percent}%`; if (banner) banner.dataset.state = total >= target ? 'unlocked' : 'locked'; if (text) text.innerHTML = total >= target ? '<strong>Selamat!</strong> Bebas biaya admin dan prioritas pengerjaan terbuka.' : `Tambah pesanan <strong>${formatRupiah(target - total)}</strong> lagi untuk bebas biaya admin.`; }
+
         function cartStorageKey() { return currentUser ? `jokiin_cart_${currentUser.uid}` : 'nugasin_guest_cart'; }
         function minimumOrderQuantity(productId) {
             return CONFIG.PRODUCTS.find(p => p.id === productId)?.minimumQuantity || 1;
         }
         function productPriceLabel(product) {
             return product?.priceLabel || product?.price || formatRupiah(product?.priceNum || 0);
+        }
+        function formatFileSize(bytes) { return bytes < 1024 * 1024 ? `${Math.ceil(bytes / 1024)} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`; }
+        function bindCheckoutFileDropzone() {
+            const zone = document.getElementById('checkoutFileDropzone'); const input = document.getElementById('chkTaskFiles');
+            const list = document.getElementById('checkoutFileList'); const status = document.getElementById('checkoutFileStatus');
+            if (!zone || !input || zone.dataset.bound) return; zone.dataset.bound = 'true'; let depth = 0;
+            const render = files => {
+                const accepted = [...files].filter(file => file.size <= 100 * 1024 * 1024);
+                list.innerHTML = accepted.map(file => `<span class="cf-upload-file">${escapeHTML(file.name)} <b>· ${formatFileSize(file.size)}</b></span>`).join('');
+                status.textContent = accepted.length ? `${accepted.length} file dipilih. Tempel link Google Drive agar admin dapat mengaksesnya.` : 'File disimpan sementara di perangkat; sertakan link Google Drive untuk mengirimkannya ke admin.';
+                if (accepted.length !== files.length) window.showToast('File di atas 100 MB tidak dipilih.', 'Ukuran file', 'error');
+            };
+            zone.addEventListener('click', event => { if (event.target !== input) input.click(); });
+            zone.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); input.click(); } });
+            input.addEventListener('change', () => render(input.files));
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(type => zone.addEventListener(type, event => event.preventDefault()));
+            zone.addEventListener('dragenter', () => { depth += 1; zone.classList.add('is-over'); });
+            zone.addEventListener('dragleave', () => { depth -= 1; if (depth <= 0) { depth = 0; zone.classList.remove('is-over'); } });
+            zone.addEventListener('drop', event => { depth = 0; zone.classList.remove('is-over'); render(event.dataTransfer.files); });
         }
         function sanitizeCart(value) {
             if (!Array.isArray(value)) return [];
@@ -6631,12 +6911,13 @@
             const product = CONFIG.PRODUCTS.find(p => p.id === productId); if (!product) return;
             const exist = CART.find(item => item.productId === productId);
             if (exist) exist.quantity += 1; else CART.push({ productId: product.id, name: product.title, price: product.priceNum, quantity: minimumOrderQuantity(product.id) });
-            saveCart(); window.showToast(`${product.title} ditambahkan ke keranjang.`);
+            saveCart(); triggerCartBounce(); window.showToast(`${product.title} ditambahkan ke keranjang.`, 'Keranjang Belanja', 'success');
         };
 
         function updateCartBadge() {
             const totalItems = CART.reduce((sum, item) => sum + item.quantity, 0);
-            document.getElementById('cartHeaderBtn').innerText = totalItems > 0 ? `🛒 Keranjang (${totalItems})` : `🛒 Keranjang`;
+            const badge = document.getElementById('cartHeaderBadge'); if (badge) { badge.textContent = totalItems; badge.style.display = totalItems ? 'inline-grid' : 'none'; }
+            updateThresholdProgress();
         }
 
         window.openCartModal = () => {
@@ -7176,7 +7457,8 @@
             // Server memakai 'CANCELED'; label yang sudah ada di getPaymentStatusLabel bernama 'CANCELLED'.
             document.getElementById('succPaymentStatus').innerHTML = getPaymentStatusLabel(status === 'CANCELED' ? 'CANCELLED' : status);
             if (status === 'PAID') {
-                icon.innerHTML = '✓';
+                icon.className = 'payment-success-pop';
+                icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" aria-label="Pembayaran berhasil"><path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
                 detailsButton.hidden = false; homeButton.hidden = false;
                 title.textContent = 'Pembayaran Berhasil';
                 lead.textContent = 'Terima kasih! Pesanan kamu sudah kami terima dan akan segera diproses. Admin akan menghubungi kamu lewat WhatsApp.';
@@ -7189,6 +7471,7 @@
                     } catch (_) { }
                 }
             } else if (status === 'CANCELED') {
+                icon.className = 'success-icon-wrapper';
                 icon.innerHTML = '!';
                 detailsButton.hidden = false; homeButton.hidden = false;
                 title.textContent = 'Pembayaran Tidak Berhasil';
@@ -7196,6 +7479,7 @@
                 box.style.display = 'none';
             } else {
                 // Pending state has only one CTA: continue the payment at Mayar.
+                icon.className = 'success-icon-wrapper';
                 icon.innerHTML = '<span class="pending-spinner" aria-label="Menunggu pembayaran"></span>';
                 detailsButton.hidden = true; homeButton.hidden = true;
             }
@@ -7631,12 +7915,13 @@ Teman tugas mahasiswa.`;
         window.showTestimoniList = () => {
             document.getElementById('testimoni-detail-view').style.display = 'none';
             document.getElementById('testimoni-list-view').style.display = 'block';
+            if (currentTab === 'testimoni') document.getElementById('nav-container').style.display = 'flex';
 
             document.getElementById('testimoni-products-grid').innerHTML = CONFIG.PRODUCTS.map(p => {
                 const s = getProductStats(p.id);
                 const rText = s.count > 0 ? `<span class="star-icon">⭐</span> <span style="color:var(--text-main); font-weight:700;">${s.avg}</span> <span class="count">(${s.count} ulasan)</span>` : `<span class="count">Belum ada ulasan</span>`;
 
-                return `<div class="service-card"><div class="service-icon" style="font-size:1.5em; margin-bottom:10px;">${p.icon}</div><h3>${escapeHTML(p.title)}</h3><span class="category-badge" style="margin-bottom:15px;">${p.category}</span><div class="rating-summary">${rText}</div><button class="btn-outline" style="width:100%; margin-top:auto;" onclick="window.showProductReviews('${p.id}')">Lihat Ulasan</button></div>`;
+                return `<article class="service-card testimonial-product-card"><div class="testimonial-product-card__glow" aria-hidden="true"></div><div class="service-icon" style="font-size:1.5em; margin-bottom:10px;">${p.icon}</div><h3>${escapeHTML(p.title)}</h3><span class="category-badge" style="margin-bottom:15px;">${p.category}</span><div class="rating-summary">${rText}</div><button class="btn-outline" style="width:100%; margin-top:auto;" onclick="window.showProductReviews('${p.id}')">Lihat Ulasan</button></article>`;
             }).join('');
         };
 
@@ -7652,18 +7937,24 @@ Teman tugas mahasiswa.`;
 
             document.getElementById('testimoni-list-view').style.display = 'none';
             document.getElementById('detail-product-title').innerText = `${product.icon} ${product.title}`;
+            const detailMedia = document.getElementById('detailProductMedia');
+            detailMedia.innerHTML = product.image
+                ? `<img src="${escapeHTML(product.image)}" alt="${escapeHTML(product.title)}" loading="lazy">`
+                : `<span>${escapeHTML(product.icon)}</span>`;
 
             const s = getProductStats(pId);
 
             // Render Header & Filter Bintang (Hanya 3, 4, 5)
             let statsHtml = '';
             if (s.count > 0) {
+                const maxRatingCount = Math.max(...Object.values(s.dist), 1);
+                const ratingBars = [5, 4, 3, 2, 1].map(star => `<button class="review-rating-bar ${currentStarFilter === star ? 'active' : ''}" onclick="window.filterReviewsByStar(${star})" aria-label="Filter rating ${star}"><span>${star} ★</span><i><b style="width:${(s.dist[star] / maxRatingCount) * 100}%"></b></i><strong>${s.dist[star]}</strong></button>`).join('');
                 statsHtml = `
-                <div style="margin-bottom: 20px; display:flex; align-items:center; gap:10px;">
-                    <span style="font-size: 1.8em; font-weight: 800; color: var(--text-main);">⭐ ${s.avg}</span>
-                    <span style="font-size: 0.95em; color: var(--text-secondary);">dari ${s.count} ulasan</span>
+                <div class="review-summary-card">
+                    <div class="review-summary-score"><strong>${s.avg}</strong><span>★</span><small>dari ${s.count} ulasan</small></div>
+                    <div class="review-rating-bars">${ratingBars}</div>
                 </div>
-                <div class="filter-pills" style="margin-bottom: 25px; overflow-x: auto; padding-bottom: 5px;">
+                <div class="filter-pills review-filter-pills">
                     <button class="filter-pill ${currentStarFilter === 0 ? 'active' : ''}" onclick="window.filterReviewsByStar(0)">Semua</button>
                     <button class="filter-pill ${currentStarFilter === 5 ? 'active' : ''}" onclick="window.filterReviewsByStar(5)">⭐ 5 (${s.dist[5]})</button>
                     <button class="filter-pill ${currentStarFilter === 4 ? 'active' : ''}" onclick="window.filterReviewsByStar(4)">⭐ 4 (${s.dist[4]})</button>
@@ -7684,29 +7975,28 @@ Teman tugas mahasiswa.`;
             pRev.sort((a, b) => new Date(b.date || b.createdAt || 0) - new Date(a.date || a.createdAt || 0));
 
             document.getElementById('detail-reviews-grid').innerHTML = pRev.length === 0
-                ? `<div class="service-card" style="grid-column: 1 / -1; text-align: center; padding: 40px;"><h3 style="margin-bottom:10px; color:var(--text-main);">Belum ada ulasan</h3><p style="margin-bottom:20px; color:var(--text-secondary);">Tidak ada ulasan untuk rating ini.</p><button class="btn-outline" onclick="window.filterReviewsByStar(0)">Lihat Semua Rating</button></div>`
+                ? `<div class="tr-01__card" style="text-align:center;"><h3 style="margin-bottom:10px; color:var(--text-main);">Belum ada ulasan</h3><p style="margin-bottom:20px; color:var(--text-secondary);">Tidak ada ulasan untuk rating ini.</p><button class="btn-outline" onclick="window.filterReviewsByStar(0)">Lihat Semua Rating</button></div>`
                 : pRev.map(r => {
                     const anonName = anonymizeName(r.customerName || r.userName || r.name);
                     const isVerified = (r.verified === true) ? `<span style="color:var(--success); font-size:0.75em; font-weight:600; background:#DCFCE7; padding:2px 8px; border-radius:12px; margin-left:8px;">✓ Pembeli Terverifikasi</span>` : '';
                     const rDate = new Date(r.date || r.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
                     return `
-                <div class="service-card" style="display:flex; flex-direction:column;">
-                    <div style="border-bottom: 1px dashed var(--border-color); padding-bottom: 12px; margin-bottom: 15px;">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:5px;">
-                            <div style="display:flex; flex-direction:column; gap:4px;">
-                                <div><strong style="color:var(--text-main); font-size:1.1em;">${escapeHTML(anonName)}</strong> ${isVerified}</div>
-                                <div style="font-size: 0.9em; letter-spacing: 2px;">${getStarsHTML(r.rating)}</div>
-                            </div>
-                        </div>
-                    </div>
-                    <p style="font-style: italic; color:var(--text-secondary); line-height:1.6; margin-bottom:15px; flex-grow:1;">"${escapeHTML(r.comment || r.text)}"</p>
-                    <div style="font-size: 0.8em; color: var(--text-muted); text-align:right;">${rDate}</div>
-                </div>`;
+                <article class="tr-01__card cf-review" style="display:flex; flex-direction:column;">
+                    <div class="cf-review__top"><span class="cf-review__rating">★ ${Number(r.rating).toFixed(1)}</span>${r.rating >= 5 ? '<span class="cf-review__rating">TOP REVIEW</span>' : ''}</div>
+                    <div class="cf-review__identity"><span class="cf-review__avatar">${escapeHTML((anonName || 'P').slice(0, 1).toUpperCase())}</span><div><strong>${escapeHTML(anonName)}</strong><br><small>${rDate}</small></div></div>
+                    <p class="cf-review__quote">“${escapeHTML(r.comment || r.text)}”</p>
+                    <div class="cf-review__line" aria-hidden="true"></div>
+                    ${r.verified === true ? '<div class="cf-review__verified"><span>✓ Pesanan Terverifikasi</span><span>Selesai</span></div>' : ''}
+                    <div class="cf-review__footer"><span>${r.rating >= 5 ? 'Sangat Puas (5/5)' : `Puas (${r.rating}/5)`}</span><button class="cf-review__helpful" onclick="window.markHelpfulReview(this)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10v10M3.5 10h3.5v10H3.5zM7 20h9.2a2 2 0 0 0 1.95-1.55l1.25-5A2 2 0 0 0 17.45 11H14l.7-3.15A2.2 2.2 0 0 0 12.55 5L7 10z"/></svg>Membantu (<span>0</span>)</button></div>
+                </article>`;
                 }).join('');
 
             document.getElementById('testimoni-detail-view').style.display = 'block';
+            document.getElementById('nav-container').style.display = 'none';
         };
+
+        window.markHelpfulReview = (button) => { const count = button.querySelector('span'); const active = button.classList.toggle('voted'); count.textContent = active ? '1' : '0'; button.style.borderColor = active ? 'var(--primary)' : ''; };
 
         const starElems = document.querySelectorAll('#interactiveStars .star');
         starElems.forEach((star, idx) => {
@@ -7791,18 +8081,18 @@ Teman tugas mahasiswa.`;
             else if (currentSort === 'populer') filtered.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
 
             document.getElementById('full-harga').innerHTML = filtered.map(p => `
-            <div class="service-card">
+            <div class="service-card cf-price-card">
+                ${p.salePercent > 0 ? `<span class="cf-sale-ribbon">${escapeHTML(p.saleLabel || `HEMAT ${Math.round(p.salePercent)}%`)}</span>` : ''}
                 ${serviceVisual(p)}
                 <h3>${escapeHTML(p.title)}</h3>
                 <div class="pricing-category-label">${p.category}</div>
                 <div class="pricing-price-box">
-                    <span class="pricing-price-label">Mulai dari</span>
-                    <div class="pricing-price-value">${escapeHTML(productPriceLabel(p))}</div>
+                    <div class="pricing-price-value ${p.salePercent > 0 ? 'cf-price-sale' : ''}">${escapeHTML(productPriceLabel(p).replace(/^Mulai dari\\s*/i, ''))}</div>
+                    ${p.salePercent > 0 ? `<span class="cf-price-original">${formatRupiah(p.originalPrice)}</span>` : ''}
                 </div>
-                <ul class="pricing-features">${p.features.map(f => `<li>${f}</li>`).join('')}</ul>
-                <div style="display:flex; gap:10px; margin-top:auto;">
-                    <button class="btn-outline" style="flex:1; padding:12px;" onclick="window.directCheckout('${p.id}')">Checkout</button>
-                    <button class="btn-header" style="flex:1; padding:12px; box-shadow:none;" onclick="window.addToCart('${p.id}');">🛒 Tambah</button>
+                <div class="cf-card-actions">
+                    <button class="btn-outline" style="flex:1; padding:12px;" onclick="window.directCheckout('${p.id}')">Beli</button>
+                    <button class="btn-header" style="flex:1; padding:12px; box-shadow:none;" onclick="window.addToCart('${p.id}');">Tambah ke Keranjang</button>
                 </div>
             </div>
         `).join('');
@@ -7876,7 +8166,7 @@ Teman tugas mahasiswa.`;
             const dots = document.getElementById('recommendationDots');
             if (!track || !dots) return;
             track.innerHTML = CONFIG.PRODUCTS.map(product => `
-            <article class="recommendation-card">
+            <article class="recommendation-card is-shimmer">
                 ${product.image ? `<img class="recommendation-card-image" src="${escapeHTML(product.image)}" alt="" loading="lazy">` : `<div class="recommendation-card-image service-icon" aria-hidden="true">${product.icon}</div>`}
                 <div class="recommendation-card-body">
                     <span class="category-badge">${escapeHTML(product.category)}</span>
@@ -8020,6 +8310,10 @@ Teman tugas mahasiswa.`;
         window.addEventListener('popstate', () => window.switchTab(TAB_BY_ROUTE[window.location.pathname] || 'beranda'));
         window.addEventListener('resize', () => updateLiquidIndicator(false));
 
+        document.getElementById('promoClaim')?.addEventListener('click', () => window.switchTab('harga'));
+        document.getElementById('promoClose')?.addEventListener('click', () => { document.getElementById('promoStrip')?.remove(); clearInterval(promoTimer); });
+        document.querySelector('.tgl-19')?.addEventListener('click', event => { event.preventDefault(); event.stopImmediatePropagation(); }, true);
+
         document.querySelectorAll('.pill').forEach(pill => pill.addEventListener('click', (e) => { e.preventDefault(); window.switchTab(pill.getAttribute('data-target')); }));
 
         // Global Search
@@ -8075,7 +8369,7 @@ Teman tugas mahasiswa.`;
         window.processGuestTrack = () => processTracking('trackInput', 'trackError', true);
 
         async function initializeApp() {
-            renderApp(); checkWelcomePopup();
+            renderApp(); bindCheckoutFileDropzone(); checkWelcomePopup(); loadPromo();
             // GitHub Pages memakai 404.html untuk fallback SPA; pulihkan rute aslinya setelah redirect.
             let fallbackPath = '';
             try { fallbackPath = sessionStorage.getItem('jokiin_spa_fallback_path') || ''; sessionStorage.removeItem('jokiin_spa_fallback_path'); } catch (_) { }
@@ -8204,6 +8498,9 @@ Teman tugas mahasiswa.`;
 
             /* Header ringkas: logo satu baris, tombol tidak lagi menciptakan scroll horizontal. */
             .container>header:not(.checkout-mode) {
+                display: grid !important;
+                grid-template-columns: minmax(0, 1fr) !important;
+                justify-items: stretch !important;
                 padding: 12px 16px !important;
                 gap: 10px !important;
                 align-items: stretch !important;
@@ -8215,20 +8512,24 @@ Teman tugas mahasiswa.`;
 
             header:not(.checkout-mode) .header-actions {
                 display: grid !important;
-                grid-template-columns: 42px minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, .8fr);
+                grid-template-columns: 62px minmax(0, 1fr) minmax(0, 1fr) !important;
                 width: 100% !important;
                 gap: 7px !important;
-                overflow: hidden !important;
+                overflow: visible !important;
             }
 
             header:not(.checkout-mode) .header-actions button {
                 min-width: 0 !important;
                 width: 100% !important;
                 padding: 9px 4px !important;
-                font-size: clamp(.64rem, 2.7vw, .78rem) !important;
-                overflow: hidden;
-                text-overflow: ellipsis;
+                font-size: clamp(.67rem, 2.7vw, .78rem) !important;
+                overflow: hidden !important;
+                text-overflow: clip !important;
+                white-space: nowrap !important;
             }
+
+            header:not(.checkout-mode) #cartIconWrapper { display: none !important; }
+            header:not(.checkout-mode) #cartHeaderBadge { margin-left: 3px !important; }
 
             .nav-pills {
                 width: 100%;

@@ -59,7 +59,7 @@ async function createPayment(request, env) {
   const slugs = [...new Set(items.map(item => clean(item?.productId, 80)).filter(Boolean))];
   if (!slugs.length || slugs.some(slug => !/^[a-z0-9-]+$/.test(slug))) return json({ error: 'Layanan tidak valid.' }, 400);
   const filter = slugs.map(encodeURIComponent).join(',');
-  const services = await supabase(env, `services?slug=in.(${filter})&select=id,slug,name,price,is_active`);
+  const services = await supabase(env, `services?slug=in.(${filter})&select=id,slug,name,price,is_active,sale_percent,sale_label`);
   const catalog = new Map(services.filter(item => item.is_active !== false).map(item => [item.slug, item]));
   let total = 0;
   const lines = [];
@@ -67,10 +67,12 @@ async function createPayment(request, env) {
     const quantity = Number(item.quantity);
     const service = catalog.get(clean(item.productId, 80));
     if (!service || !Number.isInteger(quantity) || quantity < 1 || quantity > 100) return json({ error: 'Layanan atau jumlah tidak valid.' }, 400);
-    const price = Number(service.price);
-    if (!Number.isSafeInteger(price) || price < 0) return json({ error: 'Harga layanan belum valid.' }, 503);
+    const originalPrice = Number(service.price);
+    const salePercent = Math.max(0, Math.min(100, Number(service.sale_percent) || 0));
+    const price = Math.round(originalPrice * (1 - salePercent / 100));
+    if (!Number.isSafeInteger(originalPrice) || originalPrice < 0) return json({ error: 'Harga layanan belum valid.' }, 503);
     total += price * quantity;
-    lines.push({ service_id: service.id, product_id: service.slug, name: service.name, quantity, unit_price: price });
+    lines.push({ service_id: service.id, product_id: service.slug, name: service.name, quantity, unit_price: price, original_price: originalPrice, sale_percent: salePercent, sale_label: clean(service.sale_label, 50) });
   }
   const orderCode = `NUG-${new Date().toISOString().slice(0, 10).replaceAll('-', '')}-${crypto.randomUUID().replaceAll('-', '').slice(0, 12).toUpperCase()}`;
   const order = { order_code: orderCode, customer: { name: clean(customer.name, 100), email: clean(customer.email, 254).toLowerCase(), whatsapp: clean(customer.whatsapp, 24) }, items: lines, total_price: total, payment_status: 'PENDING', status: 'pending' };
@@ -106,11 +108,42 @@ async function webhook(request, env) {
 
 async function paymentStatus(request, env) {
   const url = new URL(request.url);
-  const code = clean(url.searchParams.get('order_code') || url.searchParams.get('order_id'), 80).toUpperCase();
-  if (!code) return json({ error: 'Nomor pesanan wajib diisi.' }, 400);
-  const rows = await supabase(env, `payment_orders?order_code=eq.${encodeURIComponent(code)}&select=order_code,total_price,payment_status,payment_url,expires_at,mayar_transaction_id&limit=1`);
+  const reference = clean(url.searchParams.get('order_code') || url.searchParams.get('order_id'), 80);
+  if (!reference) return json({ error: 'Nomor pesanan wajib diisi.' }, 400);
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(reference);
+  const filter = isUuid
+    ? `id=eq.${encodeURIComponent(reference)}`
+    : `order_code=eq.${encodeURIComponent(reference.toUpperCase())}`;
+  const rows = await supabase(env, `payment_orders?${filter}&select=id,order_code,total_price,payment_status,payment_url,expires_at,mayar_transaction_id&limit=1`);
   if (!rows.length) return json({ error: 'Pesanan tidak ditemukan.' }, 404);
-  return json({ order_id: rows[0].order_code, order_code: rows[0].order_code, amount: rows[0].total_price, payment_status: rows[0].payment_status, payment_url: rows[0].payment_status === 'PENDING' ? rows[0].payment_url : null, expires_at: rows[0].expires_at, transaction_id: rows[0].mayar_transaction_id });
+  return json({ order_id: rows[0].id, order_code: rows[0].order_code, amount: rows[0].total_price, payment_status: rows[0].payment_status, payment_url: rows[0].payment_status === 'PENDING' ? rows[0].payment_url : null, expires_at: rows[0].expires_at, transaction_id: rows[0].mayar_transaction_id });
+}
+
+const DEFAULT_PROMO = {
+  label: 'PROMO TERBATAS',
+  text: 'Diskon s.d 30% semua pengerjaan tugas & makalah kuliah.',
+  coupon: 'JOKIHEMAT',
+  ends_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+};
+
+async function promo(request, env) {
+  if (!corsOk(request)) return json({ error: 'Origin tidak diizinkan.' }, 403);
+  try {
+    // JOKIIN Workplace menyimpan satu baris: key = home_promo, value = JSON promo.
+    const rows = await supabase(env, 'site_settings?key=eq.home_promo&select=value&limit=1');
+    const value = rows?.[0]?.value;
+    const stored = typeof value === 'string' ? JSON.parse(value) : value;
+    if (!stored || typeof stored !== 'object') return json({ promo: DEFAULT_PROMO });
+    return json({ promo: {
+      label: clean(stored.label, 40) || DEFAULT_PROMO.label,
+      text: clean(stored.text, 180) || DEFAULT_PROMO.text,
+      coupon: clean(stored.coupon, 40) || DEFAULT_PROMO.coupon,
+      ends_at: typeof stored.ends_at === 'string' && !Number.isNaN(Date.parse(stored.ends_at)) ? stored.ends_at : DEFAULT_PROMO.ends_at
+    } });
+  } catch (_) {
+    // Website tetap jalan saat tabel pengaturan belum dibuat / belum berisi promo.
+    return json({ promo: DEFAULT_PROMO });
+  }
 }
 
 export default { async fetch(request, env) {
@@ -121,8 +154,14 @@ export default { async fetch(request, env) {
     if (url.pathname === '/api/create-mayar-payment' && request.method === 'POST') return await createPayment(request, env);
     if (url.pathname === '/api/mayar-webhook' && request.method === 'POST') return await webhook(request, env);
     if (url.pathname === '/api/check-status' && request.method === 'GET') return await paymentStatus(request, env);
+    if (url.pathname === '/api/promo' && request.method === 'GET') return await promo(request, env);
     if (/\.(?:php|sql|sqlite|env)$/i.test(url.pathname) || /^\/(?:database|storage|api)\//i.test(url.pathname)) return json({ error: 'Not found' }, 404);
-    if (env.ASSETS) return env.ASSETS.fetch(request);
+    // SPA fallback: direct visits such as /payment or /prices still serve index.html.
+    if (env.ASSETS) {
+      const asset = await env.ASSETS.fetch(request);
+      if (asset.status !== 404) return asset;
+      return env.ASSETS.fetch(new Request(new URL('/', request.url), request));
+    }
     return json({ error: 'Not found' }, 404);
   } catch (error) {
     console.error(error instanceof Error ? error.message : 'Worker error');
