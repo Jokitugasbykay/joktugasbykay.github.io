@@ -4748,29 +4748,38 @@
         }
 
         /* Compact catalog: small cards that retain normal vertical-page scrolling. */
-        #full-harga, #full-layanan { grid-template-columns:repeat(auto-fit, minmax(210px, 250px)); gap:16px; }
-        #full-harga .service-card, #full-layanan .service-card { padding:14px; }
-        #full-harga .service-photo, #full-layanan .service-photo { height:104px; flex-basis:104px; margin:-2px -2px 11px; }
-        #full-harga .service-card h3, #full-layanan .service-card h3 { font-size:1rem; }
+        #full-harga, #full-layanan { grid-template-columns:repeat(auto-fit, minmax(270px, 310px)); gap:20px; }
+        #full-harga .service-card, #full-layanan .service-card { padding:18px; aspect-ratio:3 / 4; }
+        #full-harga .service-photo, #full-layanan .service-photo { height:126px; flex-basis:126px; margin:-2px -2px 14px; }
+        #full-harga .service-card h3, #full-layanan .service-card h3 { font-size:1.08rem; }
         #full-harga .pricing-category-label { font-size:.68rem; }
         #full-harga .pricing-price-box { margin-top:4px; }
         #full-harga .pricing-price-value { font-size:1.08rem!important; }
         #full-harga .cf-card-actions button { font-size:.74rem; padding:10px 7px!important; }
 
         @media (max-width:760px) {
-            #full-harga, #full-layanan { display:grid!important; grid-template-columns:repeat(3,minmax(0,1fr))!important; grid-auto-flow:row!important; grid-auto-columns:auto!important; justify-content:stretch!important; overflow:visible!important; overscroll-behavior:auto!important; scroll-snap-type:none!important; padding:2px 0 14px!important; gap:9px!important; }
-            #full-harga .service-card, #full-layanan .service-card { min-width:0; min-height:250px!important; height:250px!important; aspect-ratio:auto!important; scroll-snap-align:none!important; padding:9px!important; }
-            #full-harga .service-photo, #full-layanan .service-photo { height:76px; flex-basis:76px; margin:0 0 8px; border-radius:9px; }
-            #full-harga .service-card h3, #full-layanan .service-card h3 { min-height:2.35em; overflow:hidden; font-size:.78rem; line-height:1.16; }
-            #full-harga .pricing-category-label { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-size:.58rem; }
-            #full-harga .pricing-price-value { display:-webkit-box; overflow:hidden; -webkit-box-orient:vertical; -webkit-line-clamp:2; font-size:.73rem!important; line-height:1.1; }
-            #full-harga .cf-card-actions { flex-direction:column; gap:5px; }
-            #full-harga .cf-card-actions button { min-width:0; min-height:29px; font-size:.58rem!important; line-height:1!important; padding:7px 3px!important; }
+            #full-harga, #full-layanan { display:grid!important; grid-template-columns:repeat(2,minmax(0,1fr))!important; grid-auto-flow:row!important; grid-auto-columns:auto!important; justify-content:stretch!important; overflow:visible!important; overscroll-behavior:auto!important; scroll-snap-type:none!important; padding:2px 0 16px!important; gap:13px!important; }
+            #full-harga .service-card, #full-layanan .service-card { min-width:0; min-height:0!important; height:auto!important; aspect-ratio:3 / 4!important; scroll-snap-align:none!important; padding:12px!important; }
+            #full-harga .service-photo, #full-layanan .service-photo { height:94px; flex-basis:94px; margin:0 0 10px; border-radius:11px; }
+            #full-harga .service-card h3, #full-layanan .service-card h3 { min-height:2.3em; overflow:hidden; font-size:.9rem; line-height:1.18; }
+            #full-harga .pricing-category-label { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-size:.66rem; }
+            #full-harga .pricing-price-value { display:-webkit-box; overflow:hidden; -webkit-box-orient:vertical; -webkit-line-clamp:2; font-size:.92rem!important; line-height:1.12; }
+            #full-harga .cf-card-actions { flex-direction:column; gap:7px; }
+            #full-harga .cf-card-actions button { min-width:0; min-height:34px; font-size:.69rem!important; line-height:1!important; padding:8px 5px!important; }
             #full-layanan .layanan-section-title, #full-layanan .layanan-check-list { display:none; }
-            #full-layanan .service-card > p { display:-webkit-box!important; overflow:hidden; -webkit-box-orient:vertical; -webkit-line-clamp:3; margin:0 0 7px; color:var(--text-secondary); font-size:.61rem; line-height:1.28; }
+            #full-layanan .service-card > p { display:-webkit-box!important; overflow:hidden; -webkit-box-orient:vertical; -webkit-line-clamp:3; margin:0 0 8px; color:var(--text-secondary); font-size:.7rem; line-height:1.3; }
             #full-layanan .service-card > div:last-child { margin-top:auto!important; }
             #full-layanan .service-card > div:last-child { flex-direction:column!important; gap:5px!important; }
-            #full-layanan .service-card > div:last-child button { min-width:0; font-size:.58rem!important; line-height:1!important; padding:7px 3px!important; }
+            #full-layanan .service-card > div:last-child button { min-width:0; font-size:.68rem!important; line-height:1!important; padding:8px 5px!important; }
+
+            /* Touch replacement for hover-reveal: buttons stay usable, then lift on press. */
+            #full-harga .cf-price-card { transition:transform .22s ease, box-shadow .22s ease; }
+            #full-harga .cf-price-card .cf-card-actions { animation:cf-mobile-actions-in .42s cubic-bezier(.16,1,.3,1) both; }
+            #full-harga .cf-price-card:active { transform:perspective(700px) rotateX(2deg) rotateY(-2deg) translateY(-3px); box-shadow:0 15px 30px rgba(0,0,0,.24); }
+            #full-harga .cf-price-card:active .cf-card-actions { transform:translateY(-3px)!important; }
+            .testimonial-product-card { transition:transform .25s ease, box-shadow .25s ease; }
+            .testimonial-product-card:active { transform:perspective(700px) rotateX(3deg) rotateY(-3deg) translateY(-5px); box-shadow:15px 18px 30px rgba(0,0,0,.24); }
+            @keyframes cf-mobile-actions-in { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
         }
         .cf-review__helpful { display:inline-flex; align-items:center; justify-content:center; gap:5px; }
         .cf-review__helpful svg { width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
