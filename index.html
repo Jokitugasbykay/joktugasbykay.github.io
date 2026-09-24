@@ -7471,6 +7471,8 @@
                     removeStored(sessionStorage, 'nugasin_checkout_state');
                     removeStored(sessionStorage, 'jokiin_checkout_request');
                     renderOrderSuccess(order); window.switchTab('order-success');
+                    // Simpan acuan pesanan pada URL agar halaman pending tetap dapat dipulihkan setelah refresh.
+                    try { history.replaceState(null, '', `/payment/pending?order_id=${encodeURIComponent(order.id)}`); } catch (_) { }
                     startPaymentPolling(order.id);
                     return;
                 }
@@ -7619,6 +7621,49 @@
                 icon.innerHTML = '<span class="pending-spinner" aria-label="Menunggu pembayaran"></span>';
                 detailsButton.hidden = true; homeButton.hidden = true;
             }
+        }
+
+        // Memulihkan halaman pembayaran yang masih menunggu setelah browser di-refresh.
+        // sessionStorage bertahan saat refresh pada tab yang sama; order_id di URL menjadi cadangan
+        // bila halaman dibuka kembali tanpa state browser tersebut.
+        async function restorePendingMayarPage() {
+            if (window.location.pathname !== '/payment/pending') return false;
+            const params = new URLSearchParams(window.location.search);
+            const requestedId = params.get('order_id') || '';
+            let saved = null;
+            try { saved = JSON.parse(sessionStorage.getItem('jokiin_pending_mayar_order') || 'null'); } catch (_) { }
+            const savedId = String(saved?.id || '');
+            const orderId = PAYMENT_ORDER_ID_RE.test(requestedId) ? requestedId : savedId;
+            if (!PAYMENT_ORDER_ID_RE.test(orderId)) return false;
+
+            let order = saved && savedId === orderId ? saved : null;
+            const status = await fetchPaymentStatus(orderId);
+            if (!order && !status) return false;
+            if (!order) {
+                order = {
+                    id: orderId,
+                    items: [], customer: {}, task: {},
+                    total: status.amount,
+                    paymentUrl: status.payment_url,
+                    expiryTime: status.expires_at
+                };
+            }
+            order = {
+                ...order,
+                id: orderId,
+                gateway: 'mayar',
+                paymentMethod: 'Mayar',
+                paymentStatus: status?.payment_status || order.paymentStatus || 'PENDING',
+                paymentUrl: status?.payment_url || order.paymentUrl,
+                expiryTime: status?.expires_at || order.expiryTime
+            };
+            currentOrder = order;
+            try { sessionStorage.setItem('jokiin_pending_mayar_order', JSON.stringify(order)); } catch (_) { }
+            renderOrderSuccess(order);
+            window.switchTab('order-success');
+            try { history.replaceState(null, '', `/payment/pending?order_id=${encodeURIComponent(orderId)}`); } catch (_) { }
+            if (String(order.paymentStatus).toUpperCase() === 'PENDING') startPaymentPolling(orderId);
+            return true;
         }
 
         // Dipanggil saat halaman dibuka dengan ?payment=complete&order_id=... (redirect dari Mayar).
@@ -8511,8 +8556,11 @@ Teman tugas mahasiswa.`;
             try { fallbackPath = sessionStorage.getItem('jokiin_spa_fallback_path') || ''; sessionStorage.removeItem('jokiin_spa_fallback_path'); } catch (_) { }
             if (fallbackPath && fallbackPath.startsWith('/')) history.replaceState(null, '', fallbackPath);
             const initialTab = TAB_BY_ROUTE[window.location.pathname] || 'beranda';
-            if (initialTab !== 'beranda') window.switchTab(initialTab);
-            else requestAnimationFrame(() => updateLiquidIndicator(false));
+            // /payment/pending membutuhkan data pesanan sebelum tab ditampilkan. Tanpa ini,
+            // refresh hanya menampilkan tab awal walaupun URL masih menunjukkan pending.
+            const restoredPending = initialTab === 'order-success' ? await restorePendingMayarPage() : false;
+            if (!restoredPending && initialTab !== 'beranda') window.switchTab(initialTab);
+            else if (initialTab === 'beranda') requestAnimationFrame(() => updateLiquidIndicator(false));
             try { await ensureSession(); } catch (_) { window.showToast('Sesi belum dapat dipulihkan. Silakan login kembali.'); }
             await loadCart();
             const results = await Promise.allSettled([loadServices(), loadReviews(), loadAuthSettings()]);
