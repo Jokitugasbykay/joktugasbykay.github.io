@@ -83,8 +83,8 @@ Deno.serve(async(req:Request)=>{
   }
   if(input.action==='track'){
    const code=str(input.orderCode,'Nomor order',80).toUpperCase().replace(/^#/,'');
-   if(!/^NUG-\d{8}-(?:[A-F0-9]{32}|\d{4})$/.test(code))throw new ApiError(404,'Pesanan tidak ditemukan. Gunakan nomor order lengkap.');
-   const secure=/^NUG-\d{8}-[A-F0-9]{32}$/.test(code);
+   if(!/^NUG-\d{8}-(?:[A-F0-9]{32}|[A-F0-9]{12}|\d{4})$/.test(code))throw new ApiError(404,'Pesanan tidak ditemukan. Gunakan nomor order lengkap.');
+   const secure=/^NUG-\d{8}-(?:[A-F0-9]{32}|[A-F0-9]{12})$/.test(code);
    // Old short references are not credentials. They require ownership or an admin session.
    let ownerFilter='';
    if(!secure){
@@ -116,4 +116,3 @@ Deno.serve(async(req:Request)=>{
   return new Response(JSON.stringify({error:known?error.message:'Server belum dapat dihubungi. Silakan coba lagi.'}),{status:known?error.status:500,headers:cors});
  }
 });
-

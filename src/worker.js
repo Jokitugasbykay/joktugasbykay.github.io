@@ -2,7 +2,7 @@ const JSON_HEADERS = {
   'content-type': 'application/json; charset=utf-8',
   'cache-control': 'no-store',
   'access-control-allow-origin': 'https://jokiin.my.id',
-  'access-control-allow-headers': 'content-type,x-webhook-token,x-mayar-signature',
+  'access-control-allow-headers': 'content-type,authorization,x-webhook-token,x-mayar-signature',
   'access-control-allow-methods': 'GET,POST,OPTIONS'
 };
 
@@ -28,6 +28,26 @@ async function supabase(env, path, options = {}) {
   try { data = text ? JSON.parse(text) : null; } catch { data = null; }
   if (!response.ok) throw new Error(`Supabase error ${response.status}`);
   return data;
+}
+
+async function authenticatedUserId(request, env) {
+  const bearer = request.headers.get('authorization');
+  if (!bearer) return null; // Guest checkout remains supported.
+  if (!/^Bearer [^\s]+$/.test(bearer)) throw new Error('Sesi pengguna tidak valid.');
+  const response = await fetch(`${env.SUPABASE_URL.replace(/\/$/, '')}/auth/v1/user`, {
+    headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, authorization: bearer }
+  });
+  if (!response.ok) throw new Error('Sesi pengguna tidak valid.');
+  const user = await response.json();
+  if (!user?.id) throw new Error('Sesi pengguna tidak valid.');
+  const profiles = await supabase(env, `profiles?id=eq.${encodeURIComponent(user.id)}&select=id&limit=1`);
+  if (!profiles.length) {
+    await supabase(env, 'profiles?on_conflict=id', {
+      method: 'POST', headers: { Prefer: 'resolution=ignore-duplicates' },
+      body: JSON.stringify({ id: user.id, name: clean(user.email?.split('@')[0], 120) || 'Pengguna', email: user.email || null, role: 'user' })
+    });
+  }
+  return user.id;
 }
 
 async function mayar(env, method, path, body) {
@@ -70,6 +90,7 @@ function corsOk(request) {
 
 async function createPayment(request, env) {
   if (!corsOk(request)) return json({ error: 'Origin tidak diizinkan.' }, 403);
+  const userId = await authenticatedUserId(request, env);
   const input = await request.json();
   const customer = input && typeof input.customer === 'object' ? input.customer : {};
   const items = Array.isArray(input?.items) ? input.items : [];
@@ -106,13 +127,16 @@ async function createPayment(request, env) {
   if (Number(input.amount) !== total) return json({ error: 'Harga berubah. Muat ulang layanan sebelum membayar.' }, 409);
   const requestKey = clean(input.draftKey, 100);
   if (!/^(?:[0-9a-f-]{36}|req-[a-z0-9-]+)$/i.test(requestKey)) return json({ error: 'Identitas permintaan tidak valid.' }, 400);
-  const previous = await supabase(env, `payment_orders?request_key=eq.${encodeURIComponent(requestKey)}&select=id,customer,total_price,payment_status,payment_url,mayar_transaction_id,expires_at&limit=1`);
+  const previous = await supabase(env, `payment_orders?request_key=eq.${encodeURIComponent(requestKey)}&select=id,order_code,customer,user_id,total_price,payment_status,payment_url,mayar_transaction_id,expires_at&limit=1`);
   if (previous.length) {
     const saved = previous[0];
-    if (saved.customer?.email !== clean(customer.email, 254).toLowerCase() || Number(saved.total_price) !== total) return json({ error: 'Permintaan checkout berubah. Coba ulang.' }, 409);
+    if (saved.customer?.email !== clean(customer.email, 254).toLowerCase() || Number(saved.total_price) !== total || saved.user_id !== userId) return json({ error: 'Permintaan checkout berubah. Coba ulang.' }, 409);
+    if (saved.payment_status === 'PAID') {
+      return json({ order_id: saved.id, order_code: saved.order_code, payment_status: 'PAID', total });
+    }
     // Link pending yang masih berlaku dikembalikan agar klik ulang tidak membuat tagihan ganda.
     if (saved.payment_status === 'PENDING' && saved.payment_url) {
-      return json({ order_id: saved.id, paymentUrl: saved.payment_url, payment_status: saved.payment_status, transaction_id: saved.mayar_transaction_id, expires_at: saved.expires_at, total });
+      return json({ order_id: saved.id, order_code: saved.order_code, paymentUrl: saved.payment_url, payment_status: saved.payment_status, transaction_id: saved.mayar_transaction_id, expires_at: saved.expires_at, total });
     }
     // Percobaan gagal/kedaluwarsa tidak boleh mengunci draft checkout selamanya.
     // Lepaskan request_key lama (tetap menyimpan riwayat barisnya) lalu buat tagihan baru di bawah.
@@ -124,8 +148,8 @@ async function createPayment(request, env) {
       })
     });
   }
-  const orderCode = `NUG-${new Date().toISOString().slice(0, 10).replaceAll('-', '')}-${crypto.randomUUID().replaceAll('-', '').slice(0, 12).toUpperCase()}`;
-  const order = { order_code: orderCode, request_key: requestKey, customer: { name: clean(customer.name, 100), nim: clean(customer.nim, 50), email: clean(customer.email, 254).toLowerCase(), whatsapp: clean(customer.whatsapp, 24) }, task: { title: clean(task.title, 250), deadline: clean(task.deadline, 50), notes: clean(task.notes, 3000), googleDriveUrl: clean(task.googleDriveUrl, 2048) }, promo: submittedPromo, items: lines, total_price: total, payment_status: 'PENDING', status: 'pending' };
+  const orderCode = `NUG-${new Date().toISOString().slice(0, 10).replaceAll('-', '')}-${crypto.randomUUID().replaceAll('-', '').toUpperCase()}`;
+  const order = { order_code: orderCode, request_key: requestKey, user_id: userId, customer: { name: clean(customer.name, 100), nim: clean(customer.nim, 50), email: clean(customer.email, 254).toLowerCase(), whatsapp: clean(customer.whatsapp, 24) }, task: { title: clean(task.title, 250), deadline: clean(task.deadline, 50), notes: clean(task.notes, 3000), googleDriveUrl: clean(task.googleDriveUrl, 2048) }, promo: submittedPromo, items: lines, total_price: total, payment_status: 'PENDING', status: 'pending' };
   const inserted = await supabase(env, 'payment_orders', { method: 'POST', headers: { Prefer: 'return=representation' }, body: JSON.stringify(order) });
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
   const payment = await mayar(env, 'POST', 'payments/create', { name: `JOKI.IN - ${lines[0].name}`, amount: total, email: order.customer.email, mobile: order.customer.whatsapp, description: `Pesanan ${orderCode}`, expiredAt: expiresAt });
