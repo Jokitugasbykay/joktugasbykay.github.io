@@ -110,8 +110,19 @@ async function createPayment(request, env) {
   if (previous.length) {
     const saved = previous[0];
     if (saved.customer?.email !== clean(customer.email, 254).toLowerCase() || Number(saved.total_price) !== total) return json({ error: 'Permintaan checkout berubah. Coba ulang.' }, 409);
-    if (saved.payment_status !== 'PENDING' || !saved.payment_url) return json({ error: 'Pembayaran sebelumnya belum bisa digunakan. Coba ulang.' }, 409);
-    return json({ order_id: saved.id, paymentUrl: saved.payment_url, payment_status: saved.payment_status, transaction_id: saved.mayar_transaction_id, expires_at: saved.expires_at, total });
+    // Link pending yang masih berlaku dikembalikan agar klik ulang tidak membuat tagihan ganda.
+    if (saved.payment_status === 'PENDING' && saved.payment_url) {
+      return json({ order_id: saved.id, paymentUrl: saved.payment_url, payment_status: saved.payment_status, transaction_id: saved.mayar_transaction_id, expires_at: saved.expires_at, total });
+    }
+    // Percobaan gagal/kedaluwarsa tidak boleh mengunci draft checkout selamanya.
+    // Lepaskan request_key lama (tetap menyimpan riwayat barisnya) lalu buat tagihan baru di bawah.
+    await supabase(env, `payment_orders?id=eq.${encodeURIComponent(saved.id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        request_key: null,
+        payment_status: saved.payment_status === 'PENDING' ? 'CANCELED' : saved.payment_status
+      })
+    });
   }
   const orderCode = `NUG-${new Date().toISOString().slice(0, 10).replaceAll('-', '')}-${crypto.randomUUID().replaceAll('-', '').slice(0, 12).toUpperCase()}`;
   const order = { order_code: orderCode, request_key: requestKey, customer: { name: clean(customer.name, 100), nim: clean(customer.nim, 50), email: clean(customer.email, 254).toLowerCase(), whatsapp: clean(customer.whatsapp, 24) }, task: { title: clean(task.title, 250), deadline: clean(task.deadline, 50), notes: clean(task.notes, 3000), googleDriveUrl: clean(task.googleDriveUrl, 2048) }, promo: submittedPromo, items: lines, total_price: total, payment_status: 'PENDING', status: 'pending' };
