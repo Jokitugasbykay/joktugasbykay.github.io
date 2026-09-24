@@ -97,8 +97,12 @@ async function createPayment(request, env) {
     total += price * quantity;
     lines.push({ service_id: service.id, product_id: service.slug, name: service.name, quantity, unit_price: price, original_price: originalPrice, sale_percent: salePercent, sale_amount: saleAmount, sale_label: clean(service.sale_label, 50) });
   }
-  if (input.promo && input.promo !== 'MAHASISWA10') return json({ error: 'Kode promo tidak valid.' }, 400);
-  if (input.promo === 'MAHASISWA10') total = Math.round(total * 0.9);
+  const submittedPromo = clean(input.promo, 24).toUpperCase();
+  if (submittedPromo) {
+    const campaign = await activePromo(env);
+    if (!campaign || submittedPromo !== campaign.coupon) return json({ error: 'Kode promo tidak berlaku atau sudah berakhir.' }, 409);
+    total = Math.round(total * (1 - campaign.discount_percent / 100));
+  }
   if (Number(input.amount) !== total) return json({ error: 'Harga berubah. Muat ulang layanan sebelum membayar.' }, 409);
   const requestKey = clean(input.draftKey, 100);
   if (!/^(?:[0-9a-f-]{36}|req-[a-z0-9-]+)$/i.test(requestKey)) return json({ error: 'Identitas permintaan tidak valid.' }, 400);
@@ -110,7 +114,7 @@ async function createPayment(request, env) {
     return json({ order_id: saved.id, paymentUrl: saved.payment_url, payment_status: saved.payment_status, transaction_id: saved.mayar_transaction_id, expires_at: saved.expires_at, total });
   }
   const orderCode = `NUG-${new Date().toISOString().slice(0, 10).replaceAll('-', '')}-${crypto.randomUUID().replaceAll('-', '').slice(0, 12).toUpperCase()}`;
-  const order = { order_code: orderCode, request_key: requestKey, customer: { name: clean(customer.name, 100), nim: clean(customer.nim, 50), email: clean(customer.email, 254).toLowerCase(), whatsapp: clean(customer.whatsapp, 24) }, task: { title: clean(task.title, 250), deadline: clean(task.deadline, 50), notes: clean(task.notes, 3000), googleDriveUrl: clean(task.googleDriveUrl, 2048) }, promo: input.promo || '', items: lines, total_price: total, payment_status: 'PENDING', status: 'pending' };
+  const order = { order_code: orderCode, request_key: requestKey, customer: { name: clean(customer.name, 100), nim: clean(customer.nim, 50), email: clean(customer.email, 254).toLowerCase(), whatsapp: clean(customer.whatsapp, 24) }, task: { title: clean(task.title, 250), deadline: clean(task.deadline, 50), notes: clean(task.notes, 3000), googleDriveUrl: clean(task.googleDriveUrl, 2048) }, promo: submittedPromo, items: lines, total_price: total, payment_status: 'PENDING', status: 'pending' };
   const inserted = await supabase(env, 'payment_orders', { method: 'POST', headers: { Prefer: 'return=representation' }, body: JSON.stringify(order) });
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
   const payment = await mayar(env, 'POST', 'payments/create', { name: `JOKI.IN - ${lines[0].name}`, amount: total, email: order.customer.email, mobile: order.customer.whatsapp, description: `Pesanan ${orderCode}`, expiredAt: expiresAt });
@@ -158,27 +162,42 @@ const DEFAULT_PROMO = {
   label: 'PROMO TERBATAS',
   text: 'Diskon s.d 30% semua pengerjaan tugas & makalah kuliah.',
   coupon: 'JOKIHEMAT',
-  ends_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+  ends_at: null,
+  discount_percent: 0
 };
+
+async function activePromo(env) {
+  const rows = await supabase(env, 'site_settings?key=eq.home_promo&select=value&limit=1');
+  const raw = rows?.[0]?.value;
+  const p = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  if (!p || p.active !== true) return null;
+  const starts = Date.parse(p.starts_at || '');
+  const ends = Date.parse(p.ends_at || '');
+  const percent = Number(p.discount_percent);
+  if (!Number.isFinite(starts) || !Number.isFinite(ends) || starts > Date.now() || ends <= Date.now()
+    || ends - starts > 7 * 86400000 || !Number.isInteger(percent) || percent < 1 || percent > 90
+    || !/^[A-Z0-9]{4,24}$/.test(p.coupon || '')) return null;
+  return { ...p, coupon: p.coupon.toUpperCase(), discount_percent: percent };
+}
 
 async function promo(request, env) {
   if (!corsOk(request)) return json({ error: 'Origin tidak diizinkan.' }, 403);
   try {
-    // JOKIIN Workplace menyimpan satu baris: key = home_promo, value = JSON promo.
-    const rows = await supabase(env, 'site_settings?key=eq.home_promo&select=value&limit=1');
-    const value = rows?.[0]?.value;
-    const stored = typeof value === 'string' ? JSON.parse(value) : value;
-    if (!stored || typeof stored !== 'object') return json({ promo: DEFAULT_PROMO });
+    const stored = await activePromo(env);
+    const code = new URL(request.url).searchParams.get('code');
+    if (code !== null) return json({ valid: !!stored && clean(code, 24).toUpperCase() === stored.coupon,
+      discount_percent: stored && clean(code, 24).toUpperCase() === stored.coupon ? stored.discount_percent : 0 });
+    if (!stored) return json({ promo: DEFAULT_PROMO });
     return json({ promo: {
-      active: stored.active === true,
+      active: true,
       label: clean(stored.label, 40) || DEFAULT_PROMO.label,
       text: clean(stored.text, 180) || DEFAULT_PROMO.text,
-      coupon: clean(stored.coupon, 40) || DEFAULT_PROMO.coupon,
-      ends_at: typeof stored.ends_at === 'string' && !Number.isNaN(Date.parse(stored.ends_at)) ? stored.ends_at : DEFAULT_PROMO.ends_at
+      coupon: stored.coupon,
+      ends_at: stored.ends_at,
+      discount_percent: stored.discount_percent
     } });
   } catch (_) {
-    // Website tetap jalan saat tabel pengaturan belum dibuat / belum berisi promo.
-    return json({ promo: DEFAULT_PROMO });
+    return json({ error: 'Pengaturan promo belum tersedia.' }, 503);
   }
 }
 

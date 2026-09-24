@@ -5200,7 +5200,7 @@
     <!-- PROMO UTAMA -->
     <aside class="promo-strip" id="promoStrip" aria-label="Promo terbatas" hidden>
             <span class="promo-strip__badge" id="promoBadge">PROMO TERBATAS</span>
-            <span class="promo-strip__text" id="promoText">Diskon s.d 30% semua pengerjaan tugas & makalah kuliah.</span>
+            <span class="promo-strip__lead" id="promoLead"></span><span class="promo-strip__text" id="promoText"></span>
             <span class="promo-strip__countdown" aria-label="Sisa waktu promo">
                 <span class="promo-strip__time"><b id="promoDays">00</b><small>HARI</small></span>
                 <span class="promo-strip__time"><b id="promoHours">00</b><small>JAM</small></span>
@@ -6309,17 +6309,16 @@
         const DEFAULT_PROMO = {
             active: false,
             label: 'PROMO TERBATAS',
-            text: 'Diskon s.d 30% semua pengerjaan tugas & makalah kuliah.',
-            coupon: 'JOKIHEMAT',
-            ends_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+            text: '', coupon: '', ends_at: null, discount_percent: 0
         };
         let promoTimer = null;
         function renderPromo(promo = DEFAULT_PROMO) {
             const strip = document.getElementById('promoStrip'); if (!strip) return;
-            strip.hidden = promo.active !== true;
+            strip.hidden = promo.active !== true || !promo.ends_at || Date.parse(promo.ends_at) <= Date.now();
             document.getElementById('promoBadge').textContent = promo.label || DEFAULT_PROMO.label;
-            document.getElementById('promoText').textContent = promo.text || DEFAULT_PROMO.text;
-            document.getElementById('promoCoupon').textContent = promo.coupon || DEFAULT_PROMO.coupon;
+            document.getElementById('promoLead').textContent = `Diskon s.d ${Number(promo.discount_percent) || 0}%`;
+            document.getElementById('promoText').textContent = promo.text || '';
+            document.getElementById('promoCoupon').textContent = promo.coupon || '';
             const parsedTarget = new Date(promo.ends_at || DEFAULT_PROMO.ends_at).getTime();
             const target = Number.isFinite(parsedTarget) ? parsedTarget : Date.now();
             clearInterval(promoTimer);
@@ -6328,7 +6327,7 @@
                 strip.dataset.expired = String(left === 0);
                 const claim = document.getElementById('promoClaim');
                 if (claim) { claim.disabled = left === 0; claim.textContent = left === 0 ? 'Promo berakhir' : 'Klaim Promo →'; }
-                if (left === 0) clearInterval(promoTimer);
+                if (left === 0) { strip.hidden = true; appliedPromoDiscount = 0; clearInterval(promoTimer); if (typeof currentTab !== 'undefined' && currentTab === 'checkout') renderCheckoutSummary(); }
                 const totalSeconds = Math.floor(left / 1000);
                 const parts = [Math.floor(totalSeconds / 86400), Math.floor(totalSeconds / 3600) % 24, Math.floor(totalSeconds / 60) % 60, totalSeconds % 60];
                 ['promoDays', 'promoHours', 'promoMinutes', 'promoSeconds'].forEach((id, index) => { const el = document.getElementById(id); if (el) el.textContent = String(parts[index]).padStart(2, '0'); });
@@ -7097,13 +7096,14 @@
                 try {
                     const state = JSON.parse(stateJSON);
                     if (state.tab === 'checkout') {
-                        checkoutMode = state.mode === 'direct' ? 'direct' : 'cart'; directCheckoutItem = state.directItem ? sanitizeCart([state.directItem])[0] || null : null; appliedPromoDiscount = state.promoApplied === 0.1 ? 0.1 : 0;
+                        checkoutMode = state.mode === 'direct' ? 'direct' : 'cart'; directCheckoutItem = state.directItem ? sanitizeCart([state.directItem])[0] || null : null; appliedPromoDiscount = 0;
 
                         document.getElementById('chkTaskTitle').value = state.form.title || '';
                         document.getElementById('chkTaskDeadline').value = state.form.deadline || '';
                         document.getElementById('chkTaskNotes').value = state.form.notes || '';
                         document.getElementById('chkTaskDrive').value = state.form.drive || '';
                         document.getElementById('promoCodeInput').value = state.form.promo || '';
+                        if (state.form.promo) window.applyPromo();
                         if (state.form.name) document.getElementById('chkName').value = state.form.name;
                         if (state.form.nim) document.getElementById('chkNim').value = state.form.nim;
                         if (state.form.wa) document.getElementById('chkWA').value = state.form.wa;
@@ -7160,17 +7160,34 @@
             } else { document.getElementById('checkoutGuestMsg').style.display = 'block'; }
         }
 
-        window.applyPromo = () => {
-            const code = document.getElementById('promoCodeInput').value.trim().toUpperCase(); const msg = document.getElementById('promoMessage');
-            if (code === 'MAHASISWA10') {
-                appliedPromoDiscount = 0.1;
-                msg.innerHTML = '<span style="color:var(--success);">✓ Kode promo MAHASISWA10 berhasil digunakan (Diskon 10%)</span>';
-            } else {
-                appliedPromoDiscount = 0;
-                msg.innerHTML = '<span style="color:var(--error);">Kode promo tidak ditemukan atau sudah tidak berlaku.</span>';
-            }
+        async function validatePromoCode() {
+            const input = document.getElementById('promoCodeInput');
+            const code = input.value.trim().toUpperCase();
+            const msg = document.getElementById('promoMessage');
+            appliedPromoDiscount = 0;
+            if (!code) { msg.textContent = ''; renderCheckoutSummary(); return ''; }
+            if (!/^[A-Z0-9]{4,24}$/.test(code)) throw new Error('Kode promo hanya boleh berisi 4–24 huruf atau angka.');
+            const response = await fetch(`${PROMO_API_URL}?code=${encodeURIComponent(code)}`, { cache:'no-store' });
+            if (!response.ok) throw new Error('Kode promo belum dapat diperiksa. Coba lagi.');
+            const result = await response.json();
+            if (!result.valid || !Number.isInteger(result.discount_percent) || result.discount_percent < 1 || result.discount_percent > 90) throw new Error('Kode promo tidak berlaku atau sudah berakhir.');
+            if (input.value.trim().toUpperCase() !== code) throw new Error('Kode promo telah berubah. Gunakan kembali.');
+            appliedPromoDiscount = result.discount_percent / 100;
+            input.value = code;
+            msg.textContent = `✓ Diskon ${result.discount_percent}% berhasil digunakan`;
+            msg.style.color = 'var(--success)';
             renderCheckoutSummary(); window.saveCheckoutState();
+            return code;
+        }
+        window.applyPromo = async () => {
+            try { await validatePromoCode(); }
+            catch (error) { appliedPromoDiscount = 0; const msg = document.getElementById('promoMessage'); msg.textContent = error.message; msg.style.color = 'var(--error)'; renderCheckoutSummary(); window.saveCheckoutState(); }
         };
+        document.getElementById('promoCodeInput').addEventListener('input', () => {
+            appliedPromoDiscount = 0;
+            document.getElementById('promoMessage').textContent = '';
+            if (currentTab === 'checkout') renderCheckoutSummary();
+        });
 
         window.togglePayAcc = (id) => {
             document.querySelectorAll('.pay-acc-header').forEach(h => h.classList.remove('active'));
@@ -7277,7 +7294,7 @@
             listContainer.innerHTML = html;
             document.getElementById('chkSubtotal').innerText = formatRupiah(subtotal);
 
-            let discountAmt = subtotal * appliedPromoDiscount;
+            let discountAmt = Math.round(subtotal * appliedPromoDiscount);
             if (discountAmt > 0) {
                 document.getElementById('chkPromoRow').style.display = 'flex';
                 document.getElementById('chkDiscount').innerText = `-${formatRupiah(discountAmt)}`;
@@ -7404,6 +7421,7 @@
             const buyButton = document.querySelector('#tab-checkout button[onclick="window.processCheckout()"]');
             if (buyButton) { buyButton.disabled = true; buyButton.textContent = 'Menyimpan pesanan...'; }
             try {
+                const validatedPromo = await validatePromoCode();
                 await ensureSession();
                 if (!catalogueReady) await loadServices();
                 const owner = currentUser?.uid || null;
@@ -7413,8 +7431,8 @@
                     task: { title, deadline, notes, googleDriveUrl: driveUrl },
                     items: itemsToProcess.map(i => ({ productId: i.productId, quantity: i.quantity })),
                     paymentMethod: selectedPaymentMethod.id === 'midtrans_qris' ? 'midtrans_qris' : selectedPaymentMethod.id,
-                    promo: appliedPromoDiscount > 0 ? 'MAHASISWA10' : '',
-                    expectedTotal: Math.round((subtotal - subtotal * appliedPromoDiscount + CONFIG.serviceFee + selectedPaymentFee) * 100) / 100
+                    promo: validatedPromo,
+                    expectedTotal: Math.round((subtotal - Math.round(subtotal * appliedPromoDiscount) + CONFIG.serviceFee + selectedPaymentFee) * 100) / 100
                 };
                 if (selectedPaymentMethod.id === 'midtrans_qris') {
                     if (buyButton) buyButton.textContent = 'Membuat pembayaran...';
@@ -7438,7 +7456,7 @@
                         task: payload.task,
                         paymentMethod: 'Mayar',
                         subtotal,
-                        discount: appliedPromoDiscount > 0 ? subtotal * appliedPromoDiscount : 0,
+                        discount: Math.round(subtotal * appliedPromoDiscount),
                         serviceFee: CONFIG.serviceFee,
                         paymentFee: selectedPaymentFee,
                         total: Number(payment.total) || payload.expectedTotal,
@@ -8200,13 +8218,13 @@ Teman tugas mahasiswa.`;
 
             document.getElementById('full-harga').innerHTML = filtered.map(p => `
             <div class="service-card cf-price-card">
-                ${p.hasSale ? `<span class="cf-sale-ribbon">${escapeHTML(p.saleLabel || (p.saleAmount > 0 ? `HEMAT ${formatRupiah(p.saleAmount)}` : `HEMAT ${Math.round(p.salePercent)}%`))}</span>` : ''}
+                ${p.hasSale ? `<span class="cf-sale-ribbon" aria-label="Diskon ${Math.round((p.originalPrice - p.priceNum) / p.originalPrice * 100)} persen">HEMAT ${Math.round((p.originalPrice - p.priceNum) / p.originalPrice * 100)}%</span>` : ''}
                 ${serviceVisual(p)}
                 <h3>${escapeHTML(p.title)}</h3>
                 <div class="pricing-category-label">${p.category}</div>
                 <div class="pricing-price-box">
-                    <div class="pricing-price-value ${p.hasSale ? 'cf-price-sale' : ''}">${escapeHTML(productPriceLabel(p).replace(/^Mulai dari\\s*/i, ''))}</div>
-                    ${p.hasSale ? `<span class="cf-price-original">${formatRupiah(p.originalPrice)}</span>` : ''}
+                    <div class="pricing-price-value ${p.hasSale ? 'cf-price-sale' : ''}">${escapeHTML(productPriceLabel(p).replace(/^Mulai dari\s*/i, ''))}</div>
+                    ${p.hasSale ? `<span class="cf-price-original">${formatRupiah(p.originalPrice)}</span><span class="cf-sale-saving">Hemat ${formatRupiah(p.originalPrice - p.priceNum)}</span>` : ''}
                 </div>
                 <div class="cf-card-actions">
                     <button class="btn-outline" style="flex:1; padding:12px;" onclick="window.directCheckout('${p.id}')">Beli</button>
@@ -8708,6 +8726,39 @@ Teman tugas mahasiswa.`;
                 color: #45e794 !important;
             }
         }
+
+        .promo-strip__lead { flex:0 0 auto; padding:6px 9px; border-radius:6px; background:#d9ffe4; color:#086341; font-size:.82rem; font-weight:900; white-space:nowrap; }
+        @media (max-width:760px) { .promo-strip__lead { font-size:.7rem; padding:5px; } .promo-strip__text { flex:1 1 auto; } }
+        @media (max-width:390px) { .promo-strip__badge { display:none; } }
+        /* Catalog actions are visible and cards follow their content. */
+        #full-harga { align-items:start!important; grid-auto-rows:auto!important; }
+        #full-harga .service-card.cf-price-card { height:auto!important; min-height:0!important; aspect-ratio:auto!important; padding:14px!important; gap:4px; border-radius:18px; }
+        #full-harga .cf-price-card .service-photo { flex:0 0 auto!important; height:154px!important; margin:0 0 10px!important; border-radius:12px; }
+        #full-harga .cf-price-card h3 { margin:0; min-height:0; overflow:visible; font-size:1.05rem; line-height:1.25; }
+        #full-harga .cf-price-card .pricing-category-label { margin:0 0 2px; color:var(--text-secondary); font-size:.67rem; font-weight:750; }
+        #full-harga .cf-price-card .pricing-price-box { margin:8px 0 12px; padding-bottom:12px; min-height:0; }
+        #full-harga .cf-price-card .cf-card-actions { opacity:1!important; transform:none!important; pointer-events:auto!important; gap:8px; }
+        #full-harga .cf-price-card .cf-card-actions button { min-height:42px; }
+        #full-harga .cf-price-card .cf-price-sale { color:#ee5b55!important; }
+        .cf-sale-saving { display:inline-flex; margin-top:7px; padding:3px 7px; border-radius:6px; background:rgba(238,91,85,.13); color:#f06e68; font-size:.72rem; font-weight:800; }
+        #full-harga .cf-price-card .cf-sale-ribbon { top:25px; right:-34px; width:130px; min-width:0; padding:7px 4px; box-sizing:border-box; background:linear-gradient(135deg,#ffce72,#ff9e55); color:#4a260e; font-size:.67rem; letter-spacing:.04em; line-height:1.2; white-space:nowrap; transform:rotate(45deg); transform-origin:center; box-shadow:0 4px 12px rgba(0,0,0,.23); animation:joki-ribbon-arrive .5s ease-out both; }
+        @keyframes joki-ribbon-arrive { from { opacity:0; translate:20px -20px; } to { opacity:1; translate:0 0; } }
+        @media (hover:hover) and (pointer:fine) { #full-harga .cf-price-card:hover .cf-sale-ribbon { translate:-3px 3px; transition:translate .24s ease; } }
+        @media (max-width:760px) {
+            #full-harga .service-card.cf-price-card { min-height:0!important; padding:10px!important; }
+            #full-harga .cf-price-card .service-photo { height:104px!important; margin:0 0 8px!important; }
+            #full-harga .cf-price-card h3 { font-size:.85rem; }
+            #full-harga .cf-price-card .pricing-price-box { margin:6px 0 8px; padding-bottom:8px; }
+            #full-harga .cf-price-card .cf-sale-ribbon { top:16px; right:-32px; width:112px; font-size:.56rem; padding:5px 2px; }
+            #full-harga .cf-price-card .cf-card-actions { flex-direction:column; }
+            #full-harga .cf-price-card .cf-card-actions button { min-height:40px; }
+            .container > header:not(.checkout-mode) .header-actions, header:not(.checkout-mode) .header-actions { display:flex!important; width:max-content!important; max-width:100%!important; margin-left:0!important; gap:6px!important; flex-wrap:nowrap!important; justify-content:flex-start!important; overflow-x:auto!important; }
+            header:not(.checkout-mode) .header-actions button { flex:none!important; box-sizing:border-box!important; width:auto!important; min-width:0!important; max-width:none!important; padding:9px 5px!important; font-size:11px!important; line-height:1.1!important; white-space:nowrap!important; }
+            header:not(.checkout-mode) #cartHeaderBtn { width:90px!important; }
+            header:not(.checkout-mode) #ordersHeaderBtn { width:104px!important; }
+            header:not(.checkout-mode) #authHeaderBtn { width:70px!important; }
+        }
+        @media (prefers-reduced-motion:reduce) { #full-harga .cf-price-card .cf-sale-ribbon { animation:none; transition:none; } }
     </style>
 </body>
 
