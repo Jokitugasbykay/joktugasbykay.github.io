@@ -4,6 +4,7 @@
 <body>
 <script>
   try { sessionStorage.setItem('jokiin_spa_fallback_path', location.pathname + location.search + location.hash); } catch (_) {}
+  try { localStorage.setItem('jokiin_spa_fallback_path', location.pathname + location.search + location.hash); } catch (_) {}
   location.replace('/');
 </script>
 </body>
