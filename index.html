@@ -6520,13 +6520,14 @@
         }
 
         async function startMayarPayment(paymentDraft) {
+            const session = await ensureSession();
             const response = await fetch('https://jokiin-payment-api.gamingyoga14.workers.dev/api/create-mayar-payment', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}) },
                 body: JSON.stringify(paymentDraft)
             });
             const result = await response.json().catch(() => ({}));
-            if (!response.ok || !result.paymentUrl) {
+            if (!response.ok || (!result.paymentUrl && result.payment_status !== 'PAID')) {
                 const error = new Error(result.error || 'Link pembayaran Mayar belum dapat dibuat.');
                 error.status = response.status;
                 throw error;
@@ -7448,6 +7449,7 @@
                     });
                     const order = {
                         id: payment.order_id,
+                        orderCode: payment.order_code,
                         gateway: 'mayar',
                         mode: checkoutMode,
                         userId: owner || 'guest',
@@ -7460,7 +7462,7 @@
                         serviceFee: CONFIG.serviceFee,
                         paymentFee: selectedPaymentFee,
                         total: Number(payment.total) || payload.expectedTotal,
-                        paymentStatus: 'PENDING',
+                        paymentStatus: payment.payment_status || 'PENDING',
                         orderStatus: 'WAITING_PAYMENT',
                         paymentUrl: payment.paymentUrl,
                         expiryTime: payment.expires_at,
@@ -7473,7 +7475,7 @@
                     renderOrderSuccess(order); window.switchTab('order-success');
                     // Simpan acuan pesanan pada URL agar halaman pending tetap dapat dipulihkan setelah refresh.
                     try { history.replaceState(null, '', `/payment/pending?order_id=${encodeURIComponent(order.id)}`); } catch (_) { }
-                    startPaymentPolling(order.id);
+                    if (order.paymentStatus === 'PENDING') startPaymentPolling(order.id);
                     return;
                 }
                 const requestKey = requestIdentity('jokiin_checkout_request', { owner, ...payload });
@@ -7502,7 +7504,7 @@
         };
 
         function renderOrderSuccess(order) {
-            document.getElementById('succOrderId').textContent = order.id;
+            document.getElementById('succOrderId').textContent = order.orderCode || order.id;
             document.getElementById('succTotal').textContent = formatRupiah(order.total);
             document.getElementById('succMethod').textContent = order.paymentMethod;
             document.getElementById('succPaymentStatus').innerHTML = getPaymentStatusLabel(order.paymentStatus);
@@ -7544,7 +7546,7 @@
             try { sessionStorage.setItem('jokiin_pending_mayar_order', JSON.stringify(order)); } catch (_) { }
             try {
                 localStorage.setItem('jokiin_pending_mayar_order', JSON.stringify({
-                    id: order.id, total: order.total, paymentUrl: order.paymentUrl,
+                    id: order.id, orderCode: order.orderCode, total: order.total, paymentUrl: order.paymentUrl,
                     expiryTime: order.expiryTime, paymentStatus: order.paymentStatus,
                     paymentMethod: order.paymentMethod, gateway: order.gateway
                 }));
@@ -7592,7 +7594,11 @@
                 const status = await fetchPaymentStatus(orderId);
                 if (token !== paymentPollToken) return;
                 if (status && status.payment_status) {
-                    if (currentOrder && currentOrder.id === orderId) currentOrder.paymentStatus = status.payment_status;
+                    if (currentOrder && currentOrder.id === orderId) {
+                        currentOrder.paymentStatus = status.payment_status;
+                        currentOrder.orderCode = status.order_code || currentOrder.orderCode;
+                        document.getElementById('succOrderId').textContent = currentOrder.orderCode || orderId;
+                    }
                     applyMayarStatusView({ ...(currentOrder || {}), id: orderId, gateway: 'mayar', paymentStatus: status.payment_status });
                     if (status.payment_status !== 'PENDING') { stopPaymentPolling(); return; }
                 }
@@ -7684,6 +7690,7 @@
                 gateway: 'mayar',
                 paymentMethod: 'Mayar',
                 paymentStatus: status?.payment_status || order.paymentStatus || 'PENDING',
+                orderCode: status?.order_code || order.orderCode,
                 paymentUrl: status?.payment_url || order.paymentUrl,
                 expiryTime: status?.expires_at || order.expiryTime
             };
@@ -7710,7 +7717,7 @@
                 if (!status) { window.showToast('Pesanan tidak ditemukan. Periksa kembali link pembayaran kamu.'); return false; }
                 order = { id: orderId, items: [], customer: {}, task: {}, total: status.amount, paymentUrl: status.payment_url, expiryTime: status.expires_at };
             }
-            order = { ...order, gateway: 'mayar', paymentMethod: 'Mayar', paymentStatus: (status && status.payment_status) || order.paymentStatus || 'PENDING' };
+            order = { ...order, gateway: 'mayar', paymentMethod: 'Mayar', paymentStatus: (status && status.payment_status) || order.paymentStatus || 'PENDING', orderCode: status?.order_code || order.orderCode };
             if (status && status.payment_url && !order.paymentUrl) order.paymentUrl = status.payment_url;
             currentOrder = order;
             savePendingMayarOrder(order);
@@ -7797,7 +7804,7 @@ Teman tugas mahasiswa.`;
 
         window.viewOrderDetailsFromSuccess = () => {
             if (!currentOrder) return;
-            window.openOrderDetail(currentOrder.id);
+            window.openOrderDetail(currentOrder.orderCode || currentOrder.id);
         };
 
         // ==========================================
