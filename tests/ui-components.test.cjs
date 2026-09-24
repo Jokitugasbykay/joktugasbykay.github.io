@@ -1,0 +1,49 @@
+const fs = require('node:fs');
+const vm = require('node:vm');
+const assert = require('node:assert/strict');
+const html = fs.readFileSync(require('node:path').join(__dirname, '../index.html'), 'utf8');
+function fn(name) {
+  const start = html.indexOf('        function ' + name + '(');
+  assert(start >= 0, name + ' exists');
+  const end = html.indexOf('\n        }', start) + '\n        }'.length;
+  return html.slice(start, end);
+}
+const elements = new Map();
+function element(id) {
+  if (!elements.has(id)) elements.set(id, {style:{}, dataset:{}, attrs:{}, innerHTML:'', textContent:'', value:'', disabled:false, setAttribute(k,v){this.attrs[k]=v}, getAttribute(k){return this.attrs[k] ?? null}});
+  return elements.get(id);
+}
+const context = vm.createContext({URL, document:{getElementById:element}, CART:[], formatRupiah:n=>'Rp'+n, DEFAULT_PROMO:{}, clearInterval:()=>{}, setInterval:()=>1, Date, promoTimer:null});
+for (const name of ['validDriveUrl','validateTaskFiles','updateThresholdProgress','renderPromo']) vm.runInContext(fn(name),context);
+assert.equal(context.validDriveUrl('https://drive.google.com/file/d/abc/view'), true);
+assert.equal(context.validDriveUrl('https://drive.google.com.attacker.test/a'), false);
+assert.equal(context.validDriveUrl('javascript:alert(1)'), false);
+assert.equal(context.validDriveUrl('https://someone@drive.google.com/a'), false);
+const mb=1024*1024;
+assert.equal(context.validateTaskFiles([{name:'a.pdf',size:60*mb},{name:'b.zip',size:50*mb}]).length,1);
+assert.equal(context.validateTaskFiles(Array.from({length:12},()=>({name:'a.pdf',size:1}))).length,10);
+assert.equal(context.validateTaskFiles([{name:'a.exe',size:1},{name:'empty.pdf',size:0},{name:'valid.DOCX',size:1}]).length,1);
+context.updateThresholdProgress(75000);
+assert.equal(element('cartThresholdTrack').attrs['aria-valuenow'],'50');
+context.updateThresholdProgress(200000);
+assert.equal(element('cartThresholdFill').style.width,'100%');
+assert.equal(element('cartThresholdBanner').dataset.state,'unlocked');
+context.updateThresholdProgress(0);
+assert.equal(element('cartThresholdFill').style.width,'0%');
+context.renderPromo({ends_at:'2000-01-01',label:'Test',text:'Expired',coupon:'X'});
+assert.equal(element('promoClaim').disabled,true);
+context.renderPromo({ends_at:'invalid',label:'Test'});
+assert.equal(element('promoSeconds').textContent,'00');
+context.renderPromo({ends_at:new Date(Date.now()+60000).toISOString()});
+assert.equal(element('promoClaim').disabled,false);
+const rules=html.slice(html.indexOf('        const checkoutValidationRules ='),html.indexOf('        function validateCheckoutField'));
+vm.runInContext(rules+'\n'+fn('validateCheckoutField'),context);
+element('chkEmail').value='@gmail.com';
+assert.equal(context.validateCheckoutField('chkEmail'),false);
+assert.equal(element('chkEmail').attrs['aria-invalid'],'true');
+element('chkEmail').value='customer@gmail.com';
+assert.equal(context.validateCheckoutField('chkEmail'),true);
+assert.equal(element('errChkEmail').style.display,'none');
+element('chkTaskDrive').value='';
+assert.equal(context.validateCheckoutField('chkTaskDrive'),true);
+console.log('PASS: Drive URL validation, file type/count/total size, progress updates, promo expiry, inline field errors.');

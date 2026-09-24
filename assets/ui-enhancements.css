@@ -1,0 +1,60 @@
+/* JOKI.IN adaptations of the CodeFronts component references supplied by Kay. */
+.joki-skeleton { pointer-events:none; }
+.joki-skeleton-block { position:relative; overflow:hidden; border-radius:10px; background:#e4e8ef; height:14px; margin-bottom:14px; }
+.joki-skeleton-block::after { content:''; position:absolute; inset:0; background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.65) 50%,transparent 70%); animation:joki-shimmer 1.5s linear infinite; }
+.joki-skeleton-media { height:126px; }
+.joki-skeleton-title { height:24px; width:75%; }
+.joki-skeleton-short { width:55%; }
+[data-theme="dark"] .joki-skeleton-block { background:#293039; }
+[data-theme="dark"] .joki-skeleton-block::after { background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.07) 50%,transparent 70%); }
+@keyframes joki-shimmer { from { transform:translateX(-100%); } to { transform:translateX(100%); } }
+.joki-load-error { grid-column:1/-1; padding:24px; border:1px solid var(--border-color); border-radius:16px; color:var(--text-main); }
+.joki-sentiment { --sentiment-color:#10b981; display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:var(--surface-secondary); font-size:.8rem; }
+.joki-sentiment::before { content:''; width:5px; align-self:stretch; border-radius:6px; background:var(--sentiment-color); }
+.joki-sentiment[data-tone="neutral"] { --sentiment-color:#d97706; }
+.joki-sentiment[data-tone="negative"] { --sentiment-color:#e05260; }
+.cf-review__quote { overflow-wrap:anywhere; }
+.cf-review__footer { flex-wrap:wrap; }
+.joki-validation-summary { padding:14px 16px; margin-bottom:18px; border:1px solid var(--error); border-left:4px solid var(--error); border-radius:12px; background:var(--surface-secondary); color:var(--text-main); }
+.joki-validation-summary[hidden] { display:none; }
+.joki-validation-summary ul { margin:8px 0 0; padding-left:20px; }
+.joki-validation-summary a { color:var(--error); text-decoration:underline; }
+#tab-checkout .error-msg { padding:9px 11px; border-radius:8px; border-left:3px solid var(--error); background:var(--surface-secondary); }
+#tab-checkout [aria-invalid="true"] { border-color:var(--error); outline-color:var(--error); }
+#tab-checkout [aria-invalid="false"]:focus { border-color:var(--primary); }
+.ba-03__msg { display:block; line-height:1.5; }
+.promo-strip[data-expired="true"] .promo-strip__claim { opacity:.6; cursor:default; }
+.cf-upload:focus-within { outline:2px solid var(--primary); outline-offset:4px; }
+.cf-upload-file { display:inline-flex; align-items:center; gap:5px; max-width:100%; overflow-wrap:anywhere; }
+.cf-upload-file button { border:0; background:transparent; color:inherit; min-width:28px; min-height:28px; cursor:pointer; }
+.container > header:not(.checkout-mode) { position:sticky; top:0; }
+.container > header.is-compact:not(.checkout-mode) { padding-top:8px!important; padding-bottom:8px!important; box-shadow:0 8px 26px rgba(0,0,0,.16); }
+.container > header.is-compact .header-brand-lockup { transform:scale(.88); transform-origin:left center; }
+.header-brand-lockup { transition:transform .25s ease; }
+/* Content determines height; fixed aspect ratios clipped checkout buttons on phones. */
+#full-harga, #full-layanan { align-items:stretch; }
+#full-harga .service-card, #full-layanan .service-card { aspect-ratio:auto!important; }
+#full-harga .cf-card-actions, #full-layanan .service-card > div:last-child { flex-shrink:0; }
+#full-harga .pricing-price-value { display:block; overflow:visible; -webkit-line-clamp:unset; overflow-wrap:anywhere; }
+#full-harga .cf-card-actions button, #full-layanan .service-card > div:last-child button { min-height:44px; white-space:normal; }
+@media (hover:hover) and (pointer:fine) {
+    .cf-card-actions button:not(:disabled):hover, #tab-checkout .btn-modal-primary:not(:disabled):hover { animation:joki-button-bounce .42s ease-out; }
+    #full-harga .cf-price-card:hover, #full-layanan .service-card:hover { transform:perspective(900px) rotateX(2deg) rotateY(-2deg) translateY(-3px); }
+}
+@media (hover:none) {
+    #full-layanan .service-card:active { transform:perspective(900px) rotateX(1deg) scale(.995); }
+}
+@keyframes joki-button-bounce { 0%,100% { transform:translateY(0); } 40% { transform:translateY(-4px); } 70% { transform:translateY(1px); } }
+@media (max-width:760px) {
+    .joki-skeleton-media { height:94px; }
+    #bn-04-slot { right:16px; bottom:calc(16px + env(safe-area-inset-bottom)); }
+    .bn-04__toast-desc { overflow-wrap:anywhere; }
+}
+@media (prefers-reduced-motion:reduce) {
+    .joki-skeleton-block::after, .bn-04__toast, .bn-04__toast.is-out, .bn-08-cart-shake, .bn-08-badge-pop,
+    .payment-success-pop, .payment-success-pop svg, .cf-upload.is-over .cf-upload__outline rect,
+    #full-harga .cf-card-actions, .cf-card-actions button, #tab-checkout .btn-modal-primary { animation:none!important; }
+    .payment-success-pop svg { stroke-dashoffset:0; }
+    .container > header, .header-brand-lockup, .ba-03__fill, .service-card, .testimonial-product-card { transition:none!important; }
+    #full-harga .service-card, #full-layanan .service-card, .testimonial-product-card { transform:none!important; }
+}
