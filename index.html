@@ -7466,9 +7466,20 @@
                         items: payload.items,
                         promo: payload.promo
                     });
+                    let attachmentUploadError = null;
                     if (selectedTaskFiles.length) {
                         if (buyButton) buyButton.textContent = 'Mengunggah lampiran...';
-                        payload.task.attachments = await uploadMayarAttachments(payment.order_id, draftKey);
+                        try {
+                            payload.task.attachments = await uploadMayarAttachments(payment.order_id, draftKey);
+                        } catch (attachmentError) {
+                            // Pesanan dan link pembayaran sudah dibuat. Jangan pernah membatalkan
+                            // checkout hanya karena penyimpanan lampiran sementara bermasalah.
+                            attachmentUploadError = attachmentError?.message || 'Lampiran belum dapat dikirim ke Google Drive.';
+                            payload.task.attachments = [];
+                            const fileStatus = document.getElementById('checkoutFileStatus');
+                            if (fileStatus) fileStatus.textContent = 'Pembayaran tetap dapat dilanjutkan. Lampiran belum terkirim; gunakan link Google Drive atau coba kirim ulang nanti.';
+                            window.showToast('Pembayaran tetap dibuat. Lampiran belum tersimpan di Drive.', 'Lampiran belum terkirim', 'warning');
+                        }
                     }
                     const order = {
                         id: payment.order_id,
@@ -7489,7 +7500,8 @@
                         orderStatus: 'WAITING_PAYMENT',
                         paymentUrl: payment.paymentUrl,
                         expiryTime: payment.expires_at,
-                        transactionId: payment.transaction_id || null
+                        transactionId: payment.transaction_id || null,
+                        attachmentUploadError
                     };
                     currentOrder = order;
                     savePendingMayarOrder(order);

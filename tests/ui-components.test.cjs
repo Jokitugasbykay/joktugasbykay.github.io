@@ -20,7 +20,9 @@ assert.equal(context.validDriveUrl('https://drive.google.com.attacker.test/a'), 
 assert.equal(context.validDriveUrl('javascript:alert(1)'), false);
 assert.equal(context.validDriveUrl('https://someone@drive.google.com/a'), false);
 const mb=1024*1024;
-assert.equal(context.validateTaskFiles([{name:'a.pdf',size:60*mb},{name:'b.zip',size:50*mb}]).length,1);
+assert.equal(context.validateTaskFiles([{name:'a.pdf',size:51*mb}]).length,0);
+assert.equal(context.validateTaskFiles([{name:'a.pdf',size:30*mb},{name:'b.zip',size:21*mb}]).length,1);
+assert.equal(context.validateTaskFiles([{name:'a.pdf',size:30*mb},{name:'b.zip',size:20*mb}]).length,2);
 assert.equal(context.validateTaskFiles(Array.from({length:12},()=>({name:'a.pdf',size:1}))).length,10);
 assert.equal(context.validateTaskFiles([{name:'a.exe',size:1},{name:'empty.pdf',size:0},{name:'valid.DOCX',size:1}]).length,1);
 context.updateThresholdProgress(75000);
