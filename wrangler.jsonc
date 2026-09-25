@@ -2,6 +2,9 @@
   "name": "jokiin-payment-api",
   "main": "src/worker.js",
   "compatibility_date": "2026-09-20",
+  "vars": {
+    "SUPABASE_URL": "https://xdbnwjvxqtpkoaigedsk.supabase.co"
+  },
   "assets": {
     "directory": ".",
     "binding": "ASSETS",
