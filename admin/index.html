@@ -31,6 +31,18 @@
 <body>
 <main>
   <h1>Pesanan JOKI.IN</h1>
+  <nav class="bar" aria-label="Tab admin">
+    <button type="button" id="ordersTab">Pesanan</button>
+    <button type="button" id="folderTab">Folder Lampiran</button>
+  </nav>
+  <section id="folderPanel" hidden>
+    <h2>Folder Google Drive untuk lampiran pelanggan</h2>
+    <p>Tempel link folder tujuan setiap kali folder penampung diganti. Gunakan akun admin JOKI.IN yang memiliki akses ke Supabase.</p>
+    <div class="bar"><input id="adminSession" type="password" autocomplete="off" placeholder="Token sesi admin Supabase" aria-label="Token sesi admin Supabase"></div>
+    <div class="bar"><input id="folderUrl" type="url" placeholder="https://drive.google.com/drive/folders/..."><button type="button" id="saveFolder">Simpan folder</button></div>
+    <p id="folderMessage" role="status"></p>
+  </section>
+  <section id="ordersPanel">
   <div class="bar">
     <input id="token" type="password" placeholder="Token admin (ADMIN_TOKEN)" autocomplete="off">
     <select id="status">
@@ -43,6 +55,7 @@
   </div>
   <div id="msg" role="status">Masukkan token lalu tekan Muat. Token hanya disimpan di memori halaman ini.</div>
   <div id="list"></div>
+  </section>
 </main>
 <script>
 // Semua data pesanan berasal dari pelanggan, jadi SELALU dirender dengan textContent (tidak pernah innerHTML).
@@ -86,6 +99,7 @@ function render(orders) {
     row(dl, 'Deadline', o.task.deadline);
     row(dl, 'Catatan', o.task.notes);
     row(dl, 'Link Drive', o.task.drive_url ? safeLink(o.task.drive_url, o.task.drive_url, ['https:']) : '-');
+    for (const file of (Array.isArray(o.task.attachments) ? o.task.attachments : [])) row(dl, 'Lampiran', safeLink(file.drive_url, file.name, ['https:']));
     card.appendChild(dl); list.appendChild(card);
   }
 }
@@ -102,6 +116,21 @@ async function load() {
 }
 $('load').addEventListener('click', load);
 $('token').addEventListener('keydown', (e) => { if (e.key === 'Enter') load(); });
+const paymentApi = 'https://jokiin-payment-api.gamingyoga14.workers.dev';
+function switchAdminTab(folder) { $('folderPanel').hidden = !folder; $('ordersPanel').hidden = folder; }
+$('ordersTab').addEventListener('click', () => switchAdminTab(false));
+$('folderTab').addEventListener('click', () => switchAdminTab(true));
+$('saveFolder').addEventListener('click', async () => {
+  const session = $('adminSession').value.trim();
+  if (!session) { $('folderMessage').textContent = 'Token sesi admin diperlukan.'; return; }
+  $('folderMessage').textContent = 'Menyimpan folder…';
+  try {
+    const response = await fetch(paymentApi + '/api/task-folder', {method:'PUT',headers:{Authorization:'Bearer ' + session,'content-type':'application/json'},body:JSON.stringify({folder_url:$('folderUrl').value.trim()})});
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Gagal menyimpan folder.');
+    $('folderMessage').textContent = 'Folder lampiran diperbarui.';
+  } catch (error) { $('folderMessage').textContent = error.message; }
+});
 </script>
 </body>
 </html>

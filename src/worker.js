@@ -2,12 +2,71 @@ const JSON_HEADERS = {
   'content-type': 'application/json; charset=utf-8',
   'cache-control': 'no-store',
   'access-control-allow-origin': 'https://jokiin.my.id',
-  'access-control-allow-headers': 'content-type,authorization,x-webhook-token,x-mayar-signature',
-  'access-control-allow-methods': 'GET,POST,OPTIONS'
+  'access-control-allow-headers': 'content-type,authorization,x-webhook-token,x-mayar-signature,x-order-id,x-order-key,x-file-name',
+  'access-control-allow-methods': 'GET,POST,PUT,OPTIONS'
 };
 
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: JSON_HEADERS });
 const clean = (value, max = 250) => typeof value === 'string' ? value.trim().slice(0, max) : '';
+const MAX_TASK_BYTES = 50 * 1024 * 1024;
+const FILE_MIMES = {pdf:'application/pdf',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',zip:'application/zip',jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png'};
+
+async function googleToken(env) {
+  if (!env.GOOGLE_DRIVE_CLIENT_ID || !env.GOOGLE_DRIVE_CLIENT_SECRET || !env.GOOGLE_DRIVE_REFRESH_TOKEN) return null;
+  const response = await fetch('https://oauth2.googleapis.com/token', { method:'POST', headers:{'content-type':'application/x-www-form-urlencoded'}, body:new URLSearchParams({client_id:env.GOOGLE_DRIVE_CLIENT_ID,client_secret:env.GOOGLE_DRIVE_CLIENT_SECRET,refresh_token:env.GOOGLE_DRIVE_REFRESH_TOKEN,grant_type:'refresh_token'}) });
+  if (!response.ok) throw new Error(`Drive token error ${response.status}`);
+  return (await response.json()).access_token;
+}
+
+async function taskFolderSetting(request, env) {
+  if (!corsOk(request)) return json({error:'Origin tidak diizinkan.'},403);
+  const userId = await authenticatedUserId(request, env);
+  if (!userId) return json({error:'Login admin diperlukan.'},401);
+  const profile = await supabase(env,`profiles?id=eq.${encodeURIComponent(userId)}&select=role&limit=1`);
+  if (!['admin','super_admin'].includes(profile?.[0]?.role)) return json({error:'Akses admin diperlukan.'},403);
+  if (request.method === 'GET') {
+    const rows = await supabase(env,'site_settings?key=eq.task_upload_drive_folder&select=value&limit=1');
+    return json({folder_url:rows?.[0]?.value?.folder_url || ''});
+  }
+  const body = await request.json();
+  const folderUrl = clean(body?.folder_url,300);
+  const match = /^https:\/\/drive\.google\.com\/drive\/folders\/([A-Za-z0-9_-]{10,120})\/?(?:\?.*)?$/.exec(folderUrl);
+  if (!match) return json({error:'Gunakan link folder Google Drive yang valid.'},400);
+  await supabase(env,'site_settings?on_conflict=key',{method:'POST',headers:{Prefer:'resolution=merge-duplicates'},body:JSON.stringify({key:'task_upload_drive_folder',value:{folder_id:match[1],folder_url:folderUrl}})});
+  return json({folder_url:folderUrl});
+}
+
+async function uploadTaskFile(request, env) {
+  if (!corsOk(request)) return json({error:'Origin tidak diizinkan.'},403);
+  const id = clean(request.headers.get('x-order-id'),80);
+  const draftKey = clean(request.headers.get('x-order-key'),100);
+  let name;
+  try { name = decodeURIComponent(request.headers.get('x-file-name') || ''); } catch { return json({error:'Nama file tidak valid.'},400); }
+  const extension = name.split('.').pop()?.toLowerCase();
+  const size = Number(request.headers.get('content-length'));
+  if (!id || !draftKey || name.length > 200 || !FILE_MIMES[extension] || /[\\/\x00-\x1f]/.test(name) || !Number.isInteger(size) || size < 1 || size > MAX_TASK_BYTES) return json({error:'Lampiran tidak valid atau melebihi 50 MB.'},400);
+  const rows = await supabase(env,`payment_orders?id=eq.${encodeURIComponent(id)}&request_key=eq.${encodeURIComponent(draftKey)}&select=id,task,payment_status&limit=1`);
+  const order = rows?.[0];
+  if (!order || order.payment_status !== 'PENDING') return json({error:'Pesanan tidak tersedia untuk lampiran.'},403);
+  const attachments = Array.isArray(order.task?.attachments) ? order.task.attachments : [];
+  const existing = attachments.find(file => file.name === name && Number(file.size) === size);
+  if (existing) return json({attachment:existing});
+  if (attachments.length >= 10 || attachments.reduce((sum,file)=>sum+Number(file.size||0),size)>MAX_TASK_BYTES) return json({error:'Maksimal 10 file / total 50 MB.'},400);
+  const settings = await supabase(env,'site_settings?key=eq.task_upload_drive_folder&select=value&limit=1');
+  const folderId = clean(settings?.[0]?.value?.folder_id,120);
+  const token = await googleToken(env);
+  if (!/^[A-Za-z0-9_-]{10,120}$/.test(folderId) || !token) return json({error:'Folder lampiran belum siap. Hubungi admin.'},503);
+  const session = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id,name',{method:'POST',headers:{Authorization:`Bearer ${token}`,'content-type':'application/json','x-upload-content-type':FILE_MIMES[extension],'x-upload-content-length':String(size)},body:JSON.stringify({name,parents:[folderId]})});
+  const location = session.headers.get('location');
+  if (!session.ok || !location?.startsWith('https://www.googleapis.com/')) throw new Error(`Drive session error ${session.status}`);
+  const uploaded = await fetch(location,{method:'PUT',headers:{'content-type':FILE_MIMES[extension]},body:request.body});
+  if (!uploaded.ok) throw new Error(`Drive upload error ${uploaded.status}`);
+  const file = await uploaded.json();
+  if (!file?.id) throw new Error('Drive returned no file ID');
+  const entry = {name,size,drive_url:`https://drive.google.com/file/d/${encodeURIComponent(file.id)}/view`};
+  await supabase(env,`payment_orders?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:JSON.stringify({task:{...order.task,attachments:[...attachments,entry]}})});
+  return json({attachment:entry},201);
+}
 
 function supabaseHeaders(env) {
   if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) throw new Error('Supabase secret belum dikonfigurasi.');
@@ -242,6 +301,8 @@ export default { async fetch(request, env) {
   try {
     if (url.pathname === '/api/health') return json({ ok: true, worker: 'jokiin-payment-api' });
     if (url.pathname === '/api/create-mayar-payment' && request.method === 'POST') return await createPayment(request, env);
+    if (url.pathname === '/api/upload-task-file' && request.method === 'POST') return await uploadTaskFile(request, env);
+    if (url.pathname === '/api/task-folder' && ['GET', 'PUT'].includes(request.method)) return await taskFolderSetting(request, env);
     if (url.pathname === '/api/mayar-webhook' && request.method === 'POST') return await webhook(request, env);
     if (url.pathname === '/api/check-status' && request.method === 'GET') return await paymentStatus(request, env);
     if (url.pathname === '/api/promo' && request.method === 'GET') return await promo(request, env);
