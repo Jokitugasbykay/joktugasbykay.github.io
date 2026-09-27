@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masuk & Daftar Akun — JOKI.IN</title>
+    <meta name="description" content="Masuk atau daftar akun JOKI.IN untuk memesan layanan joki tugas kuliah, tracking pesanan, dan kelola akun.">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --text-main: #f0f6fc;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --primary-glow: rgba(16, 185, 129, 0.2);
+            --error: #ef4444;
+            --surface-secondary: #21262d;
+            --font-sans: 'Plus Jakarta Sans', 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f6f8fa;
+            --card-bg: #ffffff;
+            --text-main: #1f2328;
+            --text-secondary: #57606a;
+            --text-muted: #8c959f;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --primary-glow: rgba(16, 185, 129, 0.15);
+            --error: #cf222e;
+            --surface-secondary: #f3f4f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-sans);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            min-height: 100svh;
+            display: grid;
+            place-items: center;
+            padding: 24px 16px;
+            position: relative;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(at 15% 15%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
+                radial-gradient(at 85% 85%, rgba(99, 102, 241, 0.06) 0px, transparent 50%);
+        }
+
+        .auth-container {
+            width: min(420px, 100%);
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .brand-header a {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-main);
+        }
+
+        .brand-lockup { display:block; width:148px; height:58px; object-fit:contain; }
+        .brand-lockup-light { display:none; }
+        [data-theme="light"] .brand-lockup-dark { display:none; }
+        [data-theme="light"] .brand-lockup-light { display:block; }
+
+
+        /* CARD SHELL (tlf-05 & tlf-16 hybrid) */
+        .auth-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: clamp(24px, 6vw, 36px);
+            box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        [data-theme="light"] .auth-card {
+            box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .auth-view {
+            display: none;
+            animation: authFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .auth-view.active {
+            display: block;
+        }
+
+        @keyframes authFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px) scale(0.99);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* VIEW 1: LOGIN (tlf-05 Minimalist Fintech) */
+        .tlf05-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.82rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+
+        .tlf05-title {
+            font-size: 1.55rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            color: var(--text-main);
+            margin-bottom: 6px;
+        }
+
+        .tlf05-desc {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            margin-bottom: 22px;
+            line-height: 1.45;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            font-size: 0.84rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .form-input {
+            width: 100%;
+            height: 44px;
+            padding: 0 14px;
+            border-radius: 10px;
+            font-size: 0.92rem;
+            color: var(--text-main);
+            background: var(--surface-secondary);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+            background: var(--card-bg);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .input-error {
+            font-size: 0.78rem;
+            color: var(--error);
+            margin-top: 4px;
+            display: none;
+        }
+
+        .has-error .input-error {
+            display: block;
+        }
+
+        .has-error .form-input {
+            border-color: var(--error);
+        }
+
+        .btn-continue {
+            width: 100%;
+            height: 44px;
+            border-radius: 10px;
+            border: 0;
+            background: var(--primary);
+            color: #ffffff;
+            font-size: 0.94rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            margin-top: 8px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-continue:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-continue:active {
+            transform: translateY(1px);
+        }
+
+        .btn-continue:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .or-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .or-divider::before,
+        .or-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-color);
+        }
+
+        .btn-social {
+            width: 100%;
+            height: 44px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn-google {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        .btn-google:hover {
+            background: var(--surface-secondary);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        [data-theme="light"] .btn-google:hover {
+            border-color: rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-google svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
+        .auth-switch-text {
+            text-align: center;
+            font-size: 0.86rem;
+            color: var(--text-secondary);
+            margin-top: 20px;
+        }
+
+        .auth-switch-text a,
+        .auth-switch-text button {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            padding: 0;
+            font-size: inherit;
+        }
+
+        .auth-switch-text a:hover,
+        .auth-switch-text button:hover {
+            text-decoration: underline;
+        }
+
+        /* VIEW 2: SIGN UP (tlf-16 Social First) */
+        .tlf16-icon {
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+
+        .tlf16-title {
+            font-size: 1.55rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            color: var(--text-main);
+        }
+
+        .tlf16-desc {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            margin-bottom: 22px;
+        }
+
+        .social-buttons-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-social-google {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-weight: 600;
+            height: 48px;
+            border-radius: 12px;
+        }
+
+        .btn-social-google:hover {
+            background: var(--surface-secondary);
+        }
+
+        .email-signup-box {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid var(--error);
+            color: var(--error);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 0.84rem;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 0.84rem;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .back-home-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-muted);
+            font-size: 0.84rem;
+            text-decoration: none;
+            margin-top: 20px;
+            transition: color 0.2s;
+        }
+
+        .back-home-link:hover {
+            color: var(--primary);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="auth-container">
+        <!-- BRAND LOGO -->
+        <div class="brand-header">
+            <a href="/" aria-label="JOKI.IN — Beranda">
+                <img class="brand-lockup brand-lockup-dark" src="../assets/brand-dark-lockup.png" alt="JOKI.IN">
+                <img class="brand-lockup brand-lockup-light" src="../assets/brand-light-lockup.png" alt="JOKI.IN">
+            </a>
+        </div>
+
+        <!-- MAIN CARD -->
+        <div class="auth-card">
+            <div id="authGlobalAlert" class="alert-error" role="alert"></div>
+            <div id="authSuccessAlert" class="alert-success" role="status"></div>
+
+            <!-- ============================================== -->
+            <!-- VIEW 1: LOGIN (tlf-05 Fintech Layered Shadow) -->
+            <!-- ============================================== -->
+            <div id="loginView" class="auth-view active">
+                <div class="tlf05-badge">JOKI.IN</div>
+                <h1 class="tlf05-title">Masuk ke akun kamu</h1>
+                <p class="tlf05-desc">Selamat datang kembali! Masuk untuk melanjutkan pemesanan tugas dan cek status pengerjaan.</p>
+
+                <form id="loginForm" onsubmit="event.preventDefault(); window.submitLogin();">
+                    <div class="form-group" id="loginEmailGroup">
+                        <label class="form-label" for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" class="form-input" placeholder="nama@email.com" autocomplete="email" required>
+                        <span class="input-error" id="loginEmailErr">Email tidak valid</span>
+                    </div>
+
+                    <div class="form-group" id="loginPassGroup">
+                        <label class="form-label" for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" class="form-input" placeholder="Minimal 6 karakter" autocomplete="current-password" required>
+                        <span class="input-error" id="loginPassErr">Password minimal 6 karakter</span>
+                    </div>
+                    <p class="auth-switch-text" style="margin:-4px 0 18px; text-align:right;">
+                        <button type="button" onclick="window.openResetPassword()">Lupa password?</button>
+                    </p>
+
+                    <button type="submit" id="btnLoginSubmit" class="btn-continue">
+                        <span id="loginBtnText">Masuk Sekarang</span>
+                    </button>
+                </form>
+
+                <div class="or-divider"><span>atau masuk dengan</span></div>
+
+                <button type="button" class="btn-social btn-google" onclick="window.submitGoogleAuth()">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Google
+                </button>
+
+                <p class="auth-switch-text">
+                    Belum punya akun? <button type="button" onclick="window.switchAuthMode('signup')">Daftar sekarang</button>
+                </p>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- VIEW 2: SIGN UP (tlf-16 Social-First Brand Buttons) -->
+            <!-- ============================================== -->
+            <div id="signupView" class="auth-view">
+                <div style="text-align: center;">
+                    <h1 class="tlf16-title">Gabung JOKI.IN</h1>
+                    <p class="tlf16-desc">Buat akun kamu secara instan dengan satu sentuhan.</p>
+                </div>
+
+                <div class="social-buttons-stack">
+                    <button type="button" class="btn-social btn-social-google" onclick="window.submitGoogleAuth()">
+                        <svg viewBox="0 0 24 24" style="width:20px; height:20px;" aria-hidden="true">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Daftar dengan Google
+                    </button>
+                </div>
+
+                <div class="or-divider"><span>atau daftar dengan email</span></div>
+
+                <form id="signupForm" onsubmit="event.preventDefault(); window.submitRegister();">
+                    <div class="form-group" id="regEmailGroup">
+                        <label class="form-label" for="regEmail">Email</label>
+                        <input type="email" id="regEmail" class="form-input" placeholder="nama@email.com" autocomplete="email" required>
+                        <span class="input-error" id="regEmailErr">Email tidak valid</span>
+                    </div>
+
+                    <div class="form-group" id="regWhatsAppGroup">
+                        <label class="form-label" for="regWhatsApp">Nomor WhatsApp</label>
+                        <input type="tel" id="regWhatsApp" class="form-input" placeholder="08123456789" inputmode="tel" autocomplete="tel" required>
+                        <span class="input-error" id="regWhatsAppErr">Nomor WhatsApp tidak valid</span>
+                    </div>
+
+                    <div class="form-group" id="regPassGroup">
+                        <label class="form-label" for="regPassword">Password</label>
+                        <input type="password" id="regPassword" class="form-input" placeholder="Minimal 6 karakter" autocomplete="new-password" required>
+                        <span class="input-error" id="regPassErr">Password minimal 6 karakter</span>
+                    </div>
+
+                    <div class="form-group" id="regConfirmPassGroup">
+                        <label class="form-label" for="regConfirmPassword">Konfirmasi Password</label>
+                        <input type="password" id="regConfirmPassword" class="form-input" placeholder="Ulangi password" autocomplete="new-password" required>
+                        <span class="input-error" id="regConfirmPassErr">Konfirmasi password belum sama</span>
+                    </div>
+
+                    <button type="submit" id="btnRegisterSubmit" class="btn-continue">
+                        <span id="regBtnText">Buat Akun Baru</span>
+                    </button>
+                </form>
+
+                <p class="auth-switch-text">
+                    Sudah punya akun? <button type="button" onclick="window.switchAuthMode('login')">Masuk di sini</button>
+                </p>
+            </div>
+
+            <div id="resetView" class="auth-view">
+                <div style="text-align: center;">
+                    <h1 class="tlf16-title">Atur Password Baru</h1>
+                    <p class="tlf16-desc">Masukkan password baru untuk akun JOKI.IN kamu.</p>
+                </div>
+                <form id="resetForm" onsubmit="event.preventDefault(); window.submitNewPassword();">
+                    <div class="form-group">
+                        <label class="form-label" for="resetPassword">Password Baru</label>
+                        <input type="password" id="resetPassword" class="form-input" placeholder="Minimal 6 karakter" autocomplete="new-password" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="resetConfirmPassword">Konfirmasi Password Baru</label>
+                        <input type="password" id="resetConfirmPassword" class="form-input" placeholder="Ulangi password baru" autocomplete="new-password" required>
+                    </div>
+                    <button type="submit" class="btn-continue">Simpan Password Baru</button>
+                </form>
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="/" class="back-home-link">← Kembali ke Beranda</a>
+        </div>
+    </div>
+
+    <!-- SUPABASE CLIENT & AUTH SCRIPT -->
+    <script src="../config.js"></script>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/+esm';
+        const supabaseUrl = window.JOKIIN_PUBLIC_CONFIG?.SUPABASE_URL;
+        const supabaseAnonKey = window.JOKIIN_PUBLIC_CONFIG?.SUPABASE_ANON_KEY;
+        if (!supabaseUrl || !supabaseAnonKey) {
+            console.error('Konfigurasi Supabase tidak ditemukan.');
+        }
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+        // Check theme preference
+        const savedTheme = localStorage.getItem('jokiin_theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        document.documentElement.setAttribute('data-theme', savedTheme);
+
+        // Mode switch helper
+        window.switchAuthMode = (mode) => {
+            const loginV = document.getElementById('loginView');
+            const signupV = document.getElementById('signupView');
+            const resetV = document.getElementById('resetView');
+            const alertErr = document.getElementById('authGlobalAlert');
+            const alertSucc = document.getElementById('authSuccessAlert');
+            alertErr.style.display = 'none';
+            alertSucc.style.display = 'none';
+
+            if (mode === 'signup') {
+                loginV.classList.remove('active');
+                resetV.classList.remove('active');
+                signupV.classList.add('active');
+                history.replaceState(null, '', '#signup');
+            } else if (mode === 'reset') {
+                loginV.classList.remove('active');
+                signupV.classList.remove('active');
+                resetV.classList.add('active');
+                history.replaceState(null, '', '#reset-password');
+            } else {
+                signupV.classList.remove('active');
+                resetV.classList.remove('active');
+                loginV.classList.add('active');
+                history.replaceState(null, '', '#login');
+            }
+        };
+
+        // Sync initial hash
+        const isPasswordRecovery = new URLSearchParams(window.location.search).get('reset') === '1' || /(?:^|[&#])type=recovery(?:&|$)/.test(window.location.hash);
+        if (window.location.hash === '#signup') {
+            window.switchAuthMode('signup');
+        } else if (isPasswordRecovery || window.location.hash === '#reset-password') {
+            window.switchAuthMode('reset');
+        }
+
+        function showAlert(msg, isSuccess = false) {
+            const errEl = document.getElementById('authGlobalAlert');
+            const succEl = document.getElementById('authSuccessAlert');
+            if (isSuccess) {
+                errEl.style.display = 'none';
+                succEl.textContent = msg;
+                succEl.style.display = 'block';
+            } else {
+                succEl.style.display = 'none';
+                errEl.textContent = msg;
+                errEl.style.display = 'block';
+            }
+        }
+
+        // Check if user already logged in
+        supabase.auth.getSession().then(({ data }) => {
+            if (data?.session?.user && !isPasswordRecovery) {
+                window.location.replace('/');
+            }
+        });
+
+        // Submit Login
+        window.submitLogin = async () => {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const btn = document.getElementById('btnLoginSubmit');
+            const btnText = document.getElementById('loginBtnText');
+
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showAlert('Format email tidak valid.');
+                return;
+            }
+            if (password.length < 6) {
+                showAlert('Password minimal 6 karakter.');
+                return;
+            }
+
+            btn.disabled = true;
+            btnText.innerHTML = '<span class="spinner"></span> Masuk...';
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) {
+                    if (error.code === 'email_not_confirmed') {
+                        throw new Error('Konfirmasi email terlebih dahulu. Silakan periksa inbox atau spam email Anda.');
+                    }
+                    throw new Error('Email atau password salah. Silakan coba lagi.');
+                }
+                showAlert('Berhasil masuk! Mengalihkan...', true);
+                setTimeout(() => {
+                    const redirect = new URLSearchParams(window.location.search).get('redirect') || '/';
+                    window.location.replace(redirect);
+                }, 800);
+            } catch (err) {
+                showAlert(err.message || 'Terjadi kesalahan saat masuk.');
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = 'Masuk Sekarang';
+            }
+        };
+
+        // Submit Register
+        window.submitRegister = async () => {
+            const email = document.getElementById('regEmail').value.trim();
+            const whatsapp = document.getElementById('regWhatsApp').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+            const btn = document.getElementById('btnRegisterSubmit');
+            const btnText = document.getElementById('regBtnText');
+
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showAlert('Format email tidak valid.');
+                return;
+            }
+            if (password.length < 6) {
+                showAlert('Password minimal 6 karakter.');
+                return;
+            }
+            if (!/^\+?[0-9]{9,16}$/.test(whatsapp.replace(/[\s-]/g, ''))) {
+                showAlert('Nomor WhatsApp tidak valid.');
+                return;
+            }
+            if (password !== confirmPassword) {
+                showAlert('Konfirmasi password belum sama.');
+                return;
+            }
+
+            btn.disabled = true;
+            btnText.innerHTML = '<span class="spinner"></span> Mendaftar...';
+
+            try {
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        emailRedirectTo: window.location.origin + '/',
+                        data: { whatsapp }
+                    }
+                });
+                if (error) throw error;
+
+                if (data.session) {
+                    showAlert('Pendaftaran berhasil! Mengalihkan ke beranda...', true);
+                    setTimeout(() => window.location.replace('/'), 1000);
+                } else {
+                    showAlert('Pendaftaran berhasil! Silakan periksa kotak masuk atau spam email Anda untuk konfirmasi akun.', true);
+                }
+            } catch (err) {
+                showAlert(err.message || 'Gagal mendaftarkan akun.');
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = 'Buat Akun Baru';
+            }
+        };
+
+        window.openResetPassword = async () => {
+            const email = document.getElementById('loginEmail').value.trim();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showAlert('Isi alamat email kamu terlebih dahulu, lalu tekan Lupa password.');
+                return;
+            }
+            try {
+                const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/login/?reset=1' });
+                if (error) throw error;
+                showAlert('Link untuk mengatur ulang password sudah dikirim. Periksa inbox atau spam email.', true);
+            } catch (err) { showAlert(err.message || 'Link reset password belum dapat dikirim.'); }
+        };
+
+        window.submitNewPassword = async () => {
+            const password = document.getElementById('resetPassword').value;
+            const confirmPassword = document.getElementById('resetConfirmPassword').value;
+            if (password.length < 6) { showAlert('Password minimal 6 karakter.'); return; }
+            if (password !== confirmPassword) { showAlert('Konfirmasi password belum sama.'); return; }
+            try {
+                const { error } = await supabase.auth.updateUser({ password });
+                if (error) throw error;
+                showAlert('Password berhasil diperbarui. Silakan masuk.', true);
+                window.switchAuthMode('login');
+            } catch (err) { showAlert(err.message || 'Sesi reset password tidak valid atau sudah kedaluwarsa. Minta link baru.'); }
+        };
+
+        // Submit Google OAuth
+        window.submitGoogleAuth = async () => {
+            try {
+                const { error } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: window.location.origin + '/'
+                    }
+                });
+                if (error) throw error;
+            } catch (err) {
+                showAlert(err.message || 'Gagal memulai login Google.');
+            }
+        };
+    </script>
+</body>
+
+</html>

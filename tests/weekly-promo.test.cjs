@@ -5,8 +5,9 @@ const assert = require('node:assert/strict');
 
 const source = fs.readFileSync(path.join(__dirname, '../src/worker.js'), 'utf8').replace('export default {', 'globalThis.worker = {');
 const week = 7 * 86400000;
-const start = new Date(Date.now() - 60000).toISOString();
-const end = new Date(Date.now() - 60000 + week).toISOString();
+const now = Date.now();
+const start = new Date(now - 60000).toISOString();
+const end = new Date(now - 60000 + week - 1000).toISOString();
 let campaign = {active:true,starts_at:start,ends_at:end,coupon:'KAY30',discount_percent:30,text:'Promo tujuh hari'};
 const fetchMock = async (url, options = {}) => {
   const u = new URL(url);
