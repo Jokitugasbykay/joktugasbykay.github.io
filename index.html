@@ -5235,7 +5235,7 @@
                 </div>
 
                 <div class="track-status-menu" id="trackStatusMenu" aria-label="Filter status pesanan">
-                    <button type="button" class="filter-pill active" onclick="window.selectTrackStatusMenu(this)">Semua</button>
+                    <button type="button" class="filter-pill" onclick="window.selectTrackStatusMenu(this)">Semua</button>
                     <button type="button" class="filter-pill" onclick="window.selectTrackStatusMenu(this)">Pending</button>
                     <button type="button" class="filter-pill" onclick="window.selectTrackStatusMenu(this)">Dikerjakan</button>
                     <button type="button" class="filter-pill" onclick="window.selectTrackStatusMenu(this)">Selesai</button>
@@ -5287,7 +5287,7 @@
     <!-- MODAL DETAIL PESANAN KHUSUS -->
     <div id="orderDetailModal" class="modal-overlay" style="display: none;">
         <div class="modal-content" style="max-width: 600px;">
-            <div class="modal-header" style="border-bottom: 1px dashed var(--border-color); padding-bottom:15px;">
+            <div class="modal-header order-detail-header" style="border-bottom: 1px dashed var(--border-color); padding-bottom:15px;">
                 <img class="invoice-brand invoice-brand-light" src="assets/brand-light-lockup.png" alt="JOKI.IN">
                 <img class="invoice-brand invoice-brand-dark" src="assets/brand-dark-lockup.png" alt="JOKI.IN">
                 <h2>Detail Pesanan</h2>
@@ -5320,12 +5320,14 @@
                 <div style="font-size:0.9em; color:var(--text-secondary); line-height:1.6;">
                     <strong>Judul:</strong> <span id="detTaskTitle">-</span><br>
                     <strong>Catatan:</strong> <span id="detTaskNotes">-</span><br>
+                    <strong>Deadline:</strong> <span id="detTaskDeadline">-</span><br>
                     <div style="margin-top:10px;">
                         <strong>File/Keterangan Tugas:</strong><br>
                         <a id="detTaskDrive" href="#" target="_blank"
                             style="color:var(--primary); text-decoration:none; display:inline-block; margin-top:5px; background:#EFF6FF; padding:5px 10px; border-radius:6px;">🔗
                             Lihat Google Drive</a>
                     </div>
+                    <p id="detTaskCompletionNotice" class="task-completion-notice" hidden>File Tugas akan dikirim otomatis melalui Gmail.<br>Jika file tidak ada segera hubungi admin!</p>
                 </div>
 
                 <h4
@@ -8145,9 +8147,27 @@ Teman tugas mahasiswa.`;
             document.body.classList.add('modal-open');
         };
 
-        window.selectTrackStatusMenu = (button) => {
-            document.querySelectorAll('#trackStatusMenu .filter-pill').forEach(item => item.classList.remove('active'));
-            button.classList.add('active');
+        window.selectTrackStatusMenu = async (button) => {
+            const statusMap = {
+                'Semua': 'Semua',
+                'Pending': 'Pending Order',
+                'Dikerjakan': 'Sedang Dikerjakan',
+                'Selesai': 'Selesai'
+            };
+            try {
+                await ensureSession();
+                if (!currentUser) {
+                    window.showToast('Silakan masuk untuk melihat Pesanan Saya.');
+                    window.location.assign('/login/');
+                    return;
+                }
+                currentTrackWA = '';
+                if (!await fetchMyOrders()) return;
+                window.closeModal('guestTrackModal');
+                window.filterOrders(statusMap[button.textContent.trim()] || 'Semua');
+                document.getElementById('ordersModal').style.display = 'flex';
+                document.body.classList.add('modal-open');
+            } catch (error) { window.showToast(error.message || 'Pesanan belum dapat dimuat.'); }
         };
 
         window.openOrdersModal = async () => {
@@ -8296,12 +8316,15 @@ Teman tugas mahasiswa.`;
             const estDate = order.estimatedCompletion ? new Date(order.estimatedCompletion).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-';
             document.getElementById('detEstText').innerText = ordStatusStr === 'COMPLETED' ? `Selesai pada ${estDate}` : `Estimasi selesai: ${estDate}, 20:00 WIB`;
 
-            document.getElementById('detTaskTitle').innerText = order.task.title;
-            document.getElementById('detTaskNotes').innerText = order.task.notes;
+            const task = order.task || {};
+            document.getElementById('detTaskTitle').innerText = task.title || '-';
+            document.getElementById('detTaskNotes').innerText = task.notes || '-';
+            document.getElementById('detTaskDeadline').innerText = task.deadline || '-';
+            document.getElementById('detTaskCompletionNotice').hidden = !['COMPLETED', 'SELESAI'].includes(String(ordStatusStr).toUpperCase());
 
             const driveLink = document.getElementById('detTaskDrive');
-            if (order.task.googleDriveUrl && validDriveUrl(order.task.googleDriveUrl) && payStatusStr === 'PAID') {
-                driveLink.href = order.task.googleDriveUrl;
+            if (task.googleDriveUrl && validDriveUrl(task.googleDriveUrl) && payStatusStr === 'PAID') {
+                driveLink.href = task.googleDriveUrl;
                 driveLink.style.display = 'inline-block';
             } else {
                 driveLink.style.display = 'none';
@@ -8312,8 +8335,8 @@ Teman tugas mahasiswa.`;
                 driveLink.insertAdjacentElement('afterend', attachmentList);
             }
             attachmentList.replaceChildren();
-            if (payStatusStr === 'PAID' && Array.isArray(order.task.attachments)) {
-                for (const file of order.task.attachments) {
+            if (payStatusStr === 'PAID' && Array.isArray(task.attachments)) {
+                for (const file of task.attachments) {
                     if (!validDriveUrl(file.drive_url) || !file.drive_url) continue;
                     const link = document.createElement('a'); link.href = file.drive_url;
                     link.target = '_blank'; link.rel = 'noopener noreferrer'; link.textContent = file.name;
