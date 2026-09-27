@@ -1321,6 +1321,24 @@
     margin-top: 18px !important;
 }
 
+.track-status-menu {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+    margin-top: 14px !important;
+    padding: 10px !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 14px !important;
+    background: var(--surface-secondary) !important;
+}
+
+.track-status-menu .filter-pill {
+    min-width: 0 !important;
+    padding: 7px 13px !important;
+    font-size: 0.78rem !important;
+}
+
 .track-btn-primary {
     width: 100% !important;
     height: 48px !important;
@@ -1375,4 +1393,36 @@
 
 .track-footer-note a:hover {
     text-decoration: underline !important;
+}
+
+/* Logo di bagian atas nota/detail pesanan. */
+.order-detail-header {
+    text-align: left !important;
+}
+
+.order-detail-header h2,
+.order-detail-header p {
+    text-align: left !important;
+}
+
+.invoice-brand {
+    display: block;
+    width: min(104px, 34vw);
+    height: auto;
+    margin: 0 0 10px;
+}
+
+.invoice-brand-dark { display: none; }
+[data-theme="dark"] .invoice-brand-light { display: none; }
+[data-theme="dark"] .invoice-brand-dark { display: block; }
+
+.task-completion-notice {
+    margin: 14px 0 0 !important;
+    padding: 10px 12px !important;
+    border-radius: 10px !important;
+    border: 1px solid rgba(16, 185, 129, 0.32) !important;
+    background: rgba(16, 185, 129, 0.09) !important;
+    color: var(--text-secondary) !important;
+    font-size: 0.78rem !important;
+    line-height: 1.5 !important;
 }
