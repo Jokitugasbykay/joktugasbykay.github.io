@@ -22,4 +22,7 @@ alter table public.payment_orders add column if not exists request_key text;
 create unique index if not exists payment_orders_request_key_unique on public.payment_orders (request_key);
 alter table public.payment_orders add column if not exists promo text not null default '';
 alter table public.payment_orders add column if not exists last_verified_at timestamptz;
+-- Dicatat setelah pembayaran terverifikasi, misalnya QRIS, VA, atau e-wallet.
+-- Worker membaca kolom ini saat checkout dan status pembayaran.
+alter table public.payment_orders add column if not exists payment_method text;
 alter table public.payment_orders enable row level security;

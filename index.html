@@ -5364,7 +5364,7 @@
             <div class="checkout-title" id="checkoutHeaderTitle">Penyelesaian Pesanan</div>
             <div class="header-actions" id="mainHeaderActions">
                 <button id="cartHeaderBtn" class="btn-cart" onclick="window.openCartModal()"><span id="cartIconWrapper">🛒</span> Keranjang <span id="cartHeaderBadge" class="cart-header-badge" style="display:none;">0</span></button>
-                <button id="ordersHeaderBtn" class="btn-cart" onclick="window.openOrdersModal()">Pesanan Saya</button>
+                <button id="ordersHeaderBtn" class="btn-cart" onclick="window.openGuestTrackModal()">Pesanan Saya</button>
                 <button id="authHeaderBtn" class="btn-header" onclick="window.location.assign('/login/')">Masuk</button>
             </div>
         </header>
@@ -7945,10 +7945,11 @@
                 box.style.display = 'none';
                 document.getElementById('succMethodRow').hidden = true;
             } else {
-                // Pending state has only one CTA: continue the payment at Mayar.
+                // Tombol detail tetap tersedia supaya pelanggan memperoleh penjelasan
+                // ketika mencoba membukanya sebelum pembayaran terkonfirmasi.
                 icon.className = 'success-icon-wrapper';
                 icon.innerHTML = '<span class="pending-spinner" aria-label="Menunggu pembayaran"></span>';
-                detailsButton.hidden = true; homeButton.hidden = true;
+                detailsButton.hidden = false; homeButton.hidden = true;
                 document.getElementById('succMethodRow').hidden = true;
             }
         }
@@ -8102,7 +8103,22 @@ Teman tugas mahasiswa.`;
 
         window.viewOrderDetailsFromSuccess = () => {
             if (!currentOrder) return;
-            window.openOrderDetail(currentOrder.orderCode || currentOrder.id);
+            if (String(currentOrder.paymentStatus || '').toUpperCase() !== 'PAID') {
+                window.showToast('Silakan selesaikan pembayaran terlebih dahulu');
+                return;
+            }
+            // Pesanan Mayar memakai data transaksi sendiri, bukan pelacakan pesanan lama.
+            const detailId = currentOrder.orderCode || currentOrder.id;
+            const detailOrder = {
+                ...currentOrder,
+                id: detailId,
+                createdAt: currentOrder.createdAt || new Date().toISOString(),
+                orderStatus: currentOrder.orderStatus || 'PENDING_ORDER',
+                items: Array.isArray(currentOrder.items) ? currentOrder.items : [],
+                task: currentOrder.task || {}
+            };
+            ORDERS = [detailOrder, ...ORDERS.filter(order => order.id !== detailId)];
+            renderOrderDetail(detailId);
         };
 
         // ==========================================
@@ -8110,6 +8126,15 @@ Teman tugas mahasiswa.`;
         // ==========================================
         let currentTrackWA = '';
         let currentOrderFilter = 'Semua';
+
+        window.openGuestTrackModal = () => {
+            const input = document.getElementById('trackInput');
+            if (input) input.value = '';
+            const error = document.getElementById('trackError');
+            if (error) error.style.display = 'none';
+            document.getElementById('guestTrackModal').style.display = 'flex';
+            document.body.classList.add('modal-open');
+        };
 
         window.openOrdersModal = async () => {
             try {
@@ -8121,12 +8146,7 @@ Teman tugas mahasiswa.`;
                     document.getElementById('ordersModal').style.display = 'flex';
                     document.body.classList.add('modal-open');
                 } else if (currentTrackWA) { await window.openOrderDetail(currentTrackWA); }
-                else {
-                    document.getElementById('trackInput').value = '';
-                    document.getElementById('trackError').style.display = 'none';
-                    document.getElementById('guestTrackModal').style.display = 'flex';
-                    document.body.classList.add('modal-open');
-                }
+                else window.openGuestTrackModal();
             } catch (error) { window.showToast(error.message || 'Pesanan belum dapat dimuat.'); }
         };
 
