@@ -25,9 +25,9 @@ assert.equal(context.validateTaskFiles([{name:'a.pdf',size:30*mb},{name:'b.zip',
 assert.equal(context.validateTaskFiles([{name:'a.pdf',size:30*mb},{name:'b.zip',size:20*mb}]).length,2);
 assert.equal(context.validateTaskFiles(Array.from({length:12},()=>({name:'a.pdf',size:1}))).length,10);
 assert.equal(context.validateTaskFiles([{name:'a.exe',size:1},{name:'empty.pdf',size:0},{name:'valid.DOCX',size:1}]).length,1);
-context.updateThresholdProgress(75000);
+context.updateThresholdProgress(750000);
 assert.equal(element('cartThresholdTrack').attrs['aria-valuenow'],'50');
-context.updateThresholdProgress(200000);
+context.updateThresholdProgress(1500001);
 assert.equal(element('cartThresholdFill').style.width,'100%');
 assert.equal(element('cartThresholdBanner').dataset.state,'unlocked');
 context.updateThresholdProgress(0);

@@ -4648,8 +4648,12 @@
         .cart-header-badge{display:inline-grid;place-items:center;min-width:18px;height:18px;margin-left:4px;padding:0 5px;border-radius:999px;background:var(--error);color:#fff;font-size:.7rem;font-weight:800}
         .modal-close-btn-left{position:absolute;left:14px;top:14px;border:0;border-radius:8px;width:34px;height:34px;color:var(--text-secondary);background:var(--surface-secondary);cursor:pointer;font-size:1rem}.modal-close-btn-left:hover{color:var(--error)}
 
-        /* Tombol tutup tambahan hanya untuk ponsel. Desktop sengaja tidak diubah. */
-        .mobile-modal-close { display: none; }
+        /* Posisi tombol tutup popup konsisten di kanan atas. */
+        .mobile-modal-close { display:grid; place-items:center; position:absolute; z-index:13; top:14px; right:14px; width:36px; height:36px; padding:0; border:1px solid var(--border-color); border-radius:50%; background:var(--card-solid); color:var(--text-main); cursor:pointer; }
+        .modal-close-btn-left { left:auto !important; right:14px !important; top:14px !important; z-index:13; }
+        #welcomeModal .welcome-wrapper { position:relative; }
+        #welcomeModal .welcome-content { position:static; }
+        #welcomeModal .welcome-close { position:absolute; right:12px !important; left:auto !important; top:12px !important; z-index:30; width:34px !important; height:34px !important; font-size:1.1rem !important; background:var(--card-solid); border:1px solid var(--border-color); box-shadow:0 3px 12px rgba(0,0,0,.25); }
         @media (max-width: 760px) {
             .mobile-modal-close {
                 display: grid;
@@ -4657,7 +4661,7 @@
                 position: absolute;
                 z-index: 12;
                 top: 12px;
-                left: 12px;
+                right: 12px;
                 width: 36px;
                 height: 36px;
                 padding: 0;
@@ -4672,10 +4676,10 @@
             }
             .modal-overlay > .modal-content,
             .modal-overlay > .welcome-wrapper { position: relative; }
-            .modal-close-btn-left { left: 12px !important; top: 12px !important; z-index: 13; }
+            .modal-close-btn-left { left: auto !important; right: 12px !important; top: 12px !important; z-index: 13; }
             #welcomeModal .welcome-close,
             #profileModal .ssc-01__close-x,
-            #guestTrackModal .track-modal-close { left: 12px !important; right: auto !important; top: 12px !important; z-index: 13; }
+            #guestTrackModal .track-modal-close { left: auto !important; right: 12px !important; top: 12px !important; z-index: 30; }
         }
         .ba-03__banner{margin:0 0 16px;padding:13px;border:1px solid var(--border-color);border-radius:12px;background:var(--surface-secondary)}.ba-03__msg{display:flex;gap:8px;align-items:center;margin:0 0 10px;color:var(--text-secondary);font-size:.84rem}.ba-03__msg strong{color:var(--primary)}.ba-03__track{height:8px;overflow:hidden;border-radius:999px;background:rgba(16,185,129,.16)}.ba-03__fill{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--primary),#52e89a);transition:width .45s cubic-bezier(.16,1,.3,1)}.ba-03__scale{display:flex;justify-content:space-between;margin-top:6px;color:var(--text-muted);font-size:.7rem}.ba-03__banner[data-state="unlocked"]{border-color:var(--primary);background:rgba(16,185,129,.1)}
         .ba-14__summary{display:flex;gap:10px;margin-bottom:14px;padding:12px;border:1px solid rgba(239,68,68,.45);border-radius:10px;background:rgba(239,68,68,.08);color:var(--error)}.ba-14__summary[hidden]{display:none}.ba-14__summary h4,.ba-14__summary ul{margin:0}.ba-14__summary ul{padding-left:18px;font-size:.82rem}.ba-14__msg{display:none;margin:6px 0 0;color:var(--error);font-size:.78rem}.ba-14__f.has-error .form-control{border-color:var(--error);box-shadow:0 0 0 3px rgba(239,68,68,.12)}
@@ -4902,7 +4906,7 @@
                 <div class="welcome-ctas">
                     <button class="w-btn-primary" onclick="window.closeWelcomeModal()">Mulai Nugas Sekarang</button>
                     <button class="w-btn-wa"
-                        onclick="window.openAdminModal('Halo Admin NUGASIN, saya ingin konsultasi mengenai tugas saya.')">
+                    onclick="window.openAdminModal('Halo Admin JOKI.IN, saya ingin konsultasi mengenai tugas saya.')">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path
@@ -5160,9 +5164,9 @@
                 <h2>Keranjang Saya</h2>
             </div>
             <div class="ba-03__banner" id="cartThresholdBanner" data-state="locked">
-                <p class="ba-03__msg" id="cartThresholdText">Target pesanan: <strong>Rp150.000</strong>.</p>
+                <p class="ba-03__msg" id="cartThresholdText">Diskon 5% untuk transaksi di atas <strong>Rp1.500.000</strong>.</p>
                 <div class="ba-03__track" id="cartThresholdTrack" role="progressbar" aria-label="Target nilai pesanan" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"><span class="ba-03__fill" id="cartThresholdFill"></span></div>
-                <div class="ba-03__scale"><span>Rp0</span><span>Rp150.000</span></div>
+                <div class="ba-03__scale"><span>Rp0</span><span>Rp1.500.000</span></div>
             </div>
             <div class="modal-body" id="cartItemsContainer"
                 style="margin-bottom: 10px; max-height:40vh; overflow-y:auto;">
@@ -5848,7 +5852,7 @@
             <div class="steps-grid" id="full-carapesan"></div>
             <div style="text-align: center; margin-top: 40px;">
                 <button class="btn-header"
-                    onclick="window.openAdminModal('Halo NUGASIN, saya ingin konsultasi pesanan.')">Pesan
+                    onclick="window.openAdminModal('Halo JOKI.IN, saya ingin konsultasi pesanan.')">Pesan
                     Sekarang</button>
             </div>
         </div>
@@ -5860,7 +5864,7 @@
                 <div class="help-hero-content">
                     <h2>Pusat Bantuan</h2>
                     <p>Ada yang bisa kami bantu? Temukan jawaban tentang pemesanan, pembayaran, pengiriman tugas, akun,
-                        dan layanan NUGASIN.</p>
+                        dan layanan JOKI.IN.</p>
                     <div class="help-search-container">
                         <span class="icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
@@ -6007,7 +6011,7 @@
                 <h3>Masih belum menemukan jawabannya?</h3>
                 <p>Tenang, admin JOKI.IN siap membantu menyelesaikan kendalamu.</p>
                 <button class="btn-wa"
-                    onclick="window.openAdminModal('Halo Admin NUGASIN, saya ingin bertanya mengenai layanan/pesanan saya.')"><img
+                    onclick="window.openAdminModal('Halo Admin JOKI.IN, saya ingin bertanya mengenai layanan/pesanan saya.')"><img
                         src="assets/whatsapp-help.webp" alt=""
                         style="width:18px;height:18px;object-fit:contain;vertical-align:middle;margin-right:6px;">
                     Chat Admin via WhatsApp</button>
@@ -6408,7 +6412,7 @@
                                         fill="none" stroke="currentColor" stroke-width="2">
                                         <polyline points="9 18 15 12 9 6"></polyline>
                                     </svg> FAQ</a></li>
-                            <li><a onclick="window.openAdminModal('Halo Admin NUGASIN, saya butuh bantuan.')"><svg
+                            <li><a onclick="window.openAdminModal('Halo Admin JOKI.IN, saya butuh bantuan.')"><svg
                                         width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                         stroke-width="2">
                                         <polyline points="9 18 15 12 9 6"></polyline>
@@ -7188,7 +7192,7 @@
         function triggerCartBounce() { ['cartIconWrapper', 'cartHeaderBtn'].forEach(id => { const el = document.getElementById(id); if (!el) return; el.classList.remove('bn-08-cart-shake'); void el.offsetWidth; el.classList.add('bn-08-cart-shake'); }); const badge = document.getElementById('cartHeaderBadge'); if (badge) { badge.classList.remove('bn-08-badge-pop'); void badge.offsetWidth; badge.classList.add('bn-08-badge-pop'); } }
         function updateThresholdProgress(totalAmount) {
             const total = Math.max(0, typeof totalAmount === 'number' ? totalAmount : CART.reduce((sum, item) => sum + item.price * item.quantity, 0));
-            const target = 150000; const percent = Math.min(100, Math.round(total / target * 100));
+            const target = 1500000; const percent = Math.min(100, Math.round(total / target * 100));
             const fill = document.getElementById('cartThresholdFill');
             const banner = document.getElementById('cartThresholdBanner');
             const track = document.getElementById('cartThresholdTrack');
@@ -7196,7 +7200,7 @@
             if (fill) fill.style.width = `${percent}%`;
             if (banner) banner.dataset.state = total >= target ? 'unlocked' : 'locked';
             if (track) { track.setAttribute('aria-valuenow', String(percent)); track.setAttribute('aria-valuetext', `${formatRupiah(total)} dari target ${formatRupiah(target)}`); }
-            if (text) text.innerHTML = total >= target ? '<strong>Target pesanan tercapai!</strong> Periksa ringkasan biaya saat checkout.' : `Tambah <strong>${formatRupiah(target - total)}</strong> untuk mencapai target pesanan Rp150.000.`;
+            if (text) text.innerHTML = total > target ? '<strong>Diskon 5% aktif!</strong> Berlaku untuk transaksi di atas Rp1.500.000.' : `Diskon 5% untuk transaksi di atas Rp1.500.000. Tambah <strong>${formatRupiah(target + 1 - total)}</strong> lagi.`;
         }
 
         function cartStorageKey() { return currentUser ? `jokiin_cart_${currentUser.uid}` : 'nugasin_guest_cart'; }
@@ -7574,6 +7578,7 @@
             document.getElementById('chkSubtotal').innerText = formatRupiah(subtotal);
 
             let discountAmt = Math.round(subtotal * appliedPromoDiscount);
+            if (subtotal > 1500000) discountAmt += Math.round((subtotal - discountAmt) * .05);
             if (discountAmt > 0) {
                 document.getElementById('chkPromoRow').style.display = 'flex';
                 document.getElementById('chkDiscount').innerText = `-${formatRupiah(discountAmt)}`;
@@ -7711,7 +7716,7 @@
                     items: itemsToProcess.map(i => ({ productId: i.productId, quantity: i.quantity })),
                     paymentMethod: selectedPaymentMethod.id === 'midtrans_qris' ? 'midtrans_qris' : selectedPaymentMethod.id,
                     promo: validatedPromo,
-                    expectedTotal: Math.round((subtotal - Math.round(subtotal * appliedPromoDiscount) + CONFIG.serviceFee + selectedPaymentFee) * 100) / 100
+                    expectedTotal: subtotal - Math.round(subtotal * appliedPromoDiscount) - (subtotal > 1500000 ? Math.round((subtotal - Math.round(subtotal * appliedPromoDiscount)) * .05) : 0) + CONFIG.serviceFee + selectedPaymentFee
                 };
                 if (selectedPaymentMethod.id === 'midtrans_qris') {
                     if (buyButton) buyButton.textContent = 'Membuat pembayaran...';
@@ -7751,7 +7756,7 @@
                         task: payload.task,
                         paymentMethod: '',
                         subtotal,
-                        discount: Math.round(subtotal * appliedPromoDiscount),
+                        discount: subtotal - (payload.expectedTotal - CONFIG.serviceFee - selectedPaymentFee),
                         serviceFee: CONFIG.serviceFee,
                         paymentFee: selectedPaymentFee,
                         total: Number(payment.total) || payload.expectedTotal,
@@ -8411,11 +8416,13 @@ Teman tugas mahasiswa.`;
 
         function renderHomeTestimonials() {
             const track = document.getElementById('homeTestimonialsTrack'); if (!track) return;
-            const rows = REVIEWS.filter(review => !review.isDemo && !String(review.id || '').startsWith('REV-DEMO-') && String(review.comment || '').trim());
+            const rows = REVIEWS.filter(review => !review.isDemo && !String(review.id || '').startsWith('REV-DEMO-') && String(review.comment || '').trim())
+                .sort((a, b) => (Number(b.rating >= 4) - Number(a.rating >= 4)) || (Number(b.rating) - Number(a.rating)) || (new Date(b.date) - new Date(a.date)));
             if (!rows.length) { track.innerHTML = '<p class="tr-24__empty">Belum ada ulasan pelanggan.</p>'; return; }
             const cards = rows.slice(0, 12).map(review => {
                 const name = anonymizeName(review.customerName); const initial = escapeHTML((name[0] || 'P').toUpperCase());
-                return `<figure class="tr-24__card"><p>${escapeHTML(review.comment)}</p><footer><div class="tr-24__avatar-circle">${initial}</div><span><b>${escapeHTML(name)}</b>Ulasan pelanggan</span></footer></figure>`;
+                const product = CONFIG.PRODUCTS.find(p => p.id === review.productId);
+                return `<figure class="tr-24__card"><span class="tr-24__service">${escapeHTML(product?.title || 'Layanan JOKI.IN')} · ★ ${Number(review.rating) || 0}/5</span><p>${escapeHTML(review.comment)}</p><footer><div class="tr-24__avatar-circle">${initial}</div><span><b>${escapeHTML(name)}</b>Ulasan pelanggan</span></footer></figure>`;
             }).join('');
             track.innerHTML = cards + `<div class="tr-24__clone" aria-hidden="true" style="display:contents">${cards}</div>`;
         }
