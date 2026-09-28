@@ -4732,8 +4732,8 @@
 
         /* Compact mobile promo and centered action row; no clipping or three-row banner. */
         @media (max-width:760px) {
-            .promo-strip { display:flex!important; min-height:72px!important; height:72px; gap:8px; padding:8px 12px!important; overflow:hidden; }
-            .promo-strip__badge { flex:0 0 auto; padding:6px 9px; font-size:.64rem; }.promo-strip__text { flex:1 1 auto; font-size:.76rem; line-height:1.22; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }.promo-strip__countdown,.promo-strip__coupon { display:none!important; }.promo-strip__claim { flex:0 0 auto; padding:8px 9px; font-size:.7rem; }.promo-strip__close { flex:0 0 18px; padding:0; font-size:1.05rem; }
+            .promo-strip { display:grid!important; grid-template-columns:minmax(0,1fr) auto; min-height:0!important; height:auto!important; gap:9px 12px; padding:13px 16px!important; overflow:visible!important; }
+            .promo-strip__badge { grid-column:1; width:max-content; padding:6px 9px; font-size:.7rem; }.promo-strip__lead { grid-column:1; width:max-content; }.promo-strip__text { grid-column:1/-1; min-width:0; width:100%; font-size:.86rem; line-height:1.4; white-space:normal; overflow:visible; display:block; }.promo-strip__countdown { display:flex!important; grid-column:1/-1; justify-content:flex-start; flex-wrap:wrap; }.promo-strip__coupon { display:block!important; grid-column:1; justify-self:start; white-space:normal; overflow-wrap:anywhere; }.promo-strip__claim { grid-column:2; justify-self:end; font-size:.75rem; padding:9px 12px; }.promo-strip__close { grid-column:2; grid-row:1; justify-self:end; padding:5px 8px; font-size:1.1rem; }
             .container > header:not(.checkout-mode) { display:grid!important; grid-template-columns:1fr; justify-items:center; align-items:center!important; gap:9px; padding:12px 16px!important; overflow:visible!important; }
             .container > header:not(.checkout-mode) .logo { width:auto!important; justify-content:center!important; }.container > header:not(.checkout-mode) .header-brand-lockup { height:44px; }
             .container > header:not(.checkout-mode) .header-actions { position:static; left:auto; transform:none; width:auto!important; max-width:100%; justify-content:center!important; gap:7px!important; overflow:visible!important; }
@@ -5486,7 +5486,7 @@
                 <div class="recommendation-dots" id="recommendationDots" aria-label="Halaman rekomendasi"></div>
             </section>
             <div class="popular-title-row">
-                <div><span class="section-subtitle">🔥 Layanan Populer</span>
+                <div><span class="section-subtitle">Layanan Populer</span>
                     <h3 class="section-title">Pilihan mahasiswa setiap hari</h3>
                 </div>
                 <a onclick="window.switchTab('layanan')">Lihat Semua Layanan →</a>
@@ -8885,7 +8885,7 @@ Teman tugas mahasiswa.`;
             if (!track || !dots) return;
             track.innerHTML = CONFIG.PRODUCTS.map(product => `
             <article class="recommendation-card is-shimmer">
-                ${product.image ? `<img class="recommendation-card-image" src="${escapeHTML(product.image)}" alt="" loading="lazy">` : `<div class="recommendation-card-image service-icon" aria-hidden="true">${product.icon}</div>`}
+                ${product.image ? `<img class="recommendation-card-image" src="${escapeHTML(product.image)}" alt="" loading="lazy">` : `<div class="recommendation-card-image" aria-hidden="true"></div>`}
                 <div class="recommendation-card-body">
                     <span class="category-badge">${escapeHTML(product.category)}</span>
                     <h4>${escapeHTML(product.title)}</h4>
@@ -8920,9 +8920,10 @@ Teman tugas mahasiswa.`;
                 viewport.addEventListener('mouseenter', () => clearInterval(recommendationTimer));
                 viewport.addEventListener('mouseleave', startRecommendationAutoSlide);
                 viewport.addEventListener('pointerdown', event => {
+                    if (event.target.closest('button, a, input')) return;
                     clearInterval(recommendationTimer);
                     dragging = true; startX = event.clientX;
-                    viewport.setPointerCapture?.(event.pointerId); viewport.classList.add('is-dragging');
+                    viewport.classList.add('is-dragging');
                 });
                 const stopDragging = event => {
                     if (dragging && event) {
@@ -8939,7 +8940,7 @@ Teman tugas mahasiswa.`;
         }
 
         function renderApp() {
-            document.getElementById('preview-layanan').innerHTML = CONFIG.PRODUCTS.slice(0, 4).map(p => `<div class="service-card" data-price="${escapeHTML(productPriceLabel(p))}" data-sale="${p.hasSale}"><div class="service-icon">${p.icon}</div><h3>${escapeHTML(p.title)}</h3><span class="category-badge">${p.category}</span><p>${escapeHTML(p.desc)}</p>
+            document.getElementById('preview-layanan').innerHTML = CONFIG.PRODUCTS.slice(0, 4).map(p => `<div class="service-card" data-price="${escapeHTML(productPriceLabel(p))}" data-sale="${p.hasSale}"><h3>${escapeHTML(p.title)}</h3><span class="category-badge">${p.category}</span><p>${escapeHTML(p.desc)}</p>
             <button class="btn-outline" style="width:100%; border:none; padding:0; text-align:left; justify-content:flex-start;" onclick="window.switchTab('layanan')">Lihat Detail →</button></div>`).join('');
 
             document.getElementById('full-layanan').innerHTML = CONFIG.PRODUCTS.map(p => `<div class="service-card">${serviceVisual(p)}<h3>${escapeHTML(p.title)}</h3><p style="margin-bottom:10px;">${escapeHTML(p.desc)}</p><div class="layanan-section-title">Apa yang kamu dapatkan?</div><ul class="layanan-check-list">${p.benefits.slice(0, 4).map(b => `<li>${b}</li>`).join('')}</ul><div class="layanan-target"><strong>Cocok untuk:</strong> ${p.target}</div><div style="display:flex; gap:10px; margin-top:auto;"><button class="btn-wa" style="flex:none; padding:12px; box-shadow:none;" onclick="window.consultService('${p.id}')">Hubungi Admin</button><button class="btn-outline" style="flex:1; padding:12px;" onclick="window.openServiceDetail('${p.id}')">Lihat Detail</button></div></div>`).join('');
@@ -9364,7 +9365,7 @@ Teman tugas mahasiswa.`;
 
         .promo-strip__lead { flex:0 0 auto; padding:6px 9px; border-radius:6px; background:#d9ffe4; color:#086341; font-size:.82rem; font-weight:900; white-space:nowrap; }
         @media (max-width:760px) { .promo-strip__lead { font-size:.7rem; padding:5px; } .promo-strip__text { flex:1 1 auto; } }
-        @media (max-width:390px) { .promo-strip__badge { display:none; } }
+        @media (max-width:390px) { .promo-strip__badge { display:inline-flex; } }
         /* Catalog actions are visible and cards follow their content. */
         #full-harga { align-items:start!important; grid-auto-rows:auto!important; }
         #full-harga .service-card.cf-price-card { height:auto!important; min-height:0!important; aspect-ratio:auto!important; padding:14px!important; gap:4px; border-radius:18px; }
@@ -9394,6 +9395,13 @@ Teman tugas mahasiswa.`;
             header:not(.checkout-mode) #authHeaderBtn { width:64px!important; min-width:64px!important; max-width:64px!important; padding:8px 5px!important; font-size:10px!important; }
         }
         @media (prefers-reduced-motion:reduce) { #full-harga .cf-price-card .cf-sale-ribbon { animation:none; transition:none; } }
+        @media (max-width:760px) {
+            #welcomeModal .welcome-close { display:none!important; }
+            .promo-strip:not([hidden]):not([data-payment-hidden="true"]) { display:grid!important; height:auto!important; max-height:none!important; overflow:visible!important; }
+            .promo-strip__text { display:block!important; max-height:none!important; overflow:visible!important; -webkit-line-clamp:unset!important; white-space:normal!important; }
+            .promo-strip__countdown { display:flex!important; }
+            .promo-strip__coupon { display:block!important; }
+        }
     </style>
 </body>
 
