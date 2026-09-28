@@ -1339,6 +1339,20 @@
     font-size: 0.78rem !important;
 }
 
+/* Four equal status actions on narrow screens, without an orphaned last row. */
+@media (max-width: 760px) {
+    .track-status-menu { display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .track-status-menu .filter-pill { width:100%; text-align:center; }
+}
+
+.tr-24__service {
+    align-self:flex-start;
+    color:var(--primary);
+    font-weight:750;
+    font-size:.78rem;
+    line-height:1.35;
+}
+
 .track-btn-primary {
     width: 100% !important;
     height: 48px !important;
