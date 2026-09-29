@@ -4732,8 +4732,8 @@
 
         /* Compact mobile promo and centered action row; no clipping or three-row banner. */
         @media (max-width:760px) {
-            .promo-strip { display:grid!important; grid-template-columns:minmax(0,1fr) auto; min-height:0!important; height:auto!important; gap:9px 12px; padding:13px 16px!important; overflow:visible!important; }
-            .promo-strip__badge { grid-column:1; width:max-content; padding:6px 9px; font-size:.7rem; }.promo-strip__lead { grid-column:1; width:max-content; }.promo-strip__text { grid-column:1/-1; min-width:0; width:100%; font-size:.86rem; line-height:1.4; white-space:normal; overflow:visible; display:block; }.promo-strip__countdown { display:flex!important; grid-column:1/-1; justify-content:flex-start; flex-wrap:wrap; }.promo-strip__coupon { display:block!important; grid-column:1; justify-self:start; white-space:normal; overflow-wrap:anywhere; }.promo-strip__claim { grid-column:2; justify-self:end; font-size:.75rem; padding:9px 12px; }.promo-strip__close { grid-column:2; grid-row:1; justify-self:end; padding:5px 8px; font-size:1.1rem; }
+            .promo-strip { display:flex!important; min-height:72px!important; height:72px; gap:8px; padding:8px 12px!important; overflow:hidden; }
+            .promo-strip__badge { flex:0 0 auto; padding:6px 9px; font-size:.64rem; }.promo-strip__text { flex:1 1 auto; font-size:.76rem; line-height:1.22; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }.promo-strip__countdown,.promo-strip__coupon { display:none!important; }.promo-strip__claim { flex:0 0 auto; padding:8px 9px; font-size:.7rem; }.promo-strip__close { flex:0 0 18px; padding:0; font-size:1.05rem; }
             .container > header:not(.checkout-mode) { display:grid!important; grid-template-columns:1fr; justify-items:center; align-items:center!important; gap:9px; padding:12px 16px!important; overflow:visible!important; }
             .container > header:not(.checkout-mode) .logo { width:auto!important; justify-content:center!important; }.container > header:not(.checkout-mode) .header-brand-lockup { height:44px; }
             .container > header:not(.checkout-mode) .header-actions { position:static; left:auto; transform:none; width:auto!important; max-width:100%; justify-content:center!important; gap:7px!important; overflow:visible!important; }
@@ -4926,13 +4926,18 @@
         <div class="modal-content">
             <div class="modal-header"
                 style="border-bottom: 1px solid var(--border-color); padding-bottom:15px; margin-bottom: 20px;">
+                <div class="service-detail-heading">
                 <div id="detailSvcIcon" style="font-size: 2.5em; margin-bottom: 10px;">📄</div>
+                <div>
                 <h2 id="detailSvcTitle">Nama Layanan</h2>
+                <p id="detailSvcPrice" class="service-detail-price"></p>
+                </div>
+                </div>
                 <p id="detailSvcDesc"
                     style="color: var(--text-secondary); font-style: normal; font-size:0.95em; margin-top:5px;"></p>
             </div>
             <div class="modal-body">
-                <h4 class="layanan-section-title">Apa yang kamu dapatkan?</h4>
+                <h4 class="layanan-section-title">Termasuk Dalam Layanan</h4>
                 <ul id="detailSvcBenefits" class="detail-list" style="list-style-type: '✓ '; color: var(--text-main);">
                 </ul>
 
@@ -5459,19 +5464,19 @@
                 <input type="text" class="searchInputGlobal" placeholder="Cari layanan, harga, atau pertanyaan...">
             </div>
             <div class="home-categories" aria-label="Kategori layanan">
-                <button class="home-category" onclick="window.switchTab('layanan')"><span>📄</span>Semua</button>
-                <button class="home-category" onclick="window.switchTab('layanan')"><span>📝</span>Tugas
+                <button class="home-category" onclick="window.switchTab('layanan')"><span><img class="ui-art-icon" src="assets/ui-art/document.png" width="64" height="64" alt=""></span>Semua</button>
+                <button class="home-category" onclick="window.switchTab('layanan')"><span><img class="ui-art-icon" src="assets/ui-art/writing.png" width="64" height="64" alt=""></span>Tugas
                     Makalah</button>
-                <button class="home-category" onclick="window.switchTab('layanan')"><span>📊</span>Presentasi</button>
-                <button class="home-category" onclick="window.switchTab('layanan')"><span>📚</span>Tugas
+                <button class="home-category" onclick="window.switchTab('layanan')"><span><img class="ui-art-icon" src="assets/ui-art/presentation.png" width="64" height="64" alt=""></span>Presentasi</button>
+                <button class="home-category" onclick="window.switchTab('layanan')"><span><img class="ui-art-icon" src="assets/ui-art/book.png" width="64" height="64" alt=""></span>Tugas
                     Laporan</button>
-                <button class="home-category" onclick="window.switchTab('layanan')"><span>⌨️</span>Pengetikan</button>
-                <button class="home-category" onclick="window.switchTab('layanan')"><span>🎨</span>Desain &
+                <button class="home-category" onclick="window.switchTab('layanan')"><span><img class="ui-art-icon" src="assets/ui-art/keyboard.png" width="64" height="64" alt=""></span>Pengetikan</button>
+                <button class="home-category" onclick="window.switchTab('layanan')"><span><img class="ui-art-icon" src="assets/ui-art/palette.png" width="64" height="64" alt=""></span>Desain &
                     Editing</button>
-                <button class="home-category" onclick="window.switchTab('layanan')"><span>📈</span>Analisis
+                <button class="home-category" onclick="window.switchTab('layanan')"><span><img class="ui-art-icon" src="assets/ui-art/chart.png" width="64" height="64" alt=""></span>Analisis
                     Data</button>
                 <button class="home-category"
-                    onclick="window.scrollToAdminContacts()"><span>💬</span>Konsultasi</button>
+                    onclick="window.scrollToAdminContacts()"><span><img class="ui-art-icon" src="assets/ui-art/chat.png" width="64" height="64" alt=""></span>Konsultasi</button>
             </div>
             <section class="recommendations-section" aria-labelledby="recommendationsTitle">
                 <div class="recommendations-heading">
@@ -5486,7 +5491,7 @@
                 <div class="recommendation-dots" id="recommendationDots" aria-label="Halaman rekomendasi"></div>
             </section>
             <div class="popular-title-row">
-                <div><span class="section-subtitle">Layanan Populer</span>
+                <div><span class="section-subtitle">🔥 Layanan Populer</span>
                     <h3 class="section-title">Pilihan mahasiswa setiap hari</h3>
                 </div>
                 <a onclick="window.switchTab('layanan')">Lihat Semua Layanan →</a>
@@ -5963,23 +5968,23 @@
             <div class="order-flow-wrapper">
                 <div class="order-flow">
                     <div class="flow-step">
-                        <div class="flow-icon">🛒</div>
+                        <div class="flow-icon"><img class="jokiin-vector" src="assets/ui-icons/shopping-cart.svg" width="22" height="22" alt=""></div>
                         <div class="flow-text">Pesanan<br>Dibuat</div>
                     </div>
                     <div class="flow-step">
-                        <div class="flow-icon">💳</div>
+                        <div class="flow-icon"><img class="jokiin-vector" src="assets/ui-icons/credit-card.svg" width="22" height="22" alt=""></div>
                         <div class="flow-text">Pembayaran<br>Dikonfirmasi</div>
                     </div>
                     <div class="flow-step">
-                        <div class="flow-icon">⚙️</div>
+                        <div class="flow-icon"><img class="jokiin-vector" src="assets/ui-icons/settings.svg" width="22" height="22" alt=""></div>
                         <div class="flow-text">Sedang<br>Dikerjakan</div>
                     </div>
                     <div class="flow-step">
-                        <div class="flow-icon">✅</div>
+                        <div class="flow-icon"><img class="jokiin-vector" src="assets/ui-icons/check.svg" width="22" height="22" alt=""></div>
                         <div class="flow-text">Pesanan<br>Selesai</div>
                     </div>
                     <div class="flow-step">
-                        <div class="flow-icon">📤</div>
+                        <div class="flow-icon"><img class="jokiin-vector" src="assets/ui-icons/send.svg" width="22" height="22" alt=""></div>
                         <div class="flow-text">Hasil<br>Dikirim</div>
                     </div>
                 </div>
@@ -6506,8 +6511,11 @@
             document.getElementById('promoLead').textContent = `Diskon s.d ${Number(promo.discount_percent) || 0}%`;
             document.getElementById('promoText').textContent = promo.text || '';
             document.getElementById('promoCoupon').textContent = promo.coupon || '';
+            document.getElementById('promoLead').hidden = !(Number(promo.discount_percent) > 0);
+            document.querySelector('.promo-strip__coupon').hidden = !String(promo.coupon || '').trim();
             const parsedTarget = new Date(promo.ends_at || DEFAULT_PROMO.ends_at).getTime();
             const target = Number.isFinite(parsedTarget) ? parsedTarget : Date.now();
+            if (strip.hidden) { clearInterval(promoTimer); return; }
             clearInterval(promoTimer);
             const tick = () => {
                 const left = Math.max(0, target - Date.now());
@@ -6748,6 +6756,7 @@
             whatsappAdminNumber: "601155639233",
             serviceFee: 0,
             updates: [
+                { date: "29 September 2026", title: "Invoice Otomatis & Pembaruan Mobile", desc: "Invoice tersedia di Detail Pesanan setelah pembayaran Paid dan dapat dicetak atau disimpan sebagai PDF. Tampilan promo mobile, tombol rekomendasi, dan navigasi popup diperbarui.", type: "FITUR BARU", badgeClass: "badge-feature" },
                 { date: "14 September 2026", title: "Pembaruan Proses Pemesanan", desc: "Alur pemesanan diperbarui agar pemilihan layanan, pengisian detail, pembayaran, dan pelacakan pesanan lebih jelas. Rekomendasi produk kini juga dapat bergeser otomatis untuk memudahkan melihat pilihan layanan.", type: "UPDATE TERBARU", badgeClass: "badge-feature" },
                 { date: "13 September 2026", title: "Penyegaran Tampilan JOKI.IN", desc: "Banner kini menyesuaikan mode terang dan gelap, visual welcome popup diperbarui, dan tampilan header dirapikan. Warna harga layanan juga dibuat hijau agar lebih mudah terbaca.", type: "UPDATE TERBARU", badgeClass: "badge-feature" },
                 { date: "11 September 2026", title: "Penambahan Fitur Mode Gelap", desc: "Website JOKI.IN kini mendukung mode gelap (Dark Mode) untuk memberikan kenyamanan membaca saat malam hari. Aktifkan melalui ikon bulan/matahari di sudut kanan atas.", type: "FITUR BARU", badgeClass: "badge-feature" },
@@ -6799,11 +6808,11 @@
                     price: "Mulai dari Rp80.000", priceNum: 80000, features: ["Desain custom", "Revisi", "File final"]
                 },
                 {
-                    id: "editing", icon: "✍️", image: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=900&q=80", title: "Jasa Editing", category: "Editing", popularity: 6,
+                    id: "editing", icon: "✍️", image: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=900&q=80", title: "Edit & Revisi Karya Ilmiah", category: "Editing", popularity: 6,
                     requiresDriveLink: true,
-                    desc: "Dokumen yang rapi dan terstruktur sesuai standar penulisan yang berlaku.",
-                    benefits: ["Proofreading", "Perbaikan typo", "Formatting dokumen", "Perapian struktur", "Penyesuaian format", "Final checking"],
-                    target: "Dokumen tugas, artikel, dan karya tulis yang butuh perapian akhir.",
+                    desc: "Penyuntingan kata dan kalimat, revisi, serta perapian struktur dan format dokumen karya ilmiah.",
+                    benefits: ["Penyuntingan kata dan kalimat", "Perbaikan ejaan dan typo", "Revisi sesuai catatan yang disepakati", "Perapian struktur karya ilmiah", "Penyesuaian format dokumen", "Pemeriksaan akhir dokumen"],
+                    target: "Makalah, artikel ilmiah, laporan, dan skripsi yang sudah memiliki naskah dan membutuhkan penyuntingan.",
                     notIncluded: ["Penerjemahan", "Penulisan ulang secara drastis"],
                     estimatedTime: "1 Hari Kerja", revisionTerms: "Maksimal 1x Revisi",
                     price: "Mulai dari Rp60.000", priceNum: 60000, features: ["Formatting", "Perapian", "Proofreading"]
@@ -6900,10 +6909,19 @@
             'bimbingan-slr': 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=900&q=80'
         };
         const CATALOG_PHOTOS = Array.from({ length: 34 }, (_, index) => `assets/catalog/portfolio-${String(index + 1).padStart(2, '0')}.jpg`);
-        function catalogPhotoFor(index) {
-            // Satu indeks layanan hanya mendapat satu foto. Jangan gunakan modulo:
-            // bila foto habis, layanan berikutnya tampil tanpa foto daripada menduplikasi aset.
-            return CATALOG_PHOTOS[index] || '';
+        const CATALOG_PHOTO_BY_SLUG = {
+            makalah:17, ppt:8, artikel:30, poster:13, editing:34, skripsi:29,
+            turnitin:18, jurnal:1, 'bimbingan-parafrase':33,
+            'konsultasi-olah-data-kualitatif':28, 'konsultasi-olah-data-kuantitatif':27,
+            'bimbingan-konversi-artikel':12, 'bimbingan-laporan':31,
+            'bimbingan-mini-riset':14, 'bimbingan-proposal-skripsi':24,
+            'bimbingan-proposal-tesis':5, 'bimbingan-bab-4':26, 'bimbingan-bab-5':20,
+            'bimbingan-artikel-jurnal':22, 'bimbingan-slr':7
+        };
+        const RESERVED_CATALOG_PHOTOS = CATALOG_PHOTOS.filter((_,index) => !Object.values(CATALOG_PHOTO_BY_SLUG).includes(index + 1));
+        function catalogPhotoFor(slug, fallbackIndex) {
+            const photo = CATALOG_PHOTO_BY_SLUG[slug];
+            return photo ? CATALOG_PHOTOS[photo - 1] : RESERVED_CATALOG_PHOTOS[fallbackIndex] || '';
         }
         const PRICE_RULES = {
             makalah: { priceLabel: 'Rp2.000 / lembar · min. 10 lembar', minimumQuantity: 10 },
@@ -6928,11 +6946,12 @@
             const { data, error } = await supabase.from('services').select('id,slug,name,description,price,status,sale_percent,sale_amount,sale_label').eq('status', 'active').order('id');
             if (error) { catalogueReady = false; throw error; }
             servicesBySlug = new Map(data.filter(s => s.slug).map(s => [s.slug, s]));
+            let fallbackPhotoIndex = 0;
             CONFIG.PRODUCTS = data.filter(s => s.slug && /^[a-z0-9-]+$/.test(s.slug)).map((s, index) => {
                 const defaultMeta = { icon: '📄', category: 'Lainnya', popularity: 0, benefits: ['Pendampingan sesuai kebutuhan', 'Review dan arahan yang jelas', 'Penjelasan langkah kerja'], features: ['Konsultasi', 'Review', 'Pendampingan'], notIncluded: [], target: 'Mahasiswa yang membutuhkan pendampingan akademik.', estimatedTime: 'Sesuai kesepakatan', revisionTerms: 'Sesuai kesepakatan' };
                 const meta = { ...defaultMeta, ...(PRODUCT_METADATA.find(p => p.id === s.slug) || SAFE_CATALOGUE_METADATA[s.slug] || {}) };
                 const originalPrice = Number(s.price); const salePercent = Math.max(0, Math.min(99.99, Number(s.sale_percent) || 0)); const saleAmount = Math.max(0, Number(s.sale_amount) || 0); const salePrice = Math.max(1, Math.round(originalPrice - (saleAmount > 0 ? saleAmount : originalPrice * salePercent / 100)));
-                return { ...meta, ...(PRICE_RULES[s.slug] || {}), image: catalogPhotoFor(index), id: s.slug, serviceId: s.id, title: s.name, desc: s.description || '', originalPrice, salePercent, saleAmount, hasSale: salePercent > 0 || saleAmount > 0, saleLabel: String(s.sale_label || ''), priceNum: salePrice, price: formatRupiah(salePrice) };
+                return { ...meta, ...(PRICE_RULES[s.slug] || {}), image: catalogPhotoFor(s.slug, CATALOG_PHOTO_BY_SLUG[s.slug] ? 0 : fallbackPhotoIndex++), id: s.slug, serviceId: s.id, title: s.name, desc: s.description || '', originalPrice, salePercent, saleAmount, hasSale: salePercent > 0 || saleAmount > 0, saleLabel: String(s.sale_label || ''), priceNum: salePrice, price: formatRupiah(salePrice) };
             });
             catalogueReady = true;
             CART = sanitizeCart(CART);
@@ -8298,6 +8317,7 @@ Teman tugas mahasiswa.`;
         function renderOrderDetail(orderId) {
             currentDetailCode = orderId;
             const order = ORDERS.find(o => o.id === orderId); if (!order) return;
+            window.setInvoiceOrder?.(order);
 
             document.getElementById('ordersModal').style.display = 'none';
 
@@ -8777,6 +8797,7 @@ Teman tugas mahasiswa.`;
             document.getElementById('detailSvcBenefits').innerHTML = p.benefits.map(b => `<li>${b}</li>`).join('');
             document.getElementById('detailSvcNotIncluded').innerHTML = p.notIncluded ? p.notIncluded.map(n => `<li>${n}</li>`).join('') : '<li>Tidak ada pengecualian spesifik</li>';
             document.getElementById('detailSvcTime').innerText = p.estimatedTime || '-'; document.getElementById('detailSvcRevision').innerText = p.revisionTerms || '-';
+            window.updateServicePresentation?.(p, productPriceLabel(p));
             document.getElementById('btnDetailOrder').onclick = () => { window.closeModal('serviceDetailModal'); window.directCheckout(p.id); };
             document.getElementById('serviceDetailModal').style.display = 'flex';
             document.body.classList.add('modal-open');
@@ -8885,7 +8906,7 @@ Teman tugas mahasiswa.`;
             if (!track || !dots) return;
             track.innerHTML = CONFIG.PRODUCTS.map(product => `
             <article class="recommendation-card is-shimmer">
-                ${product.image ? `<img class="recommendation-card-image" src="${escapeHTML(product.image)}" alt="" loading="lazy">` : `<div class="recommendation-card-image" aria-hidden="true"></div>`}
+                ${product.image ? `<img class="recommendation-card-image" src="${escapeHTML(product.image)}" alt="" loading="lazy">` : `<div class="recommendation-card-image service-icon" aria-hidden="true">${product.icon}</div>`}
                 <div class="recommendation-card-body">
                     <span class="category-badge">${escapeHTML(product.category)}</span>
                     <h4>${escapeHTML(product.title)}</h4>
@@ -8923,7 +8944,7 @@ Teman tugas mahasiswa.`;
                     if (event.target.closest('button, a, input')) return;
                     clearInterval(recommendationTimer);
                     dragging = true; startX = event.clientX;
-                    viewport.classList.add('is-dragging');
+                    viewport.setPointerCapture?.(event.pointerId); viewport.classList.add('is-dragging');
                 });
                 const stopDragging = event => {
                     if (dragging && event) {
@@ -8940,7 +8961,7 @@ Teman tugas mahasiswa.`;
         }
 
         function renderApp() {
-            document.getElementById('preview-layanan').innerHTML = CONFIG.PRODUCTS.slice(0, 4).map(p => `<div class="service-card" data-price="${escapeHTML(productPriceLabel(p))}" data-sale="${p.hasSale}"><h3>${escapeHTML(p.title)}</h3><span class="category-badge">${p.category}</span><p>${escapeHTML(p.desc)}</p>
+            document.getElementById('preview-layanan').innerHTML = CONFIG.PRODUCTS.slice(0, 4).map(p => `<div class="service-card" data-price="${escapeHTML(productPriceLabel(p))}" data-sale="${p.hasSale}"><div class="service-icon">${p.icon}</div><h3>${escapeHTML(p.title)}</h3><span class="category-badge">${p.category}</span><p>${escapeHTML(p.desc)}</p>
             <button class="btn-outline" style="width:100%; border:none; padding:0; text-align:left; justify-content:flex-start;" onclick="window.switchTab('layanan')">Lihat Detail →</button></div>`).join('');
 
             document.getElementById('full-layanan').innerHTML = CONFIG.PRODUCTS.map(p => `<div class="service-card">${serviceVisual(p)}<h3>${escapeHTML(p.title)}</h3><p style="margin-bottom:10px;">${escapeHTML(p.desc)}</p><div class="layanan-section-title">Apa yang kamu dapatkan?</div><ul class="layanan-check-list">${p.benefits.slice(0, 4).map(b => `<li>${b}</li>`).join('')}</ul><div class="layanan-target"><strong>Cocok untuk:</strong> ${p.target}</div><div style="display:flex; gap:10px; margin-top:auto;"><button class="btn-wa" style="flex:none; padding:12px; box-shadow:none;" onclick="window.consultService('${p.id}')">Hubungi Admin</button><button class="btn-outline" style="flex:1; padding:12px;" onclick="window.openServiceDetail('${p.id}')">Lihat Detail</button></div></div>`).join('');
@@ -8972,10 +8993,10 @@ Teman tugas mahasiswa.`;
             if (!nav || !indicator || !active) return;
             const navRect = nav.getBoundingClientRect();
             const activeRect = active.getBoundingClientRect();
-            const nextX = activeRect.left - navRect.left + nav.scrollLeft;
+            const nextX = activeRect.left - navRect.left + nav.scrollLeft - nav.clientLeft - indicator.offsetLeft;
             const distance = Math.abs(nextX - liquidIndicatorX);
             const nextWidth = activeRect.width;
-            if (!animate || !liquidIndicatorWidth) {
+            if (!animate || !liquidIndicatorWidth || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
                 indicator.getAnimations().forEach(animation => animation.cancel());
                 indicator.style.width = `${nextWidth}px`;
                 indicator.style.transform = `translateX(${nextX}px)`;
@@ -8994,6 +9015,9 @@ Teman tugas mahasiswa.`;
             }
             liquidIndicatorX = nextX;
             liquidIndicatorWidth = nextWidth;
+            if (activeRect.left < navRect.left + 6 || activeRect.right > navRect.right - 6) {
+                nav.scrollTo({ left:active.offsetLeft - (nav.clientWidth - active.offsetWidth) / 2, behavior:animate && !window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'smooth' : 'instant' });
+            }
         }
         window.goHome = () => { if (currentTab !== 'checkout' && currentTab !== 'order-success') window.switchTab('beranda'); };
         window.switchTab = (tabId) => {
@@ -9019,6 +9043,7 @@ Teman tugas mahasiswa.`;
             if (promoStrip) promoStrip.dataset.paymentHidden = isCheckoutFlow ? 'true' : 'false';
 
             document.querySelectorAll('.pill').forEach(p => { p.classList.remove('active'); if (p.getAttribute('data-target') === tabId) p.classList.add('active'); });
+            document.querySelectorAll('#nav-container .pill').forEach(p => { if(p.classList.contains('active')) p.setAttribute('aria-current','page'); else p.removeAttribute('aria-current'); });
             if (!isCheckoutFlow) requestAnimationFrame(() => updateLiquidIndicator(true));
             document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
             document.getElementById('tab-' + tabId).classList.add('active');
@@ -9030,6 +9055,8 @@ Teman tugas mahasiswa.`;
 
         window.addEventListener('popstate', () => window.switchTab(TAB_BY_ROUTE[window.location.pathname] || 'beranda'));
         window.addEventListener('resize', () => updateLiquidIndicator(false));
+        document.fonts.ready.then(() => updateLiquidIndicator(false));
+        new ResizeObserver(() => updateLiquidIndicator(false)).observe(document.getElementById('nav-container'));
 
         document.getElementById('promoClaim')?.addEventListener('click', () => window.switchTab('harga'));
         document.getElementById('promoClose')?.addEventListener('click', () => { document.getElementById('promoStrip')?.remove(); clearInterval(promoTimer); });
@@ -9143,7 +9170,8 @@ Teman tugas mahasiswa.`;
             try { fallbackPath = sessionStorage.getItem('jokiin_spa_fallback_path') || localStorage.getItem('jokiin_spa_fallback_path') || ''; } catch (_) { }
             try { sessionStorage.removeItem('jokiin_spa_fallback_path'); localStorage.removeItem('jokiin_spa_fallback_path'); } catch (_) { }
             if (fallbackPath && fallbackPath.startsWith('/')) history.replaceState(null, '', fallbackPath);
-            const initialTab = TAB_BY_ROUTE[window.location.pathname] || 'beranda';
+            const routeAliases = { '/howtoorder':'carapesan', '/informasi':'informasi' };
+            const initialTab = TAB_BY_ROUTE[window.location.pathname] || routeAliases[window.location.pathname] || 'beranda';
             // /payment/pending membutuhkan data pesanan sebelum tab ditampilkan. Tanpa ini,
             // refresh hanya menampilkan tab awal walaupun URL masih menunjukkan pending.
             const restoredPending = initialTab === 'order-success' ? await restorePendingMayarPage() : false;
@@ -9365,7 +9393,7 @@ Teman tugas mahasiswa.`;
 
         .promo-strip__lead { flex:0 0 auto; padding:6px 9px; border-radius:6px; background:#d9ffe4; color:#086341; font-size:.82rem; font-weight:900; white-space:nowrap; }
         @media (max-width:760px) { .promo-strip__lead { font-size:.7rem; padding:5px; } .promo-strip__text { flex:1 1 auto; } }
-        @media (max-width:390px) { .promo-strip__badge { display:inline-flex; } }
+        @media (max-width:390px) { .promo-strip__badge { display:none; } }
         /* Catalog actions are visible and cards follow their content. */
         #full-harga { align-items:start!important; grid-auto-rows:auto!important; }
         #full-harga .service-card.cf-price-card { height:auto!important; min-height:0!important; aspect-ratio:auto!important; padding:14px!important; gap:4px; border-radius:18px; }
@@ -9395,14 +9423,11 @@ Teman tugas mahasiswa.`;
             header:not(.checkout-mode) #authHeaderBtn { width:64px!important; min-width:64px!important; max-width:64px!important; padding:8px 5px!important; font-size:10px!important; }
         }
         @media (prefers-reduced-motion:reduce) { #full-harga .cf-price-card .cf-sale-ribbon { animation:none; transition:none; } }
-        @media (max-width:760px) {
-            #welcomeModal .welcome-close { display:none!important; }
-            .promo-strip:not([hidden]):not([data-payment-hidden="true"]) { display:grid!important; height:auto!important; max-height:none!important; overflow:visible!important; }
-            .promo-strip__text { display:block!important; max-height:none!important; overflow:visible!important; -webkit-line-clamp:unset!important; white-space:normal!important; }
-            .promo-strip__countdown { display:flex!important; }
-            .promo-strip__coupon { display:block!important; }
-        }
     </style>
+    <link rel="stylesheet" href="assets/order-improvements.css?v=1.03">
+    <script src="assets/order-improvements.js?v=1.03"></script>
+    <link rel="stylesheet" href="assets/ui-refinements.css?v=1.03">
+    <script src="assets/ui-refinements.js?v=1.04"></script>
 </body>
 
 </html>

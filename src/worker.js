@@ -37,21 +37,10 @@ async function serviceAccountToken(env) {
 }
 
 async function googleToken(env) {
-  if (env.GOOGLE_DRIVE_CLIENT_ID && env.GOOGLE_DRIVE_CLIENT_SECRET && env.GOOGLE_DRIVE_REFRESH_TOKEN) {
-    const response = await fetch('https://oauth2.googleapis.com/token', { method:'POST', headers:{'content-type':'application/x-www-form-urlencoded'}, body:new URLSearchParams({client_id:env.GOOGLE_DRIVE_CLIENT_ID,client_secret:env.GOOGLE_DRIVE_CLIENT_SECRET,refresh_token:env.GOOGLE_DRIVE_REFRESH_TOKEN,grant_type:'refresh_token'}) });
-    if (!response.ok) throw new Error(`Drive OAuth token error ${response.status}`);
-    return {token:(await response.json()).access_token,method:'oauth'};
-  }
-  const token = await serviceAccountToken(env);
-  return token ? {token,method:'service_account'} : null;
-}
-
-async function verifyDriveFolder(token, folderId, method) {
-  const response = await fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(folderId)}?${new URLSearchParams({fields:'id,mimeType,driveId,capabilities(canAddChildren)',supportsAllDrives:'true'})}`, {headers:{Authorization:`Bearer ${token}`}});
-  if (!response.ok) throw new Error(`Drive folder access error ${response.status}`);
-  const folder = await response.json();
-  if (folder.mimeType !== 'application/vnd.google-apps.folder' || !folder.capabilities?.canAddChildren) throw new Error('Drive folder is not writable');
-  if (method === 'service_account' && !folder.driveId) throw new Error('Service account cannot upload to personal My Drive');
+  if (!env.GOOGLE_DRIVE_CLIENT_ID || !env.GOOGLE_DRIVE_CLIENT_SECRET || !env.GOOGLE_DRIVE_REFRESH_TOKEN) return serviceAccountToken(env);
+  const response = await fetch('https://oauth2.googleapis.com/token', { method:'POST', headers:{'content-type':'application/x-www-form-urlencoded'}, body:new URLSearchParams({client_id:env.GOOGLE_DRIVE_CLIENT_ID,client_secret:env.GOOGLE_DRIVE_CLIENT_SECRET,refresh_token:env.GOOGLE_DRIVE_REFRESH_TOKEN,grant_type:'refresh_token'}) });
+  if (!response.ok) throw new Error(`Drive token error ${response.status}`);
+  return (await response.json()).access_token;
 }
 
 const driveDateFolderName = () => new Intl.DateTimeFormat('id-ID', {
@@ -116,27 +105,31 @@ async function uploadTaskFile(request, env) {
   if (attachments.length >= 10 || attachments.reduce((sum,file)=>sum+Number(file.size||0),size)>MAX_TASK_BYTES) return json({error:'Maksimal 10 file / total 50 MB.'},400);
   const settings = await supabase(env,'site_settings?key=eq.task_upload_drive_folder&select=value&limit=1');
   const folderId = clean(settings?.[0]?.value?.folder_id,120);
-  if (!/^[A-Za-z0-9_-]{10,120}$/.test(folderId)) return json({error:'Folder lampiran belum siap. Hubungi admin.'},503);
+  let token;
+  try { token = await googleToken(env); }
+  catch { return json({error:'Autorisasi Google Drive gagal. Admin perlu memperbarui kredensial Google Drive di Worker.'},503); }
+  if (!/^[A-Za-z0-9_-]{10,120}$/.test(folderId) || !token) return json({error:'Folder lampiran belum siap. Hubungi admin.'},503);
   let file;
   try {
-    const credentials = await googleToken(env);
-    if (!credentials) return json({error:'Kredensial Google Drive belum dikonfigurasi.'},503);
-    const {token,method} = credentials;
-    await verifyDriveFolder(token, folderId, method);
+    const folderResponse = await fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(folderId)}?fields=id,mimeType,driveId,capabilities(canAddChildren)&supportsAllDrives=true`,{headers:{Authorization:`Bearer ${token}`}});
+    if (!folderResponse.ok) return json({error:'Folder Google Drive tidak dapat diakses. Periksa ID folder dan izin akun upload.'},502);
+    const folder = await folderResponse.json();
+    if (folder.mimeType !== 'application/vnd.google-apps.folder' || !folder.capabilities?.canAddChildren) return json({error:'Akun upload tidak memiliki izin menambahkan file ke folder tujuan.'},502);
+    const usingOAuth = env.GOOGLE_DRIVE_CLIENT_ID && env.GOOGLE_DRIVE_CLIENT_SECRET && env.GOOGLE_DRIVE_REFRESH_TOKEN;
+    if (!usingOAuth && !folder.driveId) return json({error:'Folder My Drive memerlukan OAuth akun pemilik. Service account hanya dapat mengunggah ke Shared Drive.'},503);
     const dailyFolder = await ensureDailyDriveFolder(token, folderId);
     const session = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id,name&supportsAllDrives=true',{method:'POST',headers:{Authorization:`Bearer ${token}`,'content-type':'application/json','x-upload-content-type':FILE_MIMES[extension],'x-upload-content-length':String(size)},body:JSON.stringify({name,parents:[dailyFolder.id]})});
     const location = session.headers.get('location');
     if (!session.ok || !location?.startsWith('https://www.googleapis.com/')) throw new Error(`Drive session error ${session.status}`);
-    const uploaded = await fetch(location,{method:'PUT',headers:{'content-type':FILE_MIMES[extension]},body:request.body});
+    const bytes = await request.arrayBuffer();
+    if (bytes.byteLength !== size) return json({error:'Ukuran file tidak sesuai. Pilih ulang lampiran dan coba lagi.'},400);
+    const uploaded = await fetch(location,{method:'PUT',headers:{'content-type':FILE_MIMES[extension],'content-length':String(size)},body:bytes});
     if (!uploaded.ok) throw new Error(`Drive upload error ${uploaded.status}`);
     file = await uploaded.json();
     if (!file?.id) throw new Error('Drive returned no file ID');
   } catch (error) {
     console.error(error instanceof Error ? error.message : 'Drive upload error');
-    const message = error instanceof Error ? error.message : '';
-    if (message === 'Service account cannot upload to personal My Drive') return json({error:'Folder ini berada di My Drive. Admin perlu menghubungkan OAuth akun Google pemilik folder atau menggunakan Shared Drive.'},503);
-    if (message.startsWith('Drive OAuth token error')) return json({error:'Koneksi OAuth Google Drive tidak valid. Admin perlu memperbarui refresh token.'},503);
-    return json({error:'Google Drive belum dapat menerima lampiran. Periksa akses folder dan konfigurasi akun Google.'},502);
+    return json({error:'Google Drive gagal menerima lampiran. Admin perlu memeriksa kuota penyimpanan, izin folder, dan kredensial upload.'},502);
   }
   const entry = {name,size,drive_url:`https://drive.google.com/file/d/${encodeURIComponent(file.id)}/view`};
   await supabase(env,`payment_orders?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:JSON.stringify({task:{...order.task,attachments:[...attachments,entry]}})});
