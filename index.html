@@ -5363,6 +5363,7 @@
     <aside class="promo-strip" id="promoStrip" aria-label="Promo terbatas" hidden>
             <span class="promo-strip__badge" id="promoBadge">PROMO TERBATAS</span>
             <span class="promo-strip__lead" id="promoLead"></span><span class="promo-strip__text" id="promoText"></span>
+            <div class="promo-strip__ticker" tabindex="0" aria-label="Informasi promo"><span id="promoTicker"></span></div>
             <span class="promo-strip__countdown" aria-label="Sisa waktu promo">
                 <span class="promo-strip__time"><b id="promoDays">00</b><small>HARI</small></span>
                 <span class="promo-strip__time"><b id="promoHours">00</b><small>JAM</small></span>
@@ -6510,6 +6511,7 @@
             document.getElementById('promoBadge').textContent = promo.label || DEFAULT_PROMO.label;
             document.getElementById('promoLead').textContent = `Diskon s.d ${Number(promo.discount_percent) || 0}%`;
             document.getElementById('promoText').textContent = promo.text || '';
+            document.getElementById('promoTicker').textContent = [promo.text, promo.coupon ? `Kode kupon: ${promo.coupon}` : '', Number(promo.discount_percent) > 0 ? `Diskon s.d ${Number(promo.discount_percent)}%` : ''].filter(Boolean).join('  |  ');
             document.getElementById('promoCoupon').textContent = promo.coupon || '';
             document.getElementById('promoLead').hidden = !(Number(promo.discount_percent) > 0);
             document.querySelector('.promo-strip__coupon').hidden = !String(promo.coupon || '').trim();
@@ -7046,8 +7048,9 @@
             const anyOpen = Array.from(document.querySelectorAll('.modal-overlay')).some(el => el.style.display !== 'none');
             document.body.classList.toggle('modal-open', anyOpen);
             if (window.matchMedia('(max-width: 760px)').matches && history.state?.jokiinModal === id) {
-                modalBackNavigation = true;
-                history.back();
+                const state = { ...(history.state || {}) };
+                delete state.jokiinModal;
+                history.replaceState(state, '', location.href);
             }
         };
 
@@ -9424,10 +9427,13 @@ Teman tugas mahasiswa.`;
         }
         @media (prefers-reduced-motion:reduce) { #full-harga .cf-price-card .cf-sale-ribbon { animation:none; transition:none; } }
     </style>
-    <link rel="stylesheet" href="assets/order-improvements.css?v=1.03">
-    <script src="assets/order-improvements.js?v=1.03"></script>
+    <link rel="stylesheet" href="assets/invoice.css?v=1.05">
+    <script src="assets/invoice-render.js?v=1.05"></script>
+    <link rel="stylesheet" href="assets/order-improvements.css?v=1.05">
+    <script src="assets/order-improvements.js?v=1.05"></script>
     <link rel="stylesheet" href="assets/ui-refinements.css?v=1.03">
     <script src="assets/ui-refinements.js?v=1.04"></script>
+    <link rel="stylesheet" href="assets/mobile-fixes.css?v=1.05">
 </body>
 
 </html>
