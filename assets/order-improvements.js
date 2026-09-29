@@ -1,9 +1,6 @@
 (() => {
   'use strict';
-  const assetsBase = new URL('.',document.currentScript.src);
-  const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-  const money = value => new Intl.NumberFormat('id-ID', {style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(value) || 0);
-  const date = value => value && !Number.isNaN(new Date(value).getTime()) ? new Date(value).toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'}) : '-';
+  const iconBase = new URL('ui-icons/',document.currentScript.src);
   let invoiceOrder = null;
   const invoice = document.createElement('div');
   invoice.id = 'invoiceModal'; invoice.className = 'modal-overlay'; invoice.style.display = 'none';
@@ -19,12 +16,7 @@
     actions.hidden = !paid; actions.style.display = paid ? 'flex' : 'none';
   };
   function markup(order) {
-    const items = Array.isArray(order.items) ? order.items : [];
-    const subtotal = order.subtotal ?? items.reduce((sum,item) => sum + Number(item.price || 0) * Number(item.quantity || 0),0);
-    return `<header><div><strong>JOKI.IN</strong><p>Teman tugas mahasiswa</p></div><div><h2>INVOICE</h2><strong>LUNAS / PAID</strong></div></header>
-      <dl class="invoice-fields"><div><dt>Nama Admin</dt><dd>Tim JOKI.IN</dd></div><div><dt>Nama Klien</dt><dd>${escape(order.customer?.name || '-')}</dd></div><div><dt>Nomor Invoice / Pesanan</dt><dd>${escape(order.orderCode || order.id)}</dd></div><div><dt>Tanggal Pesanan</dt><dd>${date(order.createdAt)}</dd></div><div><dt>Tanggal Deadline</dt><dd>${escape(order.task?.deadline || '-')}</dd></div><div><dt>Metode Pembayaran</dt><dd>${escape(order.paymentMethod || 'Pembayaran terverifikasi')}</dd></div></dl>
-      <div class="invoice-table-wrap"><table><thead><tr><th>Deskripsi</th><th>Jumlah</th><th>Harga Satuan</th><th>Subtotal</th></tr></thead><tbody>${items.map(item => `<tr><td>${escape(item.name || item.title || 'Layanan')}</td><td>${escape(item.quantity)}</td><td>${money(item.price)}</td><td>${money(Number(item.price || 0)*Number(item.quantity || 0))}</td></tr>`).join('')}</tbody></table></div>
-      <div class="invoice-totals"><p><span>Subtotal</span><strong>${money(subtotal)}</strong></p><p><span>Diskon</span><strong>-${money(order.discount)}</strong></p><p><span>Biaya Layanan</span><strong>${money(order.serviceFee)}</strong></p><p><span>Biaya Pembayaran</span><strong>${money(order.paymentFee)}</strong></p><p class="grand"><span>Total Dibayar</span><strong>${money(order.total)}</strong></p></div><p class="invoice-note">Terima kasih telah mempercayakan pekerjaan Anda kepada JOKI.IN.</p>`;
+    return window.JokiinInvoice(order);
   }
   function eligible() {
     if (!invoiceOrder || String(invoiceOrder.paymentStatus).toUpperCase() !== 'PAID') { window.showToast('Invoice tersedia setelah pembayaran terkonfirmasi Paid.'); return false; }
@@ -39,12 +31,9 @@
   };
   function printInvoice() {
     if (!eligible()) return;
-    const popup = window.open('', '_blank');
-    if (!popup) { window.showToast('Izinkan popup untuk mencetak invoice.'); return; }
-    popup.opener = null;
-    popup.document.write(`<!doctype html><html lang="id"><head><meta charset="utf-8"><title>Invoice ${escape(invoiceOrder.orderCode || invoiceOrder.id)}</title><link rel="stylesheet" href="${new URL('order-improvements.css',assetsBase).href}"><style>body{margin:0;font:14px/1.5 system-ui;background:white}.invoice-paper{max-width:960px;margin:auto}@page{size:A4;margin:16mm}@media print{.invoice-paper{padding:0}tr,.invoice-totals{break-inside:avoid}*{print-color-adjust:exact}}</style></head><body><main class="invoice-paper">${markup(invoiceOrder)}</main></body></html>`);
-    popup.document.close();
-    popup.onload = () => { popup.focus(); popup.print(); };
+    const url = new URL('/invoice/',location.origin);
+    url.searchParams.set('order',invoiceOrder.orderCode || invoiceOrder.id);
+    window.open(url.href,'_blank','noopener,noreferrer');
   }
   document.getElementById('printInvoice').onclick = printInvoice;
   document.getElementById('printInvoicePreview').onclick = printInvoice;
@@ -88,7 +77,9 @@
         fragment.append(document.createTextNode(node.textContent.slice(start,match.index)));
         if (iconNames[match[0]]) {
           const icon = document.createElement('img'); icon.className = 'jokiin-vector';
-          icon.src = `assets/ui-icons/${iconNames[match[0]]}.svg`; icon.alt = ''; icon.setAttribute('aria-hidden','true');
+          icon.src = new URL(`${iconNames[match[0]]}.svg`,iconBase).href;
+          icon.alt = ''; icon.setAttribute('aria-hidden','true');
+          icon.onerror = () => icon.remove();
           fragment.append(icon);
         }
         start = match.index + match[0].length;

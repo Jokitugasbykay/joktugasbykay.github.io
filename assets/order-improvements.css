@@ -1,21 +1,6 @@
 .invoice-actions { display:flex; gap:10px; width:100%; }
 .promo-strip__lead:empty { display:none!important; }
 .invoice-actions button { flex:1; min-height:44px; }
-.invoice-paper { background:#fff; color:#17211d; padding:28px; }
-.invoice-paper header { display:flex!important; justify-content:space-between; gap:16px; padding:0 0 20px!important; border-bottom:2px solid #087c5b; background:none!important; }
-.invoice-paper h2 { color:#087c5b; margin:0; font-size:1.4rem; }
-.invoice-fields { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin:24px 0; }
-.invoice-fields dt { color:#5d6962; font-size:.8rem; }
-.invoice-fields dd { margin:4px 0 0; overflow-wrap:anywhere; }
-.invoice-table-wrap { overflow-x:auto; }
-.invoice-paper table { width:100%; border-collapse:collapse; }
-.invoice-paper th,.invoice-paper td { text-align:left; padding:10px 8px; border-bottom:1px solid #dbe5de; }
-.invoice-paper th { background:#edf7f1; }
-.invoice-paper td:not(:first-child),.invoice-paper th:not(:first-child) { text-align:right; }
-.invoice-totals { margin:24px 0 0 auto; max-width:340px; }
-.invoice-totals p { display:flex; justify-content:space-between; gap:16px; color:inherit; }
-.invoice-totals .grand { border-top:2px solid #087c5b; padding-top:16px; font-weight:800; color:#087c5b; }
-.invoice-note { margin-top:30px; border-top:1px solid #dbe5de; padding-top:16px; font-size:.85rem; }
 .jokiin-vector { width:22px; height:22px; vertical-align:middle; flex:none; }
 :is([data-theme="dark"],.dark-mode) .jokiin-vector { filter:invert(1); }
 #serviceDetailModal .modal-content { max-height:calc(100dvh - 32px)!important; overflow-y:auto!important; width:min(560px,100%)!important; background:var(--card-solid,#fff)!important; }
@@ -40,8 +25,6 @@ html.jokiin-scroll-locked { overflow:hidden; overscroll-behavior:none; }
   #promoStrip .promo-strip__countdown { display:flex!important; grid-column:1; grid-row:4; justify-content:flex-start; }
   #promoStrip .promo-strip__coupon { display:block!important; grid-column:1; grid-row:5; justify-self:start; max-width:100%; white-space:normal; overflow-wrap:anywhere; }
   #promoStrip .promo-strip__claim { grid-column:2; grid-row:4/6; align-self:center; }
-  .invoice-paper { padding:20px 14px; }
-  .invoice-fields { grid-template-columns:1fr; }
   #invoiceModal .modal-content { width:100%; max-height:calc(100dvh - 24px); overflow:auto; }
   #orderDetailModal .modal-footer button { white-space:normal; }
 }
