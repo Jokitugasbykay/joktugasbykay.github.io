@@ -1,7 +1,7 @@
 .invoice-paper { box-sizing:border-box; background:#fff; color:#17211d; font:14px/1.5 Arial,sans-serif; padding:40px; letter-spacing:0; }
 .invoice-paper * { box-sizing:border-box; }
 .invoice-paper .invoice-heading { display:flex!important; flex-direction:row!important; position:static!important; justify-content:space-between; align-items:flex-start; gap:20px; padding:0 0 20px!important; margin:0!important; border:0; border-bottom:2px solid #008566; border-radius:0; box-shadow:none!important; background:#fff!important; }
-.invoice-wordmark { font-size:24px; font-weight:900; }
+.invoice-wordmark { display:block; width:180px; max-width:100%; height:auto; }
 .invoice-wordmark span,.invoice-heading h1 { color:#008566; }
 .invoice-paper .invoice-heading h1 { margin:0; font-size:23px; line-height:1.4; font-weight:800; }
 .invoice-paper .invoice-heading p { margin:2px 0 0; font-size:11px; color:#6c7774; }
@@ -33,7 +33,7 @@ body.invoice-page { margin:0; background:#e8ecea; color:#17211d; font:14px/1.5 A
   .invoice-paper .invoice-totals { width:75%; }
   .invoice-paper .invoice-totals .grand { white-space:nowrap; font-size:15px; }
   .invoice-paper .invoice-heading { gap:12px; }
-  .invoice-wordmark { font-size:20px; }
+  .invoice-wordmark { width:150px; }
   .invoice-paper .invoice-heading h1 { font-size:18px; }
   .invoice-paper th,.invoice-paper td { padding:8px 4px; }
 }
