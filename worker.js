@@ -115,6 +115,8 @@ async function uploadTaskFile(request, env) {
     if (!folderResponse.ok) return json({error:'Folder Google Drive tidak dapat diakses. Periksa ID folder dan izin akun upload.'},502);
     const folder = await folderResponse.json();
     if (folder.mimeType !== 'application/vnd.google-apps.folder' || !folder.capabilities?.canAddChildren) return json({error:'Akun upload tidak memiliki izin menambahkan file ke folder tujuan.'},502);
+    const usingOAuth = env.GOOGLE_DRIVE_CLIENT_ID && env.GOOGLE_DRIVE_CLIENT_SECRET && env.GOOGLE_DRIVE_REFRESH_TOKEN;
+    if (!usingOAuth && !folder.driveId) return json({error:'Upload ke My Drive memerlukan OAuth akun pemilik. Service account tidak memiliki kuota penyimpanan; gunakan Shared Drive atau konfigurasi OAuth di Worker.'},503);
     const dailyFolder = await ensureDailyDriveFolder(token, folderId);
     const session = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id,name&supportsAllDrives=true',{method:'POST',headers:{Authorization:`Bearer ${token}`,'content-type':'application/json','x-upload-content-type':FILE_MIMES[extension],'x-upload-content-length':String(size)},body:JSON.stringify({name,parents:[dailyFolder.id]})});
     const location = session.headers.get('location');
@@ -280,7 +282,7 @@ async function createPayment(request, env) {
       })
     });
   }
-  const orderCode = `JOKI-${new Date().toISOString().slice(0, 10).replaceAll('-', '')}-${crypto.randomUUID().replaceAll('-', '').toUpperCase()}`;
+  const orderCode = `NUG-${new Date().toISOString().slice(0, 10).replaceAll('-', '')}-${crypto.randomUUID().replaceAll('-', '').toUpperCase()}`;
   const order = { order_code: orderCode, request_key: requestKey, user_id: userId, customer: { name: clean(customer.name, 100), nim: clean(customer.nim, 50), email: clean(customer.email, 254).toLowerCase(), whatsapp: clean(customer.whatsapp, 24) }, task: { title: clean(task.title, 250), deadline: clean(task.deadline, 50), notes: clean(task.notes, 3000), googleDriveUrl: clean(task.googleDriveUrl, 2048) }, promo: submittedPromo, items: lines, total_price: total, payment_status: 'PENDING', status: 'pending' };
   const inserted = await supabase(env, 'payment_orders', { method: 'POST', headers: { Prefer: 'return=representation' }, body: JSON.stringify(order) });
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
