@@ -3326,6 +3326,22 @@
                 position: static;
             }
         }
+
+        #aboutJokiin { padding:0 28px; overflow:hidden; border-radius:8px; }
+        #aboutJokiin .about-heading { padding:28px 0 24px; border-bottom:1px solid var(--border-color); background:none; box-shadow:none; position:static; }
+        #aboutJokiin .about-eyebrow { color:var(--primary); font-size:12px; font-weight:700; }
+        #aboutJokiin .about-heading h3 { font-size:24px; line-height:1.3; margin:8px 0; text-wrap:balance; color:var(--text-main); }
+        #aboutJokiin .about-heading p { margin:0; font-size:14px; color:var(--text-secondary); }
+        #aboutJokiin .about-row { display:grid; grid-template-columns:190px minmax(0,1fr); gap:24px; padding:24px 0; border-bottom:1px solid var(--border-color); scroll-margin-top:120px; }
+        #aboutJokiin .about-row:last-child { border-bottom:0; }
+        #aboutJokiin .about-row h4 { display:flex; align-items:baseline; gap:12px; margin:0; font-size:15px; line-height:1.6; color:var(--text-main); text-wrap:balance; }
+        #aboutJokiin .about-number { color:var(--primary); font-size:12px; font-weight:600; font-variant-numeric:tabular-nums; }
+        #aboutJokiin .about-row p { min-width:0; margin:0; color:var(--text-secondary); font-size:14px; line-height:1.85; overflow-wrap:break-word; text-wrap:pretty; }
+        @media(max-width:700px) {
+            #aboutJokiin { padding:0 20px; }
+            #aboutJokiin .about-row { grid-template-columns:minmax(0,1fr); gap:10px; padding:20px 0; }
+            #aboutJokiin .about-heading h3 { font-size:22px; }
+        }
     </style>
 
     <style id="jokiin-glass-theme">
@@ -5650,26 +5666,26 @@
                 <div class="info-main">
 
                     <section id="aboutJokiin" class="info-card" aria-labelledby="aboutJokiinTitle">
-                        <h3 id="aboutJokiinTitle" class="info-card-title">Tentang JOKI.IN</h3>
-                        <div id="info-about" style="padding:20px 0; border-bottom:1px dashed var(--border-color);">
-                            <h4 style="font-size:1.05em; font-weight:700; margin:0; color:var(--text-main);">Tentang Kami</h4>
-                            <p style="color:var(--text-secondary); line-height:1.7; margin:12px 0 0;">JOKI.IN membantu mahasiswa memenuhi kebutuhan tugas melalui layanan yang dapat dipilih sesuai kebutuhan. Anda dapat mengirim detail tugas, berkonsultasi dengan admin, dan memantau pesanan melalui website.</p>
+                        <header class="about-heading"><span class="about-eyebrow">KENALI JOKI.IN</span><h3 id="aboutJokiinTitle">Teman Tugas Mahasiswa</h3><p>Layanan, proses, dan ketentuan dalam satu tempat.</p></header>
+                        <div id="info-about" class="about-row">
+                            <h4><span class="about-number" aria-hidden="true">01</span>Tentang Kami</h4>
+                            <p>JOKI.IN membantu mahasiswa memenuhi kebutuhan tugas melalui layanan yang dapat dipilih sesuai kebutuhan. Anda dapat mengirim detail tugas, berkonsultasi dengan admin, dan memantau pesanan melalui website.</p>
                         </div>
-                        <div id="info-why" style="padding:20px 0; border-bottom:1px dashed var(--border-color);">
-                            <h4 style="font-size:1.05em; font-weight:700; margin:0; color:var(--text-main);">Mengapa JOKI.IN?</h4>
-                            <p style="color:var(--text-secondary); line-height:1.7; margin:12px 0 0;">Pilihan layanan dan harga tersedia di website, detail kebutuhan dicatat saat pemesanan, dan status pembayaran serta pengerjaan dapat dilacak. Admin dapat dihubungi untuk membahas kebutuhan sebelum Anda memesan.</p>
+                        <div id="info-why" class="about-row">
+                            <h4><span class="about-number" aria-hidden="true">02</span>Mengapa JOKI.IN?</h4>
+                            <p>Pilihan layanan dan harga tersedia di website, detail kebutuhan dicatat saat pemesanan, dan status pembayaran serta pengerjaan dapat dilacak. Admin dapat dihubungi untuk membahas kebutuhan sebelum Anda memesan.</p>
                         </div>
-                        <div id="info-revision" style="padding:20px 0; border-bottom:1px dashed var(--border-color);">
-                            <h4 style="font-size:1.05em; font-weight:700; margin:0; color:var(--text-main);">Garansi &amp; Revisi</h4>
-                            <p style="color:var(--text-secondary); line-height:1.7; margin:12px 0 0;">Jika hasil tugas belum sesuai detail yang disepakati, hubungi admin dengan nomor pesanan dan catatan perbaikan. Cakupan, batas waktu, dan biaya revisi dikonfirmasi bersama admin sesuai layanan. Perubahan topik atau tambahan kebutuhan di luar pesanan awal perlu disepakati kembali.</p>
+                        <div id="info-revision" class="about-row">
+                            <h4><span class="about-number" aria-hidden="true">03</span>Garansi &amp; Revisi</h4>
+                            <p>Jika hasil tugas belum sesuai detail yang disepakati, hubungi admin dengan nomor pesanan dan catatan perbaikan. Cakupan, batas waktu, dan biaya revisi dikonfirmasi bersama admin sesuai layanan. Perubahan topik atau tambahan kebutuhan di luar pesanan awal perlu disepakati kembali.</p>
                         </div>
-                        <div id="info-terms" style="padding:20px 0; border-bottom:1px dashed var(--border-color);">
-                            <h4 style="font-size:1.05em; font-weight:700; margin:0; color:var(--text-main);">Syarat &amp; Ketentuan</h4>
-                            <p style="color:var(--text-secondary); line-height:1.7; margin:12px 0 0;">Pastikan detail tugas, lampiran, tenggat, dan kontak yang dikirim sudah benar. Periksa layanan serta total biaya sebelum membayar. Perubahan pesanan, pembatalan, dan permintaan pengembalian dana perlu dikonfirmasi dengan admin sesuai kondisi pesanan. Gunakan hasil layanan secara bertanggung jawab dan sesuai aturan institusi Anda.</p>
+                        <div id="info-terms" class="about-row">
+                            <h4><span class="about-number" aria-hidden="true">04</span>Syarat &amp; Ketentuan</h4>
+                            <p>Pastikan detail tugas, lampiran, tenggat, dan kontak yang dikirim sudah benar. Periksa layanan serta total biaya sebelum membayar. Perubahan pesanan, pembatalan, dan permintaan pengembalian dana perlu dikonfirmasi dengan admin sesuai kondisi pesanan. Gunakan hasil layanan secara bertanggung jawab dan sesuai aturan institusi Anda.</p>
                         </div>
-                        <div id="info-privacy" style="padding:20px 0; border-bottom:1px dashed var(--border-color);">
-                            <h4 style="font-size:1.05em; font-weight:700; margin:0; color:var(--text-main);">Kebijakan Privasi</h4>
-                            <p style="color:var(--text-secondary); line-height:1.7; margin:12px 0 0;">Data yang Anda kirim, seperti nama, NIM jika diisi, Gmail, nomor WhatsApp, detail tugas, dan lampiran, digunakan untuk memproses pesanan, menghubungi Anda, dan mengirim hasil tugas. Pemrosesan pesanan menggunakan layanan penyimpanan dan pembayaran terkait, termasuk Supabase, Google Drive, dan Mayar. Jangan mengirim kata sandi atau data sensitif yang tidak diperlukan. Hubungi admin untuk pertanyaan atau permintaan terkait data pribadi.</p>
+                        <div id="info-privacy" class="about-row">
+                            <h4><span class="about-number" aria-hidden="true">05</span>Kebijakan Privasi</h4>
+                            <p>Data yang Anda kirim, seperti nama, NIM jika diisi, Gmail, nomor WhatsApp, detail tugas, dan lampiran, digunakan untuk memproses pesanan, menghubungi Anda, dan mengirim hasil tugas. Pemrosesan pesanan menggunakan layanan penyimpanan dan pembayaran terkait, termasuk Supabase, Google Drive, dan Mayar. Jangan mengirim kata sandi atau data sensitif yang tidak diperlukan. Hubungi admin untuk pertanyaan atau permintaan terkait data pribadi.</p>
                         </div>
                     </section>
 
