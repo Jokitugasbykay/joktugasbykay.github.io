@@ -6233,7 +6233,6 @@
                             <select id="chkWACountry" class="form-control" aria-label="Kode negara WhatsApp" style="width:110px; flex-shrink:0;">
                                 <option value="62">ID +62</option>
                                 <option value="60">MY +60</option>
-                                <option value="65">SG +65</option>
                             </select>
                             <input type="tel" inputmode="numeric" autocomplete="tel-national" id="chkWA" class="form-control" placeholder="xxxxxxxx" aria-describedby="chkWAHelp" style="min-width:0;">
                         </div>
@@ -7500,7 +7499,7 @@
                 if (!document.getElementById('chkEmail').value) document.getElementById('chkEmail').value = currentUser.email;
                 if (!document.getElementById('chkWA').value) {
                     const phone = String(currentUser.phone || '').replace(/^\+/, '');
-                    const country = ['62', '60', '65'].find(code => phone.startsWith(code));
+                    const country = ['62', '60'].find(code => phone.startsWith(code));
                     if (country) document.getElementById('chkWACountry').value = country;
                     document.getElementById('chkWA').value = country ? phone.slice(country.length) : phone.replace(/^0+/, '');
                 }
