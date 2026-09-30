@@ -5,8 +5,8 @@ Perubahan kode ini belum aktif sampai Worker dan aset situs di-deploy. Link yang
 ## Aktivasi
 
 1. Siapkan Google Drive API OAuth milik akun pemilik folder. Izin OAuth harus dapat membuat file di folder tujuan; simpan refresh token dari akun tersebut di server. URL folder saja tidak memberikan izin unggah. Jangan masukkan kredensial atau refresh token ke source, HTML, APK, atau chat.
-2. Cara yang direkomendasikan: buat Google Cloud **Service Account**, buat JSON key-nya, lalu tambahkan seluruh isi JSON itu sebagai secret Cloudflare `GOOGLE_SERVICE_ACCOUNT_JSON`. Bagikan folder utama Drive tujuan ke email service account sebagai **Editor**. Metode ini tidak memerlukan OAuth Playground atau refresh token.
-3. Metode OAuth lama tetap didukung dengan tiga secret: `GOOGLE_DRIVE_CLIENT_ID`, `GOOGLE_DRIVE_CLIENT_SECRET`, `GOOGLE_DRIVE_REFRESH_TOKEN`.
+2. Untuk folder **My Drive**, gunakan OAuth akun pemilik folder. Service account tidak memiliki kuota penyimpanan Drive; membagikan folder My Drive sebagai Editor tidak mengatasi batasan ini.
+3. Simpan tiga secret Worker: `GOOGLE_DRIVE_CLIENT_ID`, `GOOGLE_DRIVE_CLIENT_SECRET`, `GOOGLE_DRIVE_REFRESH_TOKEN`. Alternatif service account dengan secret `GOOGLE_SERVICE_ACCOUNT_JSON` hanya untuk folder di **Shared Drive** organisasi.
 4. Deploy `src/worker.js`, lalu deploy `index.html` beserta file web terkait. Jalur checkout akan membuat pesanan dan mengunggah lampiran ke Drive sebelum membuka halaman pembayaran. Jika Drive gagal, checkout menampilkan error dan tidak menganggap lampiran terkirim.
 5. Buka halaman `admin/`, pilih tab **Folder Lampiran**, lalu simpan link folder utama. Sistem akan membuat atau memakai subfolder tanggal hari ini otomatis memakai zona waktu WIB, sehingga link tidak perlu diganti setiap hari. Menu tersebut membaca dan menyimpan `site_settings.task_upload_drive_folder`, yang dibatasi untuk admin.
 
