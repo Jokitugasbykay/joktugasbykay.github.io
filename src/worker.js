@@ -115,8 +115,6 @@ async function uploadTaskFile(request, env) {
     if (!folderResponse.ok) return json({error:'Folder Google Drive tidak dapat diakses. Periksa ID folder dan izin akun upload.'},502);
     const folder = await folderResponse.json();
     if (folder.mimeType !== 'application/vnd.google-apps.folder' || !folder.capabilities?.canAddChildren) return json({error:'Akun upload tidak memiliki izin menambahkan file ke folder tujuan.'},502);
-    const usingOAuth = env.GOOGLE_DRIVE_CLIENT_ID && env.GOOGLE_DRIVE_CLIENT_SECRET && env.GOOGLE_DRIVE_REFRESH_TOKEN;
-    if (!usingOAuth && !folder.driveId) return json({error:'Folder My Drive memerlukan OAuth akun pemilik. Service account hanya dapat mengunggah ke Shared Drive.'},503);
     const dailyFolder = await ensureDailyDriveFolder(token, folderId);
     const session = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id,name&supportsAllDrives=true',{method:'POST',headers:{Authorization:`Bearer ${token}`,'content-type':'application/json','x-upload-content-type':FILE_MIMES[extension],'x-upload-content-length':String(size)},body:JSON.stringify({name,parents:[dailyFolder.id]})});
     const location = session.headers.get('location');
@@ -289,7 +287,7 @@ async function createPayment(request, env) {
   const payment = await mayar(env, 'POST', 'payments/create', { name: `Pembayaran JOKI.IN - ${lines[0].name}`, amount: total, email: order.customer.email, mobile: order.customer.whatsapp, description: `Pesanan JOKI.IN ${orderCode}. Silakan selesaikan pembayaran untuk memulai pengerjaan.`, expiredAt: expiresAt });
   const data = payment.data?.data || {};
   const paymentUrl = data.link;
-  const transactionId = data.transactionId || data.transaction_id || data.id;
+  const transactionId = data.transactionId || transaction_id || data.id;
   if (!payment.response.ok || typeof paymentUrl !== 'string' || !transactionId) {
     await supabase(env, `payment_orders?order_code=eq.${encodeURIComponent(orderCode)}`, { method: 'PATCH', body: JSON.stringify({ payment_status: 'CANCELED' }) }).catch(() => {});
     return json({ error: 'Layanan pembayaran sedang sibuk. Coba lagi.' }, 502);
