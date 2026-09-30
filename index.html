@@ -6228,15 +6228,24 @@
                             placeholder="Masukkan NIM customer">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Nomor WhatsApp</label>
-                        <input type="text" id="chkWA" class="form-control" placeholder="Contoh: 0867">
+                        <label class="form-label" for="chkWA">Nomor WhatsApp</label>
+                        <div style="display:flex; gap:8px;">
+                            <select id="chkWACountry" class="form-control" aria-label="Kode negara WhatsApp" style="width:110px; flex-shrink:0;">
+                                <option value="62">ID +62</option>
+                                <option value="60">MY +60</option>
+                                <option value="65">SG +65</option>
+                            </select>
+                            <input type="tel" inputmode="numeric" autocomplete="tel-national" id="chkWA" class="form-control" placeholder="xxxxxxxx" aria-describedby="chkWAHelp" style="min-width:0;">
+                        </div>
+                        <p id="chkWAHelp" style="font-size:.85em; color:var(--text-muted); margin-top:8px;">Pastikan nomor WhatsApp aktif agar kami dapat menghubungi Anda jika ada kendala transaksi. Masukkan nomor tanpa angka 0 di depan.</p>
                         <div id="errChkWA" class="error-msg" style="text-align:left;">Nomor WhatsApp hanya boleh berisi
                             angka (0-9) dan wajib diisi!</div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Email</label>
-                        <input type="email" id="chkEmail" class="form-control" placeholder="Masukkan email @gmail.com">
-                        <div id="errChkEmail" class="error-msg" style="text-align:left;">Email wajib diisi dan harus
+                        <label class="form-label" for="chkEmail">Gmail</label>
+                        <input type="email" id="chkEmail" class="form-control" placeholder="Masukkan alamat @gmail.com" aria-describedby="chkEmailHelp">
+                        <p id="chkEmailHelp" style="font-size:.85em; color:var(--text-muted); margin-top:8px;">Pastikan alamat Gmail benar agar hasil tugas dapat kami kirim setelah selesai.</p>
+                        <div id="errChkEmail" class="error-msg" style="text-align:left;">Gmail wajib diisi dan harus
                             menggunakan akhiran @gmail.com!</div>
                     </div>
                 </div>
@@ -7413,6 +7422,7 @@
                     name: document.getElementById('chkName').value,
                     nim: document.getElementById('chkNim').value,
                     wa: document.getElementById('chkWA').value,
+                    waCountry: document.getElementById('chkWACountry').value,
                     email: document.getElementById('chkEmail').value
                 },
                 paymentId: selectedPaymentMethod ? selectedPaymentMethod.id : null,
@@ -7438,6 +7448,7 @@
                         if (state.form.name) document.getElementById('chkName').value = state.form.name;
                         if (state.form.nim) document.getElementById('chkNim').value = state.form.nim;
                         if (state.form.wa) document.getElementById('chkWA').value = state.form.wa;
+                        if (state.form.waCountry) document.getElementById('chkWACountry').value = state.form.waCountry;
                         if (state.form.email) document.getElementById('chkEmail').value = state.form.email;
 
                         window.switchTab('checkout');
@@ -7487,7 +7498,12 @@
                 document.getElementById('checkoutGuestMsg').style.display = 'none';
                 if (!document.getElementById('chkName').value) document.getElementById('chkName').value = currentUser.name;
                 if (!document.getElementById('chkEmail').value) document.getElementById('chkEmail').value = currentUser.email;
-                if (!document.getElementById('chkWA').value) document.getElementById('chkWA').value = currentUser.phone || '';
+                if (!document.getElementById('chkWA').value) {
+                    const phone = String(currentUser.phone || '').replace(/^\+/, '');
+                    const country = ['62', '60', '65'].find(code => phone.startsWith(code));
+                    if (country) document.getElementById('chkWACountry').value = country;
+                    document.getElementById('chkWA').value = country ? phone.slice(country.length) : phone.replace(/^0+/, '');
+                }
             } else { document.getElementById('checkoutGuestMsg').style.display = 'block'; }
         }
 
@@ -7698,7 +7714,9 @@
 
             const name = document.getElementById('chkName').value.trim();
             const nim = document.getElementById('chkNim').value.trim();
-            const wa = document.getElementById('chkWA').value.trim();
+            const localWA = document.getElementById('chkWA').value.trim();
+            const countryCode = document.getElementById('chkWACountry').value;
+            const wa = localWA ? countryCode + localWA.replace(/^0+/, '') : '';
             const email = document.getElementById('chkEmail').value.trim().toLowerCase();
             const title = document.getElementById('chkTaskTitle').value.trim();
             const deadline = document.getElementById('chkTaskDeadline').value;
