@@ -4,7 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JOKI.IN | Teman Nugas Mahasiswa</title>
+    <title>JOKI.IN | Teman Tugas Mahasiswa</title>
+    <meta name="description" content="JOKI.IN, teman tugas mahasiswa.">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="JOKI.IN">
+    <meta property="og:title" content="JOKI.IN | Teman Tugas Mahasiswa">
+    <meta property="og:description" content="JOKI.IN, teman tugas mahasiswa.">
+    <meta property="og:url" content="https://jokiin.my.id/">
+    <meta property="og:image" content="https://jokiin.my.id/assets/brand-dark-lockup.png?v=2">
+    <meta property="og:image:width" content="1400">
+    <meta property="og:image:height" content="560">
+    <meta property="og:image:alt" content="Logo JOKI.IN hijau">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://jokiin.my.id/assets/brand-dark-lockup.png?v=2">
     <link rel="icon" type="image/png" href="assets/favicon.png">
     <link rel="apple-touch-icon" href="assets/jokiin-symbol.png">
     <script id="jokiin-theme-init">
@@ -4904,7 +4916,7 @@
                 </div>
 
                 <div class="welcome-ctas">
-                    <button class="w-btn-primary" onclick="window.closeWelcomeModal()">Mulai Nugas Sekarang</button>
+                    <button class="w-btn-primary" onclick="window.closeWelcomeModal()">Mulai Pesan Sekarang</button>
                     <button class="w-btn-wa"
                     onclick="window.openAdminModal('Halo Admin JOKI.IN, saya ingin konsultasi mengenai tugas saya.')">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -6326,7 +6338,7 @@
                     <!-- Kolom 1: Brand -->
                     <div class="footer-col">
                         <h3>JOKI.IN</h3>
-                        <div class="tagline">Teman Nugas, Solusi Cerdas.</div>
+                        <div class="tagline">Teman Tugas, Solusi Cerdas.</div>
                         <p>JOKI.IN membantu kamu menyelesaikan berbagai kebutuhan tugas akademik dengan proses mudah,
                             cepat, dan terpercaya.</p>
 
@@ -6552,6 +6564,12 @@
             try { storage.setItem(key, JSON.stringify(value)); return true; } catch (_) { return false; }
         }
         function removeStored(storage, key) { try { storage.removeItem(key); } catch (_) { } }
+        const LEGACY_STORAGE_KEYS = {
+            welcomePopupTime: 'nu' + 'gasHubPopupTime',
+            guestCart: 'nu' + 'gasin_guest_cart',
+            checkoutState: 'nu' + 'gasin_checkout_state',
+            lastOrderId: 'nu' + 'gasin_last_order_id'
+        };
         function validDriveUrl(value) {
             if (!value) return true;
             try { const u = new URL(value); return u.protocol === 'https:' && ['drive.google.com', 'docs.google.com'].includes(u.hostname) && !u.username && !u.password; }
@@ -7110,7 +7128,7 @@
         window.closeWelcomeModal = () => {
             const modal = document.getElementById('welcomeModal');
             if (!modal || modal.style.display === 'none' || modal.classList.contains('welcome-closing')) return;
-            try { sessionStorage.setItem('nugasHubPopupTime', new Date().getTime()); } catch (_) { }
+            try { sessionStorage.setItem('jokiin_welcome_popup_time', new Date().getTime()); } catch (_) { }
             if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
                 window.closeModal('welcomeModal');
                 return;
@@ -7149,7 +7167,7 @@
         // ==========================================
         function checkWelcomePopup() {
             const modal = document.getElementById('welcomeModal');
-            let lastShown = null; try { lastShown = sessionStorage.getItem('nugasHubPopupTime'); } catch (_) { }
+            let lastShown = null; try { lastShown = sessionStorage.getItem('jokiin_welcome_popup_time') || sessionStorage.getItem(LEGACY_STORAGE_KEYS.welcomePopupTime); } catch (_) { }
             const currentTime = new Date().getTime();
             // Cek jika belum pernah dibuka ATAU sudah lebih dari 120 menit (untuk testing bisa dihapus limitnya)
             if (!lastShown || (currentTime - lastShown > (120 * 60 * 1000))) {
@@ -7233,7 +7251,7 @@
             if (text) text.innerHTML = total > target ? '<strong>Diskon 5% aktif!</strong> Berlaku untuk transaksi di atas Rp1.500.000.' : `Diskon 5% untuk transaksi di atas Rp1.500.000. Tambah <strong>${formatRupiah(target + 1 - total)}</strong> lagi.`;
         }
 
-        function cartStorageKey() { return currentUser ? `jokiin_cart_${currentUser.uid}` : 'nugasin_guest_cart'; }
+        function cartStorageKey() { return currentUser ? `jokiin_cart_${currentUser.uid}` : 'jokiin_guest_cart'; }
         function minimumOrderQuantity(productId) {
             return CONFIG.PRODUCTS.find(p => p.id === productId)?.minimumQuantity || 1;
         }
@@ -7291,10 +7309,10 @@
         async function mergeCartsOnLogin() {
             if (!currentUser) return loadCart();
             const userCart = sanitizeCart(readStored(localStorage, cartStorageKey(), []));
-            const guestCart = sanitizeCart(readStored(localStorage, 'nugasin_guest_cart', []));
+            const guestCart = sanitizeCart(readStored(localStorage, 'jokiin_guest_cart', readStored(localStorage, LEGACY_STORAGE_KEYS.guestCart, [])));
             guestCart.forEach(item => { const existing = userCart.find(i => i.productId === item.productId); if (existing) existing.quantity = Math.min(100, existing.quantity + item.quantity); else userCart.push(item); });
             CART = userCart;
-            if (writeStored(localStorage, cartStorageKey(), CART)) removeStored(localStorage, 'nugasin_guest_cart');
+            if (writeStored(localStorage, cartStorageKey(), CART)) { removeStored(localStorage, 'jokiin_guest_cart'); removeStored(localStorage, LEGACY_STORAGE_KEYS.guestCart); }
             updateCartBadge();
         }
 
@@ -7345,7 +7363,7 @@
         // ==========================================
         // SISTEM CHECKOUT (TERPISAH DIRECT & CART, LOCKED FLOW, GRID UI)
         // ==========================================
-        // Arsip nugasin_orders lama dipertahankan; sumber aktif selalu Supabase.
+        // Arsip jokiin_orders lama dipertahankan; sumber aktif selalu Supabase.
         let ORDERS = [];
         let checkoutInFlight = false;
         let currentOrder = null;
@@ -7400,11 +7418,11 @@
                 paymentId: selectedPaymentMethod ? selectedPaymentMethod.id : null,
                 promoApplied: appliedPromoDiscount
             };
-            writeStored(sessionStorage, 'nugasin_checkout_state', state);
+            writeStored(sessionStorage, 'jokiin_checkout_state', state);
         };
 
         function restoreCheckoutState() {
-            let stateJSON = null; try { stateJSON = sessionStorage.getItem('nugasin_checkout_state'); } catch (_) { }
+            let stateJSON = null; try { stateJSON = sessionStorage.getItem('jokiin_checkout_state') || sessionStorage.getItem(LEGACY_STORAGE_KEYS.checkoutState); } catch (_) { }
             if (stateJSON) {
                 try {
                     const state = JSON.parse(stateJSON);
@@ -7443,7 +7461,7 @@
 
         window.cancelCheckout = () => {
             if (checkoutMode === 'direct') { directCheckoutItem = null; }
-            removeStored(sessionStorage, 'nugasin_checkout_state');
+            removeStored(sessionStorage, 'jokiin_checkout_state'); removeStored(sessionStorage, LEGACY_STORAGE_KEYS.checkoutState);
             window.switchTab(lastActiveTab || 'beranda');
         };
 
@@ -7799,7 +7817,7 @@
                     };
                     currentOrder = order;
                     savePendingMayarOrder(order);
-                    removeStored(sessionStorage, 'nugasin_checkout_state');
+                    removeStored(sessionStorage, 'jokiin_checkout_state'); removeStored(sessionStorage, LEGACY_STORAGE_KEYS.checkoutState);
                     removeStored(sessionStorage, 'jokiin_checkout_request');
                     renderOrderSuccess(order); window.switchTab('order-success');
                     // Simpan acuan pesanan pada URL agar halaman pending tetap dapat dipulihkan setelah refresh.
@@ -7813,10 +7831,10 @@
                 const order = cacheServerOrder(orderFromDatabase(row));
                 currentOrder = order;
                 // Hanya nomor acuan disimpan di browser. Data dan status order berasal dari server.
-                try { localStorage.setItem('nugasin_last_order_id', order.id); } catch (_) { }
+                try { localStorage.setItem('jokiin_last_order_id', order.id); } catch (_) { }
                 if (checkoutMode === 'cart') { CART = []; await saveCart(); }
                 else { directCheckoutItem = null; }
-                removeStored(sessionStorage, 'nugasin_checkout_state');
+                removeStored(sessionStorage, 'jokiin_checkout_state'); removeStored(sessionStorage, LEGACY_STORAGE_KEYS.checkoutState);
                 removeStored(sessionStorage, 'jokiin_checkout_request');
                 renderOrderSuccess(order); window.switchTab('order-success');
             } catch (error) {
@@ -9194,7 +9212,7 @@ Teman tugas mahasiswa.`;
             if (results[0].status === 'rejected') window.showToast('Layanan server belum dapat dimuat. Checkout menunggu koneksi pulih.');
             restoreCheckoutState();
             await handlePaymentReturn().catch(console.error);
-            let lastOrderId = ''; try { lastOrderId = localStorage.getItem('nugasin_last_order_id') || ''; } catch (_) { }
+            let lastOrderId = ''; try { lastOrderId = localStorage.getItem('jokiin_last_order_id') || localStorage.getItem(LEGACY_STORAGE_KEYS.lastOrderId) || ''; } catch (_) { }
             if (lastOrderId) document.getElementById('helpTrackInput').value = lastOrderId;
         }
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => initializeApp().catch(console.error), { once: true });
@@ -9435,8 +9453,8 @@ Teman tugas mahasiswa.`;
         }
         @media (prefers-reduced-motion:reduce) { #full-harga .cf-price-card .cf-sale-ribbon { animation:none; transition:none; } }
     </style>
-    <link rel="stylesheet" href="assets/invoice.css?v=1.05">
-    <script src="assets/invoice-render.js?v=1.05"></script>
+    <link rel="stylesheet" href="assets/invoice.css?v=1.06">
+    <script src="assets/invoice-render.js?v=1.06"></script>
     <link rel="stylesheet" href="assets/order-improvements.css?v=1.05">
     <script src="assets/order-improvements.js?v=1.08"></script>
     <link rel="stylesheet" href="assets/ui-refinements.css?v=1.03">
