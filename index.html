@@ -9250,7 +9250,7 @@ Teman tugas mahasiswa.`;
         window.processGuestTrack = () => processTracking('trackInput', 'trackError', true);
 
         async function initializeApp() {
-            renderApp(); bindCheckoutFileDropzone(); bindCheckoutValidation(); checkWelcomePopup(); loadPromo();
+            renderApp(); bindCheckoutFileDropzone(); bindCheckoutValidation(); loadPromo();
             // GitHub Pages memakai 404.html untuk fallback SPA; pulihkan rute aslinya setelah redirect.
             let fallbackPath = '';
             try { fallbackPath = sessionStorage.getItem('jokiin_spa_fallback_path') || localStorage.getItem('jokiin_spa_fallback_path') || ''; } catch (_) { }
