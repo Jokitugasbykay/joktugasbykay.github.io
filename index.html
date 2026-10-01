@@ -9354,7 +9354,12 @@ Teman tugas mahasiswa.`;
 
             function updateHeader() {
                 const currentY = Math.max(0, window.scrollY);
-                if (currentY > 80) header.classList.add('is-compact');
+                const mobile = window.matchMedia('(max-width: 760px)').matches;
+                const promo = document.getElementById('promoStrip');
+                const promoEnd = promo && promo.getClientRects().length
+                    ? Math.max(0, promo.getBoundingClientRect().bottom + currentY) : 0;
+                const hideAfter = mobile ? Math.max(90, promoEnd + header.offsetHeight) : 90;
+                if (currentY > hideAfter) header.classList.add('is-compact');
                 else if (currentY < 10) header.classList.remove('is-compact');
                 const delta = currentY - previousY;
                 const nextDirection = Math.sign(delta);
@@ -9366,11 +9371,10 @@ Teman tugas mahasiswa.`;
                 }
                 travelled += Math.abs(delta);
 
-                const mobile = window.matchMedia('(max-width: 760px)').matches;
-                if (currentY <= (mobile ? 15 : 20) || modalOpen) {
+                if (currentY <= (mobile ? hideAfter : 20) || modalOpen) {
                     header.classList.remove('header-hidden');
                     travelled = 0;
-                } else if (direction > 0 && currentY > (mobile ? 15 : 90) && travelled >= (mobile ? 15 : 42)) {
+                } else if (direction > 0 && currentY > hideAfter && travelled >= (mobile ? 32 : 42)) {
                     header.classList.add('header-hidden');
                     travelled = 0;
                 } else if (direction < 0 && travelled >= 24) {
