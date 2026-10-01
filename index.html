@@ -8552,6 +8552,13 @@ Teman tugas mahasiswa.`;
                     rows.push(...data); if (data.length < 200) break; offset += 200;
                 }
                 REVIEWS = rows.map(r => ({ id: r.id, productId: r.services?.slug || '', rating: r.rating, comment: r.comment || '', date: r.created_at, customerName: r.customer_name, userPhoto: r.user_photo || '', verified: r.verified === true, isDemo: false }));
+                const { data: votes, error: voteError } = await supabase.rpc('review_helpful_counts');
+                if (voteError) console.warn('Jumlah membantu belum dimuat:', voteError.message);
+                for (const review of REVIEWS) {
+                    const vote = (votes || []).find(v => String(v.review_id) === String(review.id));
+                    review.helpfulCount = Number(vote?.total || 0);
+                    review.helpfulVoted = vote?.voted === true;
+                }
                 writeStored(localStorage, 'jokiin_server_reviews_cache', REVIEWS);
             } catch (error) {
                 const cached = readStored(localStorage, 'jokiin_server_reviews_cache', []);
@@ -8794,7 +8801,7 @@ Teman tugas mahasiswa.`;
                         return `
                         <figure class="tr-03__rev">
                             <header class="tr-03__rh">
-                                <div class="tr-03__ava">${escapeHTML(initial)}</div>
+                                <div class="tr-03__ava">${(r.userPhoto || '').startsWith('https://') ? `<img src="${escapeHTML(r.userPhoto)}" alt="" referrerpolicy="no-referrer" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.hidden=true;this.nextElementSibling.hidden=false;"><span hidden>${escapeHTML(initial)}</span>` : escapeHTML(initial)}</div>
                                 <div>
                                     <b>${escapeHTML(anonName)}</b>
                                     <span class="tr-03__ver">
@@ -8812,10 +8819,10 @@ Teman tugas mahasiswa.`;
                             </ul>
                             <footer class="tr-03__rf">
                                 <time datetime="${r.date || ''}">${rDate}</time>
-                                <button class="tr-03__help" type="button" aria-pressed="false" onclick="window.markTr03Helpful(this)">
+                                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><button class="tr-03__help" type="button" data-review-id="${r.id}" aria-pressed="${r.helpfulVoted === true}" onclick="window.markTr03Helpful(this)">
                                     <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 17V8.6l3.6-5.2c.9-1.3 2.9-.6 2.9 1V8h3.3c1 0 1.8.9 1.6 1.9l-1.1 5.6c-.2.9-1 1.5-1.9 1.5H6z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><rect x="2" y="8.4" width="3.2" height="8.6" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
-                                    <span class="tr-03__hn" aria-live="polite">Tandai membantu</span>
-                                </button>
+                                    <span class="tr-03__hn">${r.helpfulVoted ? 'Ditandai membantu' : 'Tandai membantu'}</span>
+                                </button><span class="tr-03__help-count" aria-live="polite" style="font-size:.78rem;color:var(--text-muted);">${Number(r.helpfulCount || 0)} Orang</span></div>
                             </footer>
                         </figure>`;
                     }).join('');
@@ -8823,11 +8830,25 @@ Teman tugas mahasiswa.`;
             }
         };
 
-        window.markTr03Helpful = (btn) => {
-            const countEl = btn.querySelector('.tr-03__hn');
-            const on = btn.getAttribute('aria-pressed') !== 'true';
-            btn.setAttribute('aria-pressed', String(on));
-            if (countEl) countEl.textContent = on ? 'Ditandai membantu' : 'Tandai membantu';
+        window.markTr03Helpful = async (btn) => {
+            if (btn.disabled) return;
+            btn.disabled = true;
+            try {
+                if (!await requireUser()) return;
+                const review = REVIEWS.find(r => String(r.id) === btn.dataset.reviewId);
+                if (!review) return;
+                const query = !review.helpfulVoted
+                    ? supabase.from('review_helpful_votes').insert({ review_id: review.id, user_id: currentUser.uid })
+                    : supabase.from('review_helpful_votes').delete().eq('review_id', review.id).eq('user_id', currentUser.uid);
+                const { error } = await query;
+                if (error && error.code !== '23505') throw error;
+                await loadReviews();
+            } catch (error) {
+                console.error('Suara membantu gagal disimpan:', error.message);
+                window.showToast('Belum bisa menyimpan suara. Coba lagi.');
+            } finally {
+                btn.disabled = false;
+            }
         };
         window.markHelpfulReview = window.markTr03Helpful;
 
