@@ -511,7 +511,7 @@
     place-items: center;
     flex-shrink: 0;
 }
-.tr-24__card footer span {
+.tr-24__card footer > span {
     display: grid;
     font-size: 0.76rem;
     line-height: 1.35;
