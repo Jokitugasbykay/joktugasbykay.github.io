@@ -6632,8 +6632,15 @@
         async function saveUserToSupabase(user, fallbackName) {
             const { data: existing, error: readError } = await supabase.from('profiles').select('id,name,email,phone,photo_url,role,created_at').eq('id', user.id).maybeSingle();
             if (readError) throw readError;
-            if (existing) return existing;
-            const photo = user.user_metadata?.avatar_url || '';
+            const photo = [user.user_metadata?.avatar_url, user.user_metadata?.picture, ...(user.identities || []).map(identity => identity.identity_data?.avatar_url || identity.identity_data?.picture)].find(value => typeof value === 'string' && /^https:\/\//.test(value)) || '';
+            if (existing) {
+                if (!existing.photo_url && photo) {
+                    const { error } = await supabase.from('profiles').update({ photo_url: photo }).eq('id', user.id);
+                    if (error) console.warn('Foto profil belum tersimpan:', error.message);
+                    return { ...existing, photo_url: photo };
+                }
+                return existing;
+            }
             const profile = {
                 id: user.id, name: fallbackName, email: user.email || null,
                 photo_url: /^https:\/\//.test(photo) ? photo : null
@@ -6668,7 +6675,7 @@
                     if (version !== authVersion || currentUser?.uid !== user.id) return;
                     currentUser = {
                         uid: user.id, name: profile.name || fallbackName, email: user.email || '',
-                        photo: profile.photo_url || '', phone: profile.phone || '', role: profile.role
+                        photo: profile.photo_url || user.user_metadata?.avatar_url || user.user_metadata?.picture || '', phone: profile.phone || '', role: profile.role
                     };
                     profileUserId = user.id;
                 } catch (error) { console.error('Profil belum dapat dimuat:', error.message); }
@@ -8531,7 +8538,7 @@ Teman tugas mahasiswa.`;
             const cards = rows.slice(0, 12).map(review => {
                 const name = anonymizeName(review.customerName); const initial = escapeHTML((name[0] || 'P').toUpperCase());
                 const product = CONFIG.PRODUCTS.find(p => p.id === review.productId);
-                return `<figure class="tr-24__card"><span class="tr-24__service">${escapeHTML(product?.title || 'Layanan JOKI.IN')} · ★ ${Number(review.rating) || 0}/5</span><p>${escapeHTML(review.comment)}</p><footer><div class="tr-24__avatar-circle">${initial}</div><span><b>${escapeHTML(name)}</b>Ulasan pelanggan</span></footer></figure>`;
+                return `<figure class="tr-24__card"><span class="tr-24__service">${escapeHTML(product?.title || 'Layanan JOKI.IN')} · ★ ${Number(review.rating) || 0}/5</span><p>${escapeHTML(review.comment)}</p><footer><div class="tr-24__avatar-circle">${/^https:\/\//.test(review.userPhoto || '') ? `<img src="${escapeHTML(review.userPhoto)}" alt="" referrerpolicy="no-referrer" loading="lazy" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" onerror="this.style.display=\'none\'; this.nextElementSibling.hidden=false;"><span hidden>${initial}</span>` : initial}</div><span><b>${escapeHTML(name)}</b>Ulasan pelanggan</span></footer></figure>`;
             }).join('');
             track.innerHTML = cards + `<div class="tr-24__clone" aria-hidden="true" style="display:contents">${cards}</div>`;
         }
