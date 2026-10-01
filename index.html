@@ -5413,10 +5413,10 @@
     <!-- CONTAINER UTAMA -->
     <div class="container">
         <header>
-            <div class="logo" onclick="window.goHome()">
-                <img class="header-brand-lockup header-brand-light" src="assets/brand-light-lockup.png" alt="JOKI.IN" onerror="this.closest('.logo').classList.add('brand-fallback')">
-                <img class="header-brand-lockup header-brand-dark" src="assets/brand-dark-lockup.png" alt="JOKI.IN" onerror="this.closest('.logo').classList.add('brand-fallback')">
-            </div>
+            <a class="logo" href="https://jokiin.my.id/" draggable="true" aria-label="Beranda JOKI.IN" onclick="if (!event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) { event.preventDefault(); window.goHome(); }" style="text-decoration:none;">
+                <img draggable="false" class="header-brand-lockup header-brand-light" src="assets/brand-light-lockup.png" alt="JOKI.IN" onerror="this.closest('.logo').classList.add('brand-fallback')">
+                <img draggable="false" class="header-brand-lockup header-brand-dark" src="assets/brand-dark-lockup.png" alt="JOKI.IN" onerror="this.closest('.logo').classList.add('brand-fallback')">
+            </a>
             <div class="checkout-title" id="checkoutHeaderTitle">Penyelesaian Pesanan</div>
             <div class="header-actions" id="mainHeaderActions">
                 <button id="cartHeaderBtn" class="btn-cart" onclick="window.openCartModal()"><span id="cartIconWrapper">🛒</span> Keranjang <span id="cartHeaderBadge" class="cart-header-badge" style="display:none;">0</span></button>
