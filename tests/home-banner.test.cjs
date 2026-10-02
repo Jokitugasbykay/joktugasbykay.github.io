@@ -14,7 +14,7 @@ const root = path.join(__dirname, '..');
       if (!file.startsWith(root + path.sep) || !fs.existsSync(file)) return route.abort();
       return route.fulfill({ path: file });
     });
-    for (const width of [320, 390, 768, 1440]) {
+    for (const width of [320, 390, 768, 1024, 1440]) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto('https://banner.test/', { waitUntil: 'domcontentloaded' });
       const mobile = width <= 820;
@@ -26,7 +26,9 @@ const root = path.join(__dirname, '..');
         assert((await hero.locator('h2').textContent()).includes('Tugas Kamu,'));
         assert.equal(await hero.locator('.hero-stats span').count(), 4);
       } else {
-        await hero.locator('img').evaluate(img => img.decode());
+        await hero.locator('img:visible').evaluate(img => img.decode());
+        const mobileHeading = await page.locator('.home-hero-mobile h2').textContent();
+        assert.equal((await hero.locator('h1').textContent()).replace(/\s+/g,''), mobileHeading.replace(/\s+/g,''));
       }
       const valid = await hero.evaluate(el => {
         const box = el.getBoundingClientRect();
@@ -39,11 +41,19 @@ const root = path.join(__dirname, '..');
       await page.evaluate(() => { window.switchTab = tab => window.clickedTab = tab; window.scrollToAdminContacts = () => window.clickedAdmin = true; });
       await hero.getByRole('button', { name: 'Lihat Layanan' }).click();
       assert.equal(await page.evaluate(() => window.clickedTab), 'layanan');
-      await hero.getByRole('button', { name: mobile ? 'Konsultasi via WhatsApp' : 'Hubungi Admin' }).click();
+      await hero.getByRole('button', { name: 'Konsultasi via WhatsApp' }).click();
       assert(await page.evaluate(() => window.clickedAdmin));
+      await hero.evaluate(el => window.scrollTo(0, window.scrollY + el.getBoundingClientRect().top - 120));
       await hero.screenshot({ path: path.join(root, `../../avatar-inspection/banner-${width}.png`) });
+      await page.evaluate(() => document.documentElement.setAttribute('data-theme','dark'));
+      if (!mobile) {
+        assert(await hero.locator('.home-banner__photo--dark').isVisible());
+        assert(!(await hero.locator('.home-banner__photo--light').isVisible()));
+        await hero.locator('img:visible').evaluate(img => img.decode());
+        assert.equal(await hero.evaluate(el => getComputedStyle(el).borderRadius), '24px');
+      }
+      await hero.screenshot({ path: path.join(root, `../../avatar-inspection/banner-dark-${width}.png`) });
       console.log(`PASS: ${mobile ? 'original mobile hero without image' : 'new desktop banner'}, text fit and actions at ${width}px.`);
     }
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
-

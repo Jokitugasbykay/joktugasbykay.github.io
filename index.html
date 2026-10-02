@@ -4910,7 +4910,8 @@
             #promoStrip #promoTickerCopy { display:none; }
         }
     </style>
-    <link rel="stylesheet" href="assets/home-banner.css?v=20261003-study">
+    <link rel="stylesheet" href="assets/home-banner.css?v=20261003-themes">
+    <script src="assets/review-moderation.js?v=20261003"></script>
 </head>
 
 <body>
@@ -5062,7 +5063,7 @@
                     <textarea id="revText" class="form-control" rows="4" placeholder="Ceritakan pengalamanmu..."
                         maxlength="500" style="resize: none;"></textarea>
                 </div>
-                <div id="revError" class="error-msg">Tolong lengkapi rating dan ulasan.</div>
+                <div id="revError" class="error-msg" role="alert">Tolong lengkapi rating dan ulasan.</div>
             </div>
             <div class="modal-footer">
                 <button id="btnSubmitReview" onclick="window.submitReview()" class="btn-modal-primary">Kirim
@@ -5515,19 +5516,21 @@
 
         <div id="tab-beranda" class="tab-content active">
             <section class="home-banner" aria-labelledby="home-banner-title">
-                <img class="home-banner__photo" src="assets/hero-jokiin-study.webp" alt="" width="1942" height="809" fetchpriority="high">
+                <img class="home-banner__photo home-banner__photo--light" src="assets/hero-jokiin-study.webp" alt="" width="1942" height="809" fetchpriority="high">
+                <img class="home-banner__photo home-banner__photo--dark" src="assets/hero-jokiin-study-dark.webp" alt="" width="1942" height="809">
                 <div class="home-banner__content">
-                    <p class="home-banner__eyebrow">Teman Tugas Mahasiswa</p>
-                    <h1 id="home-banner-title">JOKI<span>.IN</span></h1>
-                    <p class="home-banner__headline">Tugas lebih rapi. Kuliah tetap jalan.</p>
-                    <p class="home-banner__description">Makalah, presentasi, dan kebutuhan tugas kuliah.<br>Diskusikan kebutuhanmu bersama admin.</p>
+                    <h1 id="home-banner-title">Tugas Kamu,<br>Serahkan ke <span>JOKI.IN</span></h1>
+                    <p class="home-banner__description">Solusi tugas kuliah yang aman, cepat, dan berkualitas. Fokus pada hal penting, biar kami yang bantu selesaikan.</p>
                     <div class="home-banner__actions">
-                        <button type="button" onclick="window.switchTab('layanan')">Lihat Layanan &rarr;</button>
-                        <button type="button" onclick="window.scrollToAdminContacts()">Hubungi Admin</button>
+                        <button type="button" onclick="window.switchTab('layanan')">Lihat Layanan</button>
+                        <button type="button" onclick="window.scrollToAdminContacts()">Konsultasi via WhatsApp</button>
                     </div>
-                    <ul class="home-banner__services" aria-label="Layanan">
-                        <li>Makalah</li><li>Presentasi</li><li>Editing &amp; Formatting</li>
-                    </ul>
+                    <div class="home-banner__stats">
+                        <span><strong>500+</strong> Pesanan Selesai</span>
+                        <span><strong>4.9/5</strong> Rating Pengguna</span>
+                        <span><strong>100%</strong> Privasi Terjaga</span>
+                        <span><strong>24/7</strong> Siap Membantu</span>
+                    </div>
                 </div>
             </section>
             <div class="hero-box home-hero-mobile">
@@ -8626,6 +8629,7 @@ Teman tugas mahasiswa.`;
                 console.error('Ulasan server belum dapat dimuat:', error.message);
                 if (currentTab === 'testimoni') window.showToast('Ulasan terbaru belum dapat dimuat. Coba lagi nanti.');
             }
+            REVIEWS = REVIEWS.filter(review => !hasReviewProfanity(review.comment));
             renderHomeTestimonials();
             if (currentTab === 'testimoni') {
                 if (document.getElementById('testimoni-list-view').style.display !== 'none') window.showTestimoniList();
@@ -8945,6 +8949,7 @@ Teman tugas mahasiswa.`;
             const text = document.getElementById('revText').value.trim();
             const errorEl = document.getElementById('revError');
             if (currentStarRating < 1 || currentStarRating > 5 || !text || text.length > 3000) { errorEl.textContent = 'Pilih rating 1–5 dan tulis ulasan maksimal 3.000 karakter.'; errorEl.style.display = 'block'; return; }
+            if (hasReviewProfanity(text)) { errorEl.textContent = 'Ulasan mengandung kata kasar. Gunakan bahasa yang sopan.'; errorEl.style.display = 'block'; document.getElementById('revText').focus(); return; }
             reviewInFlight = true;
             const button = document.getElementById('btnSubmitReview'); button.disabled = true; button.textContent = 'Mengirim...';
             try {
