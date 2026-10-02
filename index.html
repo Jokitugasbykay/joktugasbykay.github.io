@@ -9140,7 +9140,8 @@ Teman tugas mahasiswa.`;
         window.switchTab = (tabId) => {
             if (tabId !== 'checkout' && tabId !== 'order-success') lastActiveTab = tabId;
 
-            const searchInput = document.getElementById('searchInput'); searchInput.value = '';
+            const searchInput = document.getElementById('searchInput');
+            document.querySelectorAll('#searchInput, .searchInputGlobal').forEach(field => { field.value = ''; });
             if (tabId === 'harga') searchInput.placeholder = "Cari layanan atau harga...";
             else if (tabId === 'layanan') searchInput.placeholder = "Cari layanan yang kamu butuhkan...";
             else searchInput.placeholder = "Cari layanan, harga, atau pertanyaan...";
@@ -9182,15 +9183,16 @@ Teman tugas mahasiswa.`;
         document.querySelectorAll('.pill').forEach(pill => pill.addEventListener('click', (e) => { e.preventDefault(); window.switchTab(pill.getAttribute('data-target')); }));
 
         // Global Search
-        document.getElementById('searchInput').addEventListener('input', function (e) {
-            const keyword = e.target.value.toLowerCase(); const searchTab = document.getElementById('tab-search');
+        document.querySelectorAll('#searchInput, .searchInputGlobal').forEach(input => input.addEventListener('input', function (e) {
+            document.querySelectorAll('#searchInput, .searchInputGlobal').forEach(field => { field.value = e.target.value; });
+            const keyword = e.target.value.trim().toLowerCase(); const searchTab = document.getElementById('tab-search');
             if (keyword.length > 0) {
                 document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active')); searchTab.classList.add('active');
                 document.getElementById('searchKeyword').innerText = `"${e.target.value}"`;
                 const filtered = CONFIG.PRODUCTS.filter(p => p.title.toLowerCase().includes(keyword) || p.category.toLowerCase().includes(keyword) || p.desc.toLowerCase().includes(keyword));
                 document.getElementById('searchResultsGrid').innerHTML = filtered.map(p => `<div class="service-card">${serviceVisual(p)}<h3>${escapeHTML(p.title)}</h3><span class="category-badge">${p.category}</span><p>${escapeHTML(p.desc)}</p><div style="display:flex; gap:10px; margin-top:auto;"><button class="btn-outline" style="flex:1; padding:10px; font-size:0.85em;" onclick="window.directCheckout('${p.id}')">Checkout</button><button class="btn-header" style="flex:1; padding:10px; font-size:0.85em; box-shadow:none;" onclick="window.addToCart('${p.id}')">🛒 Tambah</button></div></div>`).join('') || '<p style="color:var(--text-muted);">Layanan tidak ditemukan.</p>';
             } else { searchTab.classList.remove('active'); document.getElementById('tab-' + lastActiveTab).classList.add('active'); }
-        });
+        }));
 
         // Help Center Search
         document.getElementById('helpSearchInput').addEventListener('input', function (e) {
