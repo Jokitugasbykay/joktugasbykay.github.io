@@ -816,6 +816,17 @@
     font-weight: 800;
     font-size: 0.9rem;
 }
+.tr-24__avatar-circle,
+.tr-03__ava {
+    position: relative;
+    overflow: hidden;
+}
+.tr-24__avatar-circle > img,
+.tr-03__ava > img {
+    position: absolute;
+    inset: 0;
+    display: block;
+}
 .tr-03__rh div {
     display: grid;
     gap: 2px;
