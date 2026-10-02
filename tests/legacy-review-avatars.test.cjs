@@ -3,36 +3,31 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const root = path.join(__dirname, '..');
+const dir = path.join(root, 'assets/review-avatars');
 const sql = fs.readFileSync(path.join(root, 'database/legacy_review_avatars.sql'), 'utf8');
-const assignments = [...sql.matchAll(/\((\d+), 'https:\/\/jokiin\.my\.id\/assets\/review-avatars\/([^']+)'\)/g)];
-assert.equal(assignments.length, 205);
-assert.equal(new Set(assignments.map(match => match[1])).size, 205);
-assert.equal(assignments.filter(match => match[2] === 'default.jpg').length, 8);
-const unique = new Set();
-for (const [, , filename] of assignments) {
-  const bytes = fs.readFileSync(path.join(root, 'assets/review-avatars', filename));
-  if (filename === 'default.jpg') continue;
-  const hash = crypto.createHash('sha256').update(bytes).digest('hex');
-  assert(!unique.has(hash), `Duplicate avatar: ${filename}`);
-  unique.add(hash);
+const assignments = [...sql.matchAll(/\('([^']+)', 'https:\/\/jokiin\.my\.id\/assets\/review-avatars\/([^']+)'\)/g)];
+assert.equal(assignments.length, 207);
+assert.equal(new Set(assignments.map(match => match[1])).size, 207);
+const hashes = new Set();
+for (const [, customer, file] of assignments) {
+  assert(file.endsWith('.jpg'));
+  const hash = crypto.createHash('sha256').update(fs.readFileSync(path.join(dir, file))).digest('hex');
+  if (file === 'default.jpg') continue;
+  assert(!hashes.has(hash), `Duplicate photo for ${customer}`);
+  hashes.add(hash);
 }
-assert.equal(unique.size, 197);
-assert(sql.includes("r.user_id is null and nullif(trim(r.user_photo), '') is null"));
+assert.equal(hashes.size, 86);
+assert(!fs.readdirSync(dir).some(file => file.endsWith('.svg')));
+assert(sql.includes('where r.user_id is null and r.customer_name = a.customer_name'));
 assert(sql.includes('Existing profile photos changed'));
+assert(sql.includes('Duplicate customer avatar'));
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const helper = html.match(/function reviewProfilePhoto\(row\) \{[\s\S]*?return fallback\[row.customer_name\] \|\| photo;\s*\}/)[0];
-const photo = require('node:vm').runInNewContext('(' + helper + ')');
-assert.equal(photo({ user_id: 'google-user', user_photo: 'https://lh3.googleusercontent.com/photo' }), 'https://lh3.googleusercontent.com/photo');
-assert.equal(photo({ customer_name: 'Rahmat S.', user_photo: 'https://share.google/example' }), 'https://jokiin.my.id/assets/review-avatars/legacy-650.svg');
-assert.equal(photo({ customer_name: 'Siti M.', user_photo: 'https://share.google/example' }), 'https://jokiin.my.id/assets/review-avatars/legacy-654.svg');
-assert.equal(photo({ user_photo: '' }), '');
-const fallbackHash = crypto.createHash('sha256').update(fs.readFileSync(path.join(root, 'assets/review-avatars/legacy-654.svg'))).digest('hex');
-assert(!unique.has(fallbackHash));
+assert(!html.includes('Avatar pengganti, bukan foto akun terhubung'));
+assert(!html.includes('reviewProfilePhoto'));
 for (const className of ['tr-24__avatar-circle', 'tr-03__ava']) {
   const line = html.split('\n').find(line => line.includes(`class="${className}"`));
   assert(line.includes('href="https://jokiin.my.id/testimonials"'));
   assert(line.includes('draggable="false"'));
-  assert(line.includes('Avatar pengganti, bukan foto akun terhubung'));
 }
-console.log('PASS: 205 new assignments, 197 unique pictures, 8 defaults, existing-photo guard and page-link drag.');
+console.log('PASS: 207 customers, 86 unique supplied photos, default fallback, no generated avatars, account-photo guard and page-link drag.');
 

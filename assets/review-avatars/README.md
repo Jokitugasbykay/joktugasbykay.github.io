@@ -1,13 +1,12 @@
 Legacy review avatars
 ====================
 
-Assigned only to legacy reviews without a profile photo. These are replacement
-avatars, not authenticated account photos. Existing account photos take priority.
-Repeated legacy customer names share an avatar; eight names use default.jpg.
+Assigned only to legacy reviews with no linked user account.
+Existing authenticated account photos are never changed.
+Repeated legacy customer names share one photo. Different customers never
+share a supplied photo; default.jpg is reused when unique photos run out.
 
 JPEG files were provided by the site owner. Original files are preserved.
-SVG illustrations were generated locally using DiceBear 10.6.0:
-- Lorelei by Lisa Wischofsky, CC0 1.0: https://www.dicebear.com/styles/lorelei/
-- Bottts by Pablo Stanley, free personal/commercial use: https://bottts.com/
 
 There is no runtime avatar API or generator dependency on the website.
+
