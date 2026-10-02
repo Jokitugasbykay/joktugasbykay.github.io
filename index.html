@@ -5515,7 +5515,7 @@
         </div>
 
         <div id="tab-beranda" class="tab-content active">
-            <section class="home-banner" aria-labelledby="home-banner-title">
+            <section class="home-banner" aria-labelledby="home-banner-title" draggable="true">
                 <img class="home-banner__photo home-banner__photo--light" src="assets/hero-jokiin-study.webp" alt="" width="1942" height="809" fetchpriority="high">
                 <img class="home-banner__photo home-banner__photo--dark" src="assets/hero-jokiin-study-dark.webp" alt="" width="1942" height="809">
                 <div class="home-banner__content">
@@ -9124,6 +9124,7 @@ Teman tugas mahasiswa.`;
                 viewport.addEventListener('mouseleave', startRecommendationAutoSlide);
                 viewport.addEventListener('pointerdown', event => {
                     if (event.target.closest('button, a, input')) return;
+                    if (event.pointerType === 'mouse' && event.target.closest('.recommendation-card-image')) return;
                     clearInterval(recommendationTimer);
                     dragging = true; startX = event.clientX;
                     viewport.setPointerCapture?.(event.pointerId); viewport.classList.add('is-dragging');
@@ -9166,6 +9167,17 @@ Teman tugas mahasiswa.`;
         let lastActiveTab = 'beranda'; let currentTab = 'beranda';
         const ROUTES = { beranda: '/', layanan: '/services', harga: '/prices', testimoni: '/testimonials', informasi: '/information', carapesan: '/how-to-order', bantuan: '/help', checkout: '/payment', 'order-success': '/payment/pending' };
         const TAB_BY_ROUTE = Object.fromEntries(Object.entries(ROUTES).map(([tab, path]) => [path, tab]));
+        document.addEventListener('dragstart', event => {
+            const picture = event.target.closest('.home-banner, .recommendation-card-image, .service-photo img');
+            if (!picture || !event.dataTransfer) return;
+            const path = picture.matches('.home-banner, .recommendation-card-image') ? ROUTES.beranda
+                : [ROUTES.layanan, ROUTES.harga].includes(location.pathname) ? location.pathname : ROUTES.beranda;
+            const url = 'https://jokiin.my.id' + path;
+            event.dataTransfer.clearData();
+            event.dataTransfer.setData('text/uri-list', url);
+            event.dataTransfer.setData('text/plain', url);
+            event.dataTransfer.effectAllowed = 'link';
+        }, true);
         let liquidIndicatorX = 0;
         let liquidIndicatorWidth = 0;
         function updateLiquidIndicator(animate = true) {
