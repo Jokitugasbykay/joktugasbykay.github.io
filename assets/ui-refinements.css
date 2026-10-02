@@ -30,31 +30,10 @@
 #serviceDetailModal .modal-footer { position:static; margin-top:8px; padding:16px 0 0; border-top:0; gap:12px; }
 #serviceDetailModal .modal-footer button { border-radius:8px; min-height:46px; box-shadow:none; }
 #serviceDetailModal .mobile-modal-close { width:36px; height:36px; border-radius:8px; box-shadow:none; }
-#promoStrip.promo-strip { background:#075c43!important; gap:12px; padding:12px 20px!important; }
-#promoStrip .promo-strip__badge { background:#e0f5e9; color:#07533b; border-radius:4px; letter-spacing:0; }
-#promoStrip .promo-strip__lead { background:transparent; color:#fff; padding:0; }
-#promoStrip .promo-strip__text { font-size:.88rem; line-height:1.5; }
-#promoStrip .promo-strip__coupon { border:0; background:rgba(255,255,255,.1); border-radius:4px; }
-#promoStrip .promo-strip__claim { background:#fff; color:#07533b; border-radius:6px; min-height:40px; box-shadow:none; }
-#promoStrip .promo-strip__close { width:32px; height:32px; min-width:32px; }
-#promoStrip .promo-strip__time { min-width:30px; padding:0; border:0; background:transparent; font-variant-numeric:tabular-nums; }
-#promoStrip .promo-strip__countdown { gap:8px; }
-#promoStrip [hidden],#promoStrip[hidden],#promoStrip[data-expired="true"] { display:none!important; }
 .section-subtitle img[src*="sparkles"],img[src*="sparkles.svg"] { display:none!important; }
 @media(max-width:760px) {
   #welcomeModal :is(.welcome-close,.mobile-modal-close) { display:none!important; }
   #welcomeModal .welcome-content { overflow-y:auto; min-height:0; overscroll-behavior:contain; }
-  #promoStrip.promo-strip { grid-template-columns:minmax(0,1fr) auto 32px; gap:8px 12px; padding:12px 16px!important; }
-  #promoStrip .promo-strip__badge { grid-column:1; grid-row:1; font-size:.65rem; padding:4px 7px; }
-  #promoStrip .promo-strip__lead { grid-column:2; grid-row:1; font-size:.78rem; align-self:center; }
-  #promoStrip .promo-strip__close { grid-column:3; grid-row:1; }
-  #promoStrip .promo-strip__text { grid-column:1/4; grid-row:2; font-size:.84rem; margin-bottom:2px; }
-  #promoStrip .promo-strip__text:empty { display:none; }
-  #promoStrip .promo-strip__coupon { grid-column:1; grid-row:3; font-size:.76rem; padding:6px 8px; align-self:center; }
-  #promoStrip .promo-strip__claim { grid-column:2/4; grid-row:3; min-height:36px; padding:8px 12px; font-size:.76rem; }
-  #promoStrip .promo-strip__countdown { grid-column:1/4; grid-row:4; justify-content:flex-start; border-top:1px solid rgba(255,255,255,.2); padding-top:8px; }
-  #promoStrip .promo-strip__time { display:flex; align-items:baseline; gap:4px; font-size:.78rem; }
-  #promoStrip .promo-strip__time small { font-size:.62rem; }
   #serviceDetailModal .modal-content { padding:24px 20px!important; width:calc(100% - 24px)!important; max-height:calc(100dvh - 24px)!important; }
   .service-detail-heading { gap:12px; }
   #detailSvcIcon,#detailSvcIcon .ui-art-icon { width:72px; height:72px; }

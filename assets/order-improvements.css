@@ -1,5 +1,4 @@
 .invoice-actions { display:flex; gap:10px; width:100%; }
-.promo-strip__lead:empty { display:none!important; }
 .invoice-actions button { flex:1; min-height:44px; }
 .jokiin-vector { width:22px; height:22px; vertical-align:middle; flex:none; }
 :is([data-theme="dark"],.dark-mode) .jokiin-vector { filter:invert(1); }
@@ -17,14 +16,6 @@
 html.jokiin-scroll-locked { overflow:hidden; overscroll-behavior:none; }
 .modal-overlay { overscroll-behavior:contain; }
 @media(max-width:760px) {
-  #promoStrip.promo-strip { display:grid!important; grid-template-columns:1fr auto; height:auto!important; max-height:none; overflow:visible; gap:8px; padding:12px 16px!important; }
-  #promoStrip .promo-strip__badge { display:block!important; grid-column:1; grid-row:1; justify-self:start; }
-  #promoStrip .promo-strip__close { grid-column:2; grid-row:1; width:32px; height:32px; }
-  #promoStrip .promo-strip__lead { grid-column:1; grid-row:2; justify-self:start; white-space:normal; }
-  #promoStrip .promo-strip__text { grid-column:1/3; grid-row:3; display:block; overflow:visible; font-size:.85rem; line-height:1.5; -webkit-line-clamp:unset; }
-  #promoStrip .promo-strip__countdown { display:flex!important; grid-column:1; grid-row:4; justify-content:flex-start; }
-  #promoStrip .promo-strip__coupon { display:block!important; grid-column:1; grid-row:5; justify-self:start; max-width:100%; white-space:normal; overflow-wrap:anywhere; }
-  #promoStrip .promo-strip__claim { grid-column:2; grid-row:4/6; align-self:center; }
   #invoiceModal .modal-content { width:100%; max-height:calc(100dvh - 24px); overflow:auto; }
   #orderDetailModal .modal-footer button { white-space:normal; }
 }
