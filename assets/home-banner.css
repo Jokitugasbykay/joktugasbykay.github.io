@@ -1,0 +1,45 @@
+.home-banner {
+    position: relative;
+    isolation: isolate;
+    min-height: 550px;
+    margin-bottom: 36px;
+    padding: 64px 48px 36px;
+    overflow: hidden;
+    background: #f2f5fa;
+    color: #111827;
+}
+.home-banner__photo {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+.home-banner__content { width: 56%; max-width: 690px; }
+.home-banner__eyebrow { margin: 0 0 8px; font-size: 21px; font-weight: 600; }
+.home-banner h1 { margin: 0 0 10px; color: #090d12; font-size: 104px; font-weight: 800; line-height: 1.05; letter-spacing: 0; }
+.home-banner h1 span { color: #009b73; }
+.home-banner__headline { margin: 0 0 18px; font-size: 26px; font-weight: 700; line-height: 1.35; }
+.home-banner__description { max-width: 550px; margin: 0; color: #253046; font-size: 18px; line-height: 1.6; }
+.home-banner__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+.home-banner__actions button { min-height: 48px; padding: 12px 20px; border: 1px solid #111827; border-radius: 8px; background: #fff; color: #111827; font: inherit; font-weight: 700; cursor: pointer; }
+.home-banner__actions button:first-child { border-color: #009b73; background: #009b73; color: #fff; }
+.home-banner__actions button:hover { background: #f0f5f4; }
+.home-banner__actions button:first-child:hover { background: #007e5f; }
+.home-banner__actions button:focus-visible { outline: 3px solid #004c3b; outline-offset: 4px; }
+.home-banner__services { display: flex; flex-wrap: wrap; gap: 10px; margin: 54px 0 0; padding: 0; list-style: none; color: #35425b; font-size: 14px; }
+.home-banner__services li + li::before { content: '/'; margin-right: 10px; }
+.hero-box.home-hero-mobile { display: none !important; }
+@media (max-width: 1100px) and (min-width: 821px) {
+    .home-banner { padding: 40px 28px; min-height: 520px; }
+    .home-banner h1 { font-size: 80px; }
+    .home-banner__headline { font-size: 23px; }
+    .home-banner__content { width: 54%; }
+}
+@media (max-width: 820px) {
+    .home-banner { display: none; }
+    .hero-box.home-hero-mobile { display: flex !important; }
+}
+

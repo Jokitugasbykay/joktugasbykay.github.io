@@ -4910,6 +4910,7 @@
             #promoStrip #promoTickerCopy { display:none; }
         }
     </style>
+    <link rel="stylesheet" href="assets/home-banner.css?v=20261003-study">
 </head>
 
 <body>
@@ -5513,7 +5514,23 @@
         </div>
 
         <div id="tab-beranda" class="tab-content active">
-            <div class="hero-box">
+            <section class="home-banner" aria-labelledby="home-banner-title">
+                <img class="home-banner__photo" src="assets/hero-jokiin-study.webp" alt="" width="1942" height="809" fetchpriority="high">
+                <div class="home-banner__content">
+                    <p class="home-banner__eyebrow">Teman Tugas Mahasiswa</p>
+                    <h1 id="home-banner-title">JOKI<span>.IN</span></h1>
+                    <p class="home-banner__headline">Tugas lebih rapi. Kuliah tetap jalan.</p>
+                    <p class="home-banner__description">Makalah, presentasi, dan kebutuhan tugas kuliah.<br>Diskusikan kebutuhanmu bersama admin.</p>
+                    <div class="home-banner__actions">
+                        <button type="button" onclick="window.switchTab('layanan')">Lihat Layanan &rarr;</button>
+                        <button type="button" onclick="window.scrollToAdminContacts()">Hubungi Admin</button>
+                    </div>
+                    <ul class="home-banner__services" aria-label="Layanan">
+                        <li>Makalah</li><li>Presentasi</li><li>Editing &amp; Formatting</li>
+                    </ul>
+                </div>
+            </section>
+            <div class="hero-box home-hero-mobile">
                 <div class="hero-content">
                     <h2>Tugas Kamu,<br>Serahkan ke <span>JOKI.IN</span></h2>
                     <p>Solusi tugas kuliah yang aman, cepat, dan berkualitas. Fokus pada hal penting, biar kami yang
@@ -5522,12 +5539,6 @@
                         <button class="btn-outline" onclick="window.switchTab('layanan')">Lihat Layanan</button>
                         <button class="btn-wa" onclick="window.scrollToAdminContacts()">Konsultasi via WhatsApp</button>
                     </div>
-                </div>
-                <div class="hero-visual" aria-label="Ilustrasi layanan akademik">
-                    <img class="hero-banner-light" src="assets/hero-jokiin-light.png"
-                        alt="Mahasiswa bersama laptop dan buku tugas">
-                    <img class="hero-banner-dark" src="assets/hero-jokiin-dark.png"
-                        alt="Mahasiswa bersama laptop dan buku tugas">
                 </div>
                 <div class="hero-stats">
                     <span><strong>500+</strong> Pesanan Selesai</span>
