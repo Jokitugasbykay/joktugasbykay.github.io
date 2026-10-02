@@ -26,7 +26,9 @@ assert(!html.includes('Avatar pengganti, bukan foto akun terhubung'));
 assert(!html.includes('reviewProfilePhoto'));
 for (const className of ['tr-24__avatar-circle', 'tr-03__ava']) {
   const line = html.split('\n').find(line => line.includes(`class="${className}"`));
-  assert(line.includes('href="https://jokiin.my.id/testimonials"'));
+  assert(line.includes(`<div class="${className}"`));
+  assert(!line.includes('href="https://jokiin.my.id/testimonials"'));
+  assert(line.includes("setData('text/uri-list','https://jokiin.my.id/testimonials')"));
   assert(line.includes('draggable="false"'));
 }
 console.log('PASS: 207 customers, 86 unique supplied photos, default fallback, no generated avatars, account-photo guard and page-link drag.');
