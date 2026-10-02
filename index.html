@@ -8591,6 +8591,17 @@ Teman tugas mahasiswa.`;
             track.innerHTML = cards + `<div class="tr-24__clone" aria-hidden="true" style="display:contents">${cards}</div>`;
         }
 
+        function reviewProfilePhoto(row) {
+            const photo = row.user_photo || '';
+            if (row.user_id || !photo.startsWith('https://share.google/')) return photo;
+            // Share links are pages, not images. Keep their stored URLs unchanged.
+            const fallback = {
+                'Rahmat S.': 'https://jokiin.my.id/assets/review-avatars/legacy-650.svg',
+                'Siti M.': 'https://jokiin.my.id/assets/review-avatars/legacy-654.svg'
+            };
+            return fallback[row.customer_name] || photo;
+        }
+
         async function loadReviews() {
             try {
                 let offset = 0; const rows = [];
@@ -8599,7 +8610,7 @@ Teman tugas mahasiswa.`;
                     if (error) throw error;
                     rows.push(...data); if (data.length < 200) break; offset += 200;
                 }
-                REVIEWS = rows.map(r => ({ id: r.id, productId: r.services?.slug || '', rating: r.rating, comment: r.comment || '', date: r.created_at, customerName: r.customer_name, userPhoto: r.user_photo || '', verified: r.verified === true, isDemo: false }));
+                REVIEWS = rows.map(r => ({ id: r.id, productId: r.services?.slug || '', rating: r.rating, comment: r.comment || '', date: r.created_at, customerName: r.customer_name, userPhoto: reviewProfilePhoto(r), verified: r.verified === true, isDemo: false }));
                 const { data: votes, error: voteError } = await supabase.rpc('review_helpful_counts');
                 if (voteError) console.warn('Jumlah membantu belum dimuat:', voteError.message);
                 for (const review of REVIEWS) {

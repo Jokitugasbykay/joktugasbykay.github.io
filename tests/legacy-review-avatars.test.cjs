@@ -20,6 +20,14 @@ assert.equal(unique.size, 197);
 assert(sql.includes("r.user_id is null and nullif(trim(r.user_photo), '') is null"));
 assert(sql.includes('Existing profile photos changed'));
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const helper = html.match(/function reviewProfilePhoto\(row\) \{[\s\S]*?return fallback\[row.customer_name\] \|\| photo;\s*\}/)[0];
+const photo = require('node:vm').runInNewContext('(' + helper + ')');
+assert.equal(photo({ user_id: 'google-user', user_photo: 'https://lh3.googleusercontent.com/photo' }), 'https://lh3.googleusercontent.com/photo');
+assert.equal(photo({ customer_name: 'Rahmat S.', user_photo: 'https://share.google/example' }), 'https://jokiin.my.id/assets/review-avatars/legacy-650.svg');
+assert.equal(photo({ customer_name: 'Siti M.', user_photo: 'https://share.google/example' }), 'https://jokiin.my.id/assets/review-avatars/legacy-654.svg');
+assert.equal(photo({ user_photo: '' }), '');
+const fallbackHash = crypto.createHash('sha256').update(fs.readFileSync(path.join(root, 'assets/review-avatars/legacy-654.svg'))).digest('hex');
+assert(!unique.has(fallbackHash));
 for (const className of ['tr-24__avatar-circle', 'tr-03__ava']) {
   const line = html.split('\n').find(line => line.includes(`class="${className}"`));
   assert(line.includes('href="https://jokiin.my.id/testimonials"'));
