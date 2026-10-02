@@ -1,6 +1,10 @@
 -- Only fill legacy reviews with missing photos. Existing account photos are untouched.
 begin;
 create temporary table avatar_before on commit drop as select id, user_photo from public.reviews;
+update public.reviews r set user_photo = p.user_photo
+from public.reviews p
+where p.id = 402 and p.user_photo like 'https://lh3.googleusercontent.com/%'
+and r.customer_name = p.customer_name and r.user_id is null and nullif(trim(r.user_photo), '') is null;
 create temporary table avatar_assignment (first_id bigint primary key, photo_url text not null) on commit drop;
 insert into avatar_assignment values
     (403, 'https://jokiin.my.id/assets/review-avatars/legacy-403.jpg'),
@@ -183,7 +187,6 @@ insert into avatar_assignment values
     (618, 'https://jokiin.my.id/assets/review-avatars/legacy-618.svg'),
     (619, 'https://jokiin.my.id/assets/review-avatars/legacy-619.svg'),
     (620, 'https://jokiin.my.id/assets/review-avatars/legacy-620.svg'),
-    (622, 'https://jokiin.my.id/assets/review-avatars/legacy-622.svg'),
     (623, 'https://jokiin.my.id/assets/review-avatars/legacy-623.svg'),
     (624, 'https://jokiin.my.id/assets/review-avatars/legacy-624.svg'),
     (625, 'https://jokiin.my.id/assets/review-avatars/legacy-625.svg'),
@@ -221,8 +224,11 @@ begin
         select 1 from avatar_before b join public.reviews r using (id)
         where nullif(trim(b.user_photo), '') is not null and r.user_photo is distinct from b.user_photo
     ) then raise exception 'Existing profile photos changed'; end if;
-    if (select count(*) from public.reviews where user_photo in (select photo_url from avatar_assignment)) <> 251 then
+    if (select count(*) from public.reviews where user_photo in (select photo_url from avatar_assignment)) <> 250 then
         raise exception 'Unexpected number of assigned reviews';
+    end if;
+    if exists (select 1 from public.reviews where user_id is null and nullif(trim(user_photo), '') is null) then
+        raise exception 'Missing legacy profile photos remain';
     end if;
     if (select count(distinct customer_name) from public.reviews where user_photo = 'https://jokiin.my.id/assets/review-avatars/default.jpg') <> 8 then
         raise exception 'Expected exactly 8 default-avatar customers';
