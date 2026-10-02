@@ -8586,7 +8586,7 @@ Teman tugas mahasiswa.`;
             const cards = rows.slice(0, 12).map(review => {
                 const name = anonymizeName(review.customerName); const initial = escapeHTML((name[0] || 'P').toUpperCase());
                 const product = CONFIG.PRODUCTS.find(p => p.id === review.productId);
-                return `<figure class="tr-24__card"><span class="tr-24__service">${escapeHTML(product?.title || 'Layanan JOKI.IN')} · ★ ${Number(review.rating) || 0}/5</span><p>${escapeHTML(review.comment)}</p><footer><div class="tr-24__avatar-circle">${/^https:\/\//.test(review.userPhoto || '') ? `<img src="${escapeHTML(review.userPhoto)}" alt="" referrerpolicy="no-referrer" loading="lazy" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" onerror="this.style.display=\'none\'; this.nextElementSibling.hidden=false;"><span hidden>${initial}</span>` : initial}</div><span><b>${escapeHTML(name)}</b>Ulasan pelanggan</span></footer></figure>`;
+                return `<figure class="tr-24__card"><span class="tr-24__service">${escapeHTML(product?.title || 'Layanan JOKI.IN')} · ★ ${Number(review.rating) || 0}/5</span><p>${escapeHTML(review.comment)}</p><footer><a class="tr-24__avatar-circle" href="https://jokiin.my.id/testimonials" draggable="true" aria-label="Lihat testimoni" style="text-decoration:none;">${/^https:\/\//.test(review.userPhoto || '') ? `<img src="${escapeHTML(review.userPhoto)}" alt="" referrerpolicy="no-referrer" loading="lazy" draggable="false" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" onerror="this.style.display=\'none\'; this.nextElementSibling.hidden=false;"><span hidden>${initial}</span>` : initial}</a><span><b>${escapeHTML(name)}</b>Ulasan pelanggan</span></footer></figure>`;
             }).join('');
             track.innerHTML = cards + `<div class="tr-24__clone" aria-hidden="true" style="display:contents">${cards}</div>`;
         }
@@ -8849,7 +8849,7 @@ Teman tugas mahasiswa.`;
                         return `
                         <figure class="tr-03__rev">
                             <header class="tr-03__rh">
-                                <div class="tr-03__ava">${(r.userPhoto || '').startsWith('https://') ? `<img src="${escapeHTML(r.userPhoto)}" alt="" referrerpolicy="no-referrer" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.hidden=true;this.nextElementSibling.hidden=false;"><span hidden>${escapeHTML(initial)}</span>` : escapeHTML(initial)}</div>
+                                <a class="tr-03__ava" href="https://jokiin.my.id/testimonials" draggable="true" aria-label="Lihat testimoni" style="text-decoration:none;">${(r.userPhoto || '').startsWith('https://') ? `<img src="${escapeHTML(r.userPhoto)}" alt="" referrerpolicy="no-referrer" loading="lazy" draggable="false" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.hidden=true;this.nextElementSibling.hidden=false;"><span hidden>${escapeHTML(initial)}</span>` : escapeHTML(initial)}</a>
                                 <div>
                                     <b>${escapeHTML(anonName)}</b>
                                     <span class="tr-03__ver">
