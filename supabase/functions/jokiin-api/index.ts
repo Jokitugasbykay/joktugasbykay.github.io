@@ -15,7 +15,6 @@ async function db(path:string,method='GET',body?:unknown,prefer?:string) {
   if(message.includes('PROMO_PAYMENT_PENDING')) throw new ApiError(409,'Promo sedang digunakan pada pesanan yang menunggu pembayaran.');
   if(message.includes('PROMO_EXPIRED')) throw new ApiError(409,'Kode promo tidak berlaku atau sudah berakhir.');
   if(message.includes('PRICE_CHANGED')) throw new ApiError(409,'Harga layanan berubah. Muat ulang ringkasan lalu checkout kembali.');
-  if(message.includes('PROMO_EXPIRED')) throw new ApiError(409,'Kode promo tidak berlaku atau sudah berakhir.');
   if(message.includes('SERVICE_UNAVAILABLE')) throw new ApiError(409,'Salah satu layanan sedang tidak tersedia.');
   if(message.includes('CHECKOUT_CONFLICT')) throw new ApiError(409,'Data checkout berubah. Silakan buat permintaan checkout baru.');
   if(result?.code==='23505') throw new ApiError(409,'Permintaan sudah diproses. Silakan muat ulang data.');
