@@ -1,0 +1,16 @@
+/.env*
+/.git/**
+/.github/**
+/.gitignore
+/.htaccess
+/src/**
+/supabase/**
+/database/**
+/storage/**
+/api/**
+/tests/**
+/worker.js
+/wrangler.*
+/package*.json
+/README*
+/*.sql

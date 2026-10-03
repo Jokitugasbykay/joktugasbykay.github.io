@@ -15,6 +15,10 @@ require_method('POST');
 function webhook_is_authorized(string $raw): bool
 {
     $token = env('MAYAR_WEBHOOK_TOKEN');
+    $header = env('MAYAR_WEBHOOK_SIGNATURE_HEADER');
+    $secret = env('MAYAR_WEBHOOK_SECRET');
+    if ($secret !== null && hash('sha256', $secret) === '1bb2b8dedc8aded34cad4e72a8e3aed8acfcb409ef8b5a41b5ce8fdc10e5d452') return false;
+    if ($token === null && ($header === null || $secret === null)) return false;
     if ($token !== null && !hash_equals($token, (string) ($_GET['token'] ?? ''))) return false;
 
     $header = env('MAYAR_WEBHOOK_SIGNATURE_HEADER');

@@ -10,6 +10,7 @@ $orderId = (string) ($_GET['order_id'] ?? '');
 if (!preg_match('/^[A-Za-z0-9_-]{6,80}$/', $orderId)) json_response(422, ['error' => 'Invalid order_id']);
 
 try {
+    if (!rate_limit_allow('status:' . client_ip(), 60, 60)) json_response(429, ['error' => 'Too many requests']);
     $pdo = db();
     $stmt = $pdo->prepare('SELECT * FROM orders WHERE order_id = ? LIMIT 1');
     $stmt->execute([$orderId]);

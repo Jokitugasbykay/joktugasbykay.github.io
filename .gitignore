@@ -2,3 +2,5 @@
 storage/*.sqlite
 storage/*.sqlite-shm
 storage/*.sqlite-wal
+.env.*
+!.env.example

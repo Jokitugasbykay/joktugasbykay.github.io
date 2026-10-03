@@ -9,6 +9,39 @@ const JSON_HEADERS = {
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: JSON_HEADERS });
 const clean = (value, max = 250) => typeof value === 'string' ? value.trim().slice(0, max) : '';
 const MAX_TASK_BYTES = 50 * 1024 * 1024;
+
+class ApiError extends Error {
+  constructor(status, message) { super(message); this.status = status; }
+}
+async function digest(value) {
+  const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
+  return [...new Uint8Array(bytes)].map(n => n.toString(16).padStart(2, '0')).join('');
+}
+async function limitRequest(request, env, action, count, seconds) {
+  // Only Cloudflare's platform-provided address is trusted; arbitrary forwarded headers are ignored.
+  const ip = request.headers.get('cf-connecting-ip') || 'unknown';
+  const key = await digest(`${env.SUPABASE_SERVICE_ROLE_KEY}:${action}:${ip}`);
+  const allowed = await supabase(env, 'rpc/jokiin_rate_limit', {
+    method: 'POST', body: JSON.stringify({p_key:`worker:${key}`,p_limit:count,p_seconds:seconds})
+  });
+  if (allowed !== true) throw new ApiError(429, 'Terlalu banyak permintaan. Tunggu sebentar lalu coba lagi.');
+}
+async function readJSON(request, max = 48000) {
+  const reader = request.body?.getReader();
+  if (!reader) throw new ApiError(400, 'Permintaan kosong.');
+  let length = 0; const chunks = [];
+  while (true) {
+    const {done,value} = await reader.read(); if (done) break;
+    length += value.length;
+    if (length > max) { await reader.cancel(); throw new ApiError(413, 'Permintaan terlalu besar.'); }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(length); let offset = 0;
+  for (const chunk of chunks) { bytes.set(chunk,offset); offset += chunk.length; }
+  try { return JSON.parse(new TextDecoder().decode(bytes)); }
+  catch { throw new ApiError(400, 'Format permintaan tidak valid.'); }
+}
+
 const FILE_MIMES = {pdf:'application/pdf',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',zip:'application/zip',jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png'};
 
 const base64Url = value => btoa(String.fromCharCode(...new Uint8Array(value instanceof ArrayBuffer ? value : new TextEncoder().encode(value)))).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
@@ -79,7 +112,7 @@ async function taskFolderSetting(request, env) {
     const rows = await supabase(env,'site_settings?key=eq.task_upload_drive_folder&select=value&limit=1');
     return json({folder_url:rows?.[0]?.value?.folder_url || ''});
   }
-  const body = await request.json();
+  const body = await readJSON(request);
   const folderUrl = clean(body?.folder_url,300);
   const match = /^https:\/\/drive\.google\.com\/drive\/folders\/([A-Za-z0-9_-]{10,120})\/?(?:\?.*)?$/.exec(folderUrl);
   if (!match) return json({error:'Gunakan link folder Google Drive yang valid.'},400);
@@ -89,6 +122,7 @@ async function taskFolderSetting(request, env) {
 
 async function uploadTaskFile(request, env) {
   if (!corsOk(request)) return json({error:'Origin tidak diizinkan.'},403);
+  await limitRequest(request, env, 'upload', 30, 600);
   const id = clean(request.headers.get('x-order-id'),80);
   const draftKey = clean(request.headers.get('x-order-key'),100);
   let name;
@@ -222,8 +256,9 @@ function corsOk(request) {
 
 async function createPayment(request, env) {
   if (!corsOk(request)) return json({ error: 'Origin tidak diizinkan.' }, 403);
+  await limitRequest(request, env, 'checkout', 10, 600);
   const userId = await authenticatedUserId(request, env);
-  const input = await request.json();
+  const input = await readJSON(request);
   const customer = input && typeof input.customer === 'object' ? input.customer : {};
   const items = Array.isArray(input?.items) ? input.items : [];
   const task = input && typeof input.task === 'object' && input.task !== null ? input.task : {};
@@ -289,7 +324,7 @@ async function createPayment(request, env) {
   const payment = await mayar(env, 'POST', 'payments/create', { name: `Pembayaran JOKI.IN - ${lines[0].name}`, amount: total, email: order.customer.email, mobile: order.customer.whatsapp, description: `Pesanan JOKI.IN ${orderCode}. Silakan selesaikan pembayaran untuk memulai pengerjaan.`, expiredAt: expiresAt });
   const data = payment.data?.data || {};
   const paymentUrl = data.link;
-  const transactionId = data.transactionId || transaction_id || data.id;
+  const transactionId = data.transactionId || data.transaction_id || data.id;
   if (!payment.response.ok || typeof paymentUrl !== 'string' || !transactionId) {
     await supabase(env, `payment_orders?order_code=eq.${encodeURIComponent(orderCode)}`, { method: 'PATCH', body: JSON.stringify({ payment_status: 'CANCELED' }) }).catch(() => {});
     return json({ error: 'Layanan pembayaran sedang sibuk. Coba lagi.' }, 502);
@@ -300,9 +335,11 @@ async function createPayment(request, env) {
 
 async function webhook(request, env) {
   const expected = env.MAYAR_WEBHOOK_SECRET;
+  if (!expected || await digest(expected) === '1bb2b8dedc8aded34cad4e72a8e3aed8acfcb409ef8b5a41b5ce8fdc10e5d452') return json({ error: 'Webhook perlu dikonfigurasi ulang.' }, 503);
+  await limitRequest(request, env, 'webhook', 100, 60);
   const supplied = request.headers.get('x-webhook-token');
-  if (expected && supplied !== expected) return json({ error: 'Unauthorized webhook.' }, 401);
-  const payload = await request.json();
+  if (supplied !== expected) return json({ error: 'Unauthorized webhook.' }, 401);
+  const payload = await readJSON(request);
   const data = payload?.data || payload;
   const transactionId = data.transactionId || data.transaction_id || data.id;
   if (!transactionId) return json({ received: true, matched: false });
@@ -313,6 +350,7 @@ async function webhook(request, env) {
 }
 
 async function paymentStatus(request, env) {
+  await limitRequest(request, env, 'status', 60, 60);
   const url = new URL(request.url);
   const reference = clean(url.searchParams.get('order_code') || url.searchParams.get('order_id'), 80);
   if (!reference) return json({ error: 'Nomor pesanan wajib diisi.' }, 400);
@@ -320,10 +358,15 @@ async function paymentStatus(request, env) {
   const filter = isUuid
     ? `id=eq.${encodeURIComponent(reference)}`
     : `order_code=eq.${encodeURIComponent(reference.toUpperCase())}`;
-  const rows = await supabase(env, `payment_orders?${filter}&select=id,order_code,total_price,payment_status,payment_method,payment_url,expires_at,mayar_transaction_id,last_verified_at&limit=1`);
+  const rows = await supabase(env, `payment_orders?${filter}&select=id,user_id,request_key,order_code,total_price,payment_status,payment_method,payment_url,expires_at,mayar_transaction_id,last_verified_at&limit=1`);
   if (!rows.length) return json({ error: 'Pesanan tidak ditemukan.' }, 404);
   const order = await reconcilePayment(env, rows[0]);
-  return json({ order_id: order.id, order_code: order.order_code, amount: order.total_price, payment_status: order.payment_status, payment_method: order.payment_status === 'PAID' ? order.payment_method || null : null, payment_url: order.payment_status === 'PENDING' ? order.payment_url : null, expires_at: order.expires_at, transaction_id: order.mayar_transaction_id });
+  const userId = await authenticatedUserId(request, env);
+  const key = request.headers.get('x-order-key');
+  const owner = (userId && userId === order.user_id) || (key && key === order.request_key);
+  const summary = { order_id: order.id, order_code: order.order_code, payment_status: order.payment_status, expires_at: order.expires_at };
+  if (!owner) return json(summary);
+  return json({ ...summary, amount: order.total_price, payment_method: order.payment_status === 'PAID' ? order.payment_method || null : null, payment_url: order.payment_status === 'PENDING' ? order.payment_url : null });
 }
 
 const DEFAULT_PROMO = {
@@ -381,6 +424,7 @@ export default { async fetch(request, env) {
     if (url.pathname === '/api/mayar-webhook' && request.method === 'POST') return await webhook(request, env);
     if (url.pathname === '/api/check-status' && request.method === 'GET') return await paymentStatus(request, env);
     if (url.pathname === '/api/promo' && request.method === 'GET') return await promo(request, env);
+    if (/^\/(?:\.|src\/|supabase\/|tests\/|worker\.js|wrangler\.|package(?:-lock)?\.json|README)/i.test(url.pathname)) return json({ error: 'Not found' }, 404);
     if (/\.(?:php|sql|sqlite|env)$/i.test(url.pathname) || /^\/(?:database|storage|api)\//i.test(url.pathname)) return json({ error: 'Not found' }, 404);
     // SPA fallback: direct visits such as /payment or /prices still serve index.html.
     if (env.ASSETS) {
@@ -390,6 +434,7 @@ export default { async fetch(request, env) {
     }
     return json({ error: 'Not found' }, 404);
   } catch (error) {
+    if (error instanceof ApiError) return json({ error: error.message }, error.status);
     console.error(error instanceof Error ? error.message : 'Worker error');
     return json({ error: 'Server belum dapat memproses permintaan.' }, 500);
   }

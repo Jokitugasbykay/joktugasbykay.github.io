@@ -7126,7 +7126,7 @@
                 paymentMethod: row.payment_method || '', subtotal: Number(row.subtotal) || 0, discount: Number(row.discount) || 0,
                 serviceFee: Number(row.service_fee) || 0, paymentFee: Number(row.payment_fee) || 0, total: Number(row.total_price) || 0,
                 paymentStatus: String(row.payment_status || 'PENDING').toUpperCase(), orderStatus: statusMap[row.status] || 'PENDING_ORDER',
-                estimatedCompletion: row.estimated_completion, createdAt: row.created_at
+                detailRestricted: row.detail_restricted === true, estimatedCompletion: row.estimated_completion, createdAt: row.created_at
             };
         }
         const ORDER_SELECT = 'id,order_code,user_id,items,customer,task,notes,payment_method,subtotal,discount,service_fee,payment_fee,total_price,payment_status,status,estimated_completion,created_at';
@@ -7924,6 +7924,7 @@
                     }
                     const order = {
                         id: payment.order_id,
+                        draftKey,
                         orderCode: payment.order_code,
                         gateway: 'mayar',
                         mode: checkoutMode,
@@ -8025,7 +8026,7 @@
             try { sessionStorage.setItem('jokiin_pending_mayar_order', JSON.stringify(order)); } catch (_) { }
             try {
                 localStorage.setItem('jokiin_pending_mayar_order', JSON.stringify({
-                    id: order.id, orderCode: order.orderCode, total: order.total, paymentUrl: order.paymentUrl,
+                    id: order.id, draftKey: order.draftKey, orderCode: order.orderCode, total: order.total, paymentUrl: order.paymentUrl,
                     expiryTime: order.expiryTime, paymentStatus: order.paymentStatus,
                     paymentMethod: order.paymentMethod, gateway: order.gateway
                 }));
@@ -8055,7 +8056,12 @@
 
         async function fetchPaymentStatus(orderId) {
             try {
-                const response = await fetch('https://jokiin-payment-api.gamingyoga14.workers.dev/api/check-status?order_id=' + encodeURIComponent(orderId), { cache: 'no-store' });
+                const saved = getSavedPendingMayarOrder();
+                const headers = {};
+                if (saved?.id === orderId && saved.draftKey) headers['x-order-key'] = saved.draftKey;
+                const { data } = await supabase.auth.getSession();
+                if (data?.session?.access_token) headers.authorization = `Bearer ${data.session.access_token}`;
+                const response = await fetch('https://jokiin-payment-api.gamingyoga14.workers.dev/api/check-status?order_id=' + encodeURIComponent(orderId), { cache: 'no-store', headers });
                 return response.ok ? await response.json() : null;
             } catch (_) { return null; }
         }
@@ -8481,7 +8487,7 @@ Teman tugas mahasiswa.`;
 
             document.getElementById('detOrderId').innerText = `${order.id}`;
             document.getElementById('detDate').innerText = new Date(order.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-            document.getElementById('detTotal').innerText = formatRupiah(order.total);
+            document.getElementById('detTotal').innerText = order.detailRestricted ? 'Detail tersedia untuk pemilik pesanan' : formatRupiah(order.total);
             document.getElementById('detService').innerText = order.items.map(i => `${escapeHTML(i.name)} (x${i.quantity}) - ${formatRupiah(i.price * i.quantity)}`).join(', ');
 
             const payStatusStr = order.paymentStatus || 'PENDING';
@@ -8500,7 +8506,7 @@ Teman tugas mahasiswa.`;
             document.getElementById('detEstText').innerText = ordStatusStr === 'COMPLETED' ? `Selesai pada ${estDate}` : `Estimasi selesai: ${estDate}, 20:00 WIB`;
 
             const task = order.task || {};
-            document.getElementById('detTaskTitle').innerText = task.title || '-';
+            document.getElementById('detTaskTitle').innerText = task.title || (order.detailRestricted ? 'Login sebagai pemilik pesanan untuk melihat detail tugas.' : '-');
             document.getElementById('detTaskNotes').innerText = task.notes || '-';
             document.getElementById('detTaskDeadline').innerText = task.deadline || '-';
             document.getElementById('detTaskCompletionNotice').hidden = !['COMPLETED', 'SELESAI'].includes(String(ordStatusStr).toUpperCase());

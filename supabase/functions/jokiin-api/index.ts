@@ -94,7 +94,19 @@ Deno.serve(async(req:Request)=>{
    }
    const rows=await db(`orders?order_code=eq.${encodeURIComponent(code)}${ownerFilter}&select=${ORDER_FIELDS}&limit=1`);
    if(!rows.length)throw new ApiError(404,'Pesanan tidak ditemukan. Periksa nomor order lengkap.');
-   return new Response(JSON.stringify({order:rows[0]}),{headers:cors});
+   const row=rows[0];
+   let fullAccess=Boolean(user && row.user_id===user.id);
+   if(user && !fullAccess){
+    const profiles=await db(`profiles?id=eq.${user.id}&select=role`);
+    fullAccess=profiles[0]?.role==='admin';
+   }
+   // Knowing a reference grants status tracking, never access to personal/task data.
+   const order=fullAccess ? row : {
+    order_code:row.order_code,status:row.status,payment_status:row.payment_status,
+    estimated_completion:row.estimated_completion,created_at:row.created_at,
+    detail_restricted:true
+   };
+   return new Response(JSON.stringify({order}),{headers:cors});
   }
   if(!user)throw new ApiError(401,'Silakan login untuk menulis ulasan.');
   const requestKey=uuid(input.requestKey);
