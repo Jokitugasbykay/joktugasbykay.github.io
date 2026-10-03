@@ -10,6 +10,10 @@ async function db(path:string,method='GET',body?:unknown,prefer?:string) {
  try { result=text?JSON.parse(text):null; } catch { throw new ApiError(503,'Server belum dapat dihubungi. Coba lagi.'); }
  if(!response.ok) {
   const message=String(result?.message||'');
+  if(message.includes('PROMO_LOGIN_REQUIRED')) throw new ApiError(401,'Silakan login untuk menggunakan promo.');
+  if(message.includes('PROMO_ALREADY_USED')) throw new ApiError(409,'Promo ini sudah digunakan pada akun Anda.');
+  if(message.includes('PROMO_PAYMENT_PENDING')) throw new ApiError(409,'Promo sedang digunakan pada pesanan yang menunggu pembayaran.');
+  if(message.includes('PROMO_EXPIRED')) throw new ApiError(409,'Kode promo tidak berlaku atau sudah berakhir.');
   if(message.includes('PRICE_CHANGED')) throw new ApiError(409,'Harga layanan berubah. Muat ulang ringkasan lalu checkout kembali.');
   if(message.includes('PROMO_EXPIRED')) throw new ApiError(409,'Kode promo tidak berlaku atau sudah berakhir.');
   if(message.includes('SERVICE_UNAVAILABLE')) throw new ApiError(409,'Salah satu layanan sedang tidak tersedia.');

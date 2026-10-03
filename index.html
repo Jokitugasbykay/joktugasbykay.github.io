@@ -6637,13 +6637,16 @@
         };
         let promoTimer = null;
         let promoDismissedUntil = 0;
+        let activePromoId = '';
+        let promoLoadVersion = 0;
         function isPromoDismissed() {
-            try { promoDismissedUntil = Math.max(promoDismissedUntil, Number(localStorage.getItem('jokiin_promo_dismissed_until')) || 0); } catch (_) { }
+            try { promoDismissedUntil = Math.max(promoDismissedUntil, Number(sessionStorage.getItem(`jokiin_promo_dismissed_until:${activePromoId}`)) || 0); } catch (_) { }
             return promoDismissedUntil > Date.now();
         }
         function renderPromo(promo = DEFAULT_PROMO) {
             const strip = document.getElementById('promoStrip'); if (!strip) return;
-            strip.hidden = isPromoDismissed() || promo.active !== true || !promo.ends_at || Date.parse(promo.ends_at) <= Date.now();
+            if (activePromoId !== String(promo.campaign_id || '')) { activePromoId = String(promo.campaign_id || ''); promoDismissedUntil = 0; }
+            strip.hidden = promo.used === true || isPromoDismissed() || promo.active !== true || !promo.ends_at || Date.parse(promo.ends_at) <= Date.now();
             document.getElementById('promoBadge').textContent = promo.label || DEFAULT_PROMO.label;
             document.getElementById('promoLead').textContent = `Diskon s.d ${Number(promo.discount_percent) || 0}%`;
             document.getElementById('promoText').textContent = promo.text || '';
@@ -6670,8 +6673,12 @@
         }
         async function loadPromo() {
             if (document.readyState !== 'complete') await new Promise(resolve => window.addEventListener('load', resolve, { once: true }));
-            try { const response = await fetch(PROMO_API_URL, { cache: 'no-store' }); if (!response.ok) throw new Error('promo'); const data = await response.json(); renderPromo(data?.promo || DEFAULT_PROMO); }
-            catch (_) { renderPromo(DEFAULT_PROMO); }
+            const version = ++promoLoadVersion;
+            try {
+                const { data, error } = await supabase.rpc('jokiin_promo_eligibility');
+                if (error) throw error;
+                if (version === promoLoadVersion) renderPromo({ ...(data?.promo || DEFAULT_PROMO), used: data?.used === true });
+            } catch (_) { if (version === promoLoadVersion) renderPromo(DEFAULT_PROMO); }
         }
 
         function readStored(storage, key, fallback) {
@@ -6731,10 +6738,11 @@
                 document.getElementById('chkEmail').value = '';
                 document.getElementById('chkWA').value = '';
             }
-            if (!user) { currentUser = null; updateHeaderAuth(); await loadCart(); return; }
+            if (!user) { currentUser = null; updateHeaderAuth(); loadPromo(); await loadCart(); return; }
             const fallbackName = String(user.user_metadata?.full_name || user.email?.split('@')[0] || 'Pengguna').slice(0, 120);
             currentUser = { uid: user.id, name: fallbackName, email: user.email || '', photo: '', phone: '', role: 'user', ...(previousId === nextId ? currentUser : {}) };
             updateHeaderAuth();
+            loadPromo();
             if (previousId !== nextId) await mergeCartsOnLogin();
             if (profileUserId !== user.id) {
                 try {
@@ -7606,9 +7614,12 @@
             appliedPromoDiscount = 0;
             if (!code) { msg.textContent = ''; renderCheckoutSummary(); return ''; }
             if (!/^[A-Z0-9]{4,24}$/.test(code)) throw new Error('Kode promo hanya boleh berisi 4–24 huruf atau angka.');
-            const response = await fetch(`${PROMO_API_URL}?code=${encodeURIComponent(code)}`, { cache:'no-store' });
-            if (!response.ok) throw new Error('Kode promo belum dapat diperiksa. Coba lagi.');
-            const result = await response.json();
+            await ensureSession();
+            if (!currentUser) throw new Error('Silakan login untuk menggunakan promo.');
+            const { data: result, error } = await supabase.rpc('jokiin_promo_eligibility', { p_code: code });
+            if (error || !result) throw new Error('Kode promo belum dapat diperiksa. Coba lagi.');
+            if (result.reason === 'used') throw new Error('Promo ini sudah digunakan pada akun Anda.');
+            if (result.reason === 'pending') throw new Error('Promo sedang digunakan pada pesanan yang menunggu pembayaran.');
             if (!result.valid || !Number.isInteger(result.discount_percent) || result.discount_percent < 1 || result.discount_percent > 90) throw new Error('Kode promo tidak berlaku atau sudah berakhir.');
             if (input.value.trim().toUpperCase() !== code) throw new Error('Kode promo telah berubah. Gunakan kembali.');
             appliedPromoDiscount = result.discount_percent / 100;
@@ -8096,6 +8107,7 @@
             // Server memakai 'CANCELED'; label yang sudah ada di getPaymentStatusLabel bernama 'CANCELLED'.
             document.getElementById('succPaymentStatus').innerHTML = getPaymentStatusLabel(status === 'CANCELED' ? 'CANCELLED' : status);
             if (status === 'PAID') {
+                loadPromo();
                 const methodRow = document.getElementById('succMethodRow');
                 methodRow.hidden = false;
                 document.getElementById('succMethod').textContent = order.paymentMethod || 'Pembayaran terverifikasi';
@@ -9236,10 +9248,11 @@ Teman tugas mahasiswa.`;
         document.getElementById('promoClaim')?.addEventListener('click', () => window.switchTab('harga'));
         document.getElementById('promoClose')?.addEventListener('click', () => {
             promoDismissedUntil = Date.now() + 120 * 60 * 1000;
-            try { localStorage.setItem('jokiin_promo_dismissed_until', String(promoDismissedUntil)); } catch (_) { }
+            try { sessionStorage.setItem(`jokiin_promo_dismissed_until:${activePromoId}`, String(promoDismissedUntil)); } catch (_) { }
             document.getElementById('promoStrip').hidden = true;
             clearInterval(promoTimer);
         });
+        window.addEventListener('focus', () => loadPromo());
         document.querySelector('.tgl-19')?.addEventListener('click', event => { event.preventDefault(); event.stopImmediatePropagation(); }, true);
 
         document.querySelectorAll('.pill').forEach(pill => pill.addEventListener('click', (e) => { e.preventDefault(); window.switchTab(pill.getAttribute('data-target')); }));
