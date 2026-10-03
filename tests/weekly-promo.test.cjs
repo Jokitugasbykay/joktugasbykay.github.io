@@ -12,14 +12,15 @@ let campaign = {active:true,starts_at:start,ends_at:end,coupon:'KAY30',discount_
 const fetchMock = async (url, options = {}) => {
   const u = new URL(url);
   let data;
-  if (u.pathname.endsWith('/site_settings')) data = [{value:campaign}];
+  if (u.pathname.endsWith('/rpc/jokiin_rate_limit')) data = true;
+  else if (u.pathname.endsWith('/site_settings')) data = [{value:campaign}];
   else if (u.pathname.endsWith('/services')) data = [{id:1,slug:'makalah',name:'Makalah',price:2000,is_active:true,sale_percent:10,sale_amount:0}];
   else if (u.pathname.endsWith('/payment_orders')) data = options.method === 'POST' ? [{id:10}] : [];
   else if (u.pathname.endsWith('/payments/create')) data = {data:{link:'https://pay.example/checkout',transactionId:'tx-test'}};
   else throw new Error(`Unexpected request ${u.pathname}`);
   return new Response(JSON.stringify(data),{status:200});
 };
-const ctx = vm.createContext({Response,Request,URL,console,crypto,fetch:fetchMock});
+const ctx = vm.createContext({Response,Request,URL,console,crypto,TextEncoder,TextDecoder,Uint8Array,fetch:fetchMock});
 vm.runInContext(source,ctx);
 const env = {SUPABASE_URL:'https://example.supabase.co',SUPABASE_SERVICE_ROLE_KEY:'test',MAYAR_API_KEY:'test'};
 async function call(url,body) {

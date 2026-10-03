@@ -6,7 +6,7 @@ Sumber ini menyiapkan promo satu kampanye untuk setiap periode berjalan tujuh ha
 
 1. Tinjau dan jalankan `workplace/supabase/promo-weekly.sql` pada proyek Supabase yang benar. Skrip menormalkan promo lama, membatasi perubahan promo ke RPC admin, dan menghitung ulang diskon produk serta kode promo pada checkout reguler.
 2. Perbarui Edge Function `jokiin-api` dari `website/supabase/functions/jokiin-api/index.ts`. Perubahan ini memberikan pesan jelas ketika promo kedaluwarsa.
-3. Publikasikan Worker dari `website/src/worker.js` (salinan `website/worker.js` identik) serta website `website/index.html` dalam satu rilis. Worker adalah sumber validasi kode untuk tampilan dan checkout Mayar.
+3. Publikasikan Worker dari `src/worker.js` serta website `website/index.html` dalam satu rilis. Worker adalah sumber validasi kode untuk tampilan dan checkout Mayar.
 4. Bangun dan bagikan aplikasi Android versi 1.5.3 dari folder `workplace` setelah langkah di atas.
 
 Jangan membalik urutan: Worker baru memerlukan `starts_at` yang dibuat migrasi; aplikasi baru memerlukan RPC `jokiin_manage_promo`. Website lama memiliki kode promo tetap yang bisa menampilkan diskon berbeda dari backend baru.

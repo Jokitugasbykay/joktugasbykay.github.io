@@ -103,7 +103,7 @@ Hal-hal ini bergantung pada perilaku Mayar yang tidak bisa diuji dari luar. Cek 
 
 # Produk Workplace v1.5.0
 
-Deploy `index.html` dan `src/worker.js` bersama setelah persetujuan pengguna. Perubahan backend Supabase sudah diterapkan. Katalog dan worker checkout menghitung harga dari `price`, `sale_percent`, `sale_amount` yang sama. Sakelar promo membaca `site_settings.home_promo.active` lewat `/api/promo`. `worker.js` di akar juga disinkronkan, tetapi Wrangler memakai `src/worker.js`. Jangan menerbitkan hanya salah satu bagian: situs lama tidak memahami diskon nominal dan worker lama mengabaik nominal di checkout.
+Deploy `index.html` dan `src/worker.js` bersama setelah persetujuan pengguna. Perubahan backend Supabase sudah diterapkan. Katalog dan worker checkout menghitung harga dari `price`, `sale_percent`, `sale_amount` yang sama. Sakelar promo membaca `site_settings.home_promo.active` lewat `/api/promo`. Wrangler memakai `src/worker.js` sebagai satu-satunya sumber Worker. Jangan menerbitkan hanya salah satu bagian: situs lama tidak memahami diskon nominal dan worker lama mengabaik nominal di checkout.
 
 
 ---
@@ -116,7 +116,7 @@ Sumber ini menyiapkan promo satu kampanye untuk setiap periode berjalan tujuh ha
 
 1. Tinjau dan jalankan `workplace/supabase/promo-weekly.sql` pada proyek Supabase yang benar. Skrip menormalkan promo lama, membatasi perubahan promo ke RPC admin, dan menghitung ulang diskon produk serta kode promo pada checkout reguler.
 2. Perbarui Edge Function `jokiin-api` dari `website/supabase/functions/jokiin-api/index.ts`. Perubahan ini memberikan pesan jelas ketika promo kedaluwarsa.
-3. Publikasikan Worker dari `website/src/worker.js` (salinan `website/worker.js` identik) serta website `website/index.html` dalam satu rilis. Worker adalah sumber validasi kode untuk tampilan dan checkout Mayar.
+3. Publikasikan Worker dari `src/worker.js` serta website `website/index.html` dalam satu rilis. Worker adalah sumber validasi kode untuk tampilan dan checkout Mayar.
 4. Bangun dan bagikan aplikasi Android versi 1.5.3 dari folder `workplace` setelah langkah di atas.
 
 Jangan membalik urutan: Worker baru memerlukan `starts_at` yang dibuat migrasi; aplikasi baru memerlukan RPC `jokiin_manage_promo`. Website lama memiliki kode promo tetap yang bisa menampilkan diskon berbeda dari backend baru.

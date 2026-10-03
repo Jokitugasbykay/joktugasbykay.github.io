@@ -7021,7 +7021,6 @@
             ]
         };
 
-        const STATUS_MAP = { "pending_payment": "Menunggu Pembayaran", "paid": "Pending Order", "processing": "Sedang Dikerjakan", "completed": "Selesai", "cancelled": "Dibatalkan" };
 
         // UTILS
         // UI metadata stays local; business fields come from active server services.
@@ -7041,20 +7040,6 @@
             'bimbingan-bab-5': { icon: '✅', category: 'Penelitian', popularity: 7, features: ['Kesimpulan', 'Saran', 'Review'] },
             'bimbingan-artikel-jurnal': { icon: '📑', category: 'Penelitian', popularity: 8, features: ['Template jurnal', 'Studi literatur', 'Review'] },
             'bimbingan-slr': { icon: '🧭', category: 'Penelitian', popularity: 9, features: ['Strategi pencarian', 'Seleksi studi', 'Pelaporan metode'] }
-        };
-        const SAFE_CATALOGUE_IMAGES = {
-            'bimbingan-parafrase': 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=900&q=80',
-            'konsultasi-olah-data-kualitatif': 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=900&q=80',
-            'konsultasi-olah-data-kuantitatif': 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=900&q=80',
-            'bimbingan-konversi-artikel': 'https://images.unsplash.com/photo-1456324504439-367cee3b3c32?auto=format&fit=crop&w=900&q=80',
-            'bimbingan-laporan': 'https://images.unsplash.com/photo-1456324504439-367cee3b3c32?auto=format&fit=crop&w=900&q=80',
-            'bimbingan-mini-riset': 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=900&q=80',
-            'bimbingan-proposal-skripsi': 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=900&q=80',
-            'bimbingan-proposal-tesis': 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=900&q=80',
-            'bimbingan-bab-4': 'https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=900&q=80',
-            'bimbingan-bab-5': 'https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=900&q=80',
-            'bimbingan-artikel-jurnal': 'https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=900&q=80',
-            'bimbingan-slr': 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=900&q=80'
         };
         const CATALOG_PHOTOS = Array.from({ length: 34 }, (_, index) => `assets/catalog/portfolio-${String(index + 1).padStart(2, '0')}.jpg`);
         const CATALOG_PHOTO_BY_SLUG = {
@@ -7285,15 +7270,6 @@
         // ==========================================
         // WELCOME POPUP
         // ==========================================
-        function checkWelcomePopup() {
-            const modal = document.getElementById('welcomeModal');
-            let lastShown = null; try { lastShown = sessionStorage.getItem('jokiin_welcome_popup_time') || sessionStorage.getItem(LEGACY_STORAGE_KEYS.welcomePopupTime); } catch (_) { }
-            const currentTime = new Date().getTime();
-            // Cek jika belum pernah dibuka ATAU sudah lebih dari 120 menit (untuk testing bisa dihapus limitnya)
-            if (!lastShown || (currentTime - lastShown > (120 * 60 * 1000))) {
-                openWelcomeModal();
-            }
-        }
 
         // ==========================================
         // UI AUTHENTICATION
@@ -8663,13 +8639,6 @@ Teman tugas mahasiswa.`;
             };
         }
 
-        function getStarsHTML(rating) {
-            let s = "";
-            for (let i = 1; i <= 5; i++) {
-                s += i <= rating ? '<span style="color:var(--warning-star); font-size:1.05em;">★</span>' : '<span style="color:var(--border-color); opacity: 0.35; font-size:1.05em;">☆</span>';
-            }
-            return s;
-        }
 
         function getServiceSVGIcon(product, size = 22) {
             const id = (product && product.id ? product.id : '').toLowerCase();
