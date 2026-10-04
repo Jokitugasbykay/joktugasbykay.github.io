@@ -5520,7 +5520,7 @@
                     </div>
                     <div class="home-banner__stats">
                         <span><strong>500+</strong> Pesanan Selesai</span>
-                        <span><strong>4.9/5</strong> Rating Pengguna</span>
+                        <span><strong data-user-rating>--/5</strong> Rating Pengguna</span>
                         <span><strong>100%</strong> Privasi Terjaga</span>
                         <span><strong>24/7</strong> Siap Membantu</span>
                     </div>
@@ -5538,7 +5538,7 @@
                 </div>
                 <div class="hero-stats">
                     <span><strong>500+</strong> Pesanan Selesai</span>
-                    <span><strong>4.9/5</strong> Rating Pengguna</span>
+                    <span><strong data-user-rating>--/5</strong> Rating Pengguna</span>
                     <span><strong>100%</strong> Privasi Terjaga</span>
                     <span><strong>24/7</strong> Siap Membantu</span>
                 </div>
@@ -9180,9 +9180,40 @@ Teman tugas mahasiswa.`;
             }
         }
 
-        function renderApp() {
-            document.getElementById('preview-layanan').innerHTML = CONFIG.PRODUCTS.slice(0, 4).map(p => `<div class="service-card" data-price="${escapeHTML(productPriceLabel(p))}" data-sale="${p.hasSale}"><div class="service-icon">${p.icon}</div><h3>${escapeHTML(p.title)}</h3><span class="category-badge">${p.category}</span><p>${escapeHTML(p.desc)}</p>
+        let websiteMetrics = null;
+        function applyWebsiteMetrics(row) {
+            if (!row?.stats || (websiteMetrics && Number(row.revision) < Number(websiteMetrics.revision))) return;
+            websiteMetrics = row;
+            const rating = row.stats.reviewCount > 0 && Number.isFinite(Number(row.stats.rating))
+                ? Number(row.stats.rating).toFixed(1) + '/5' : '--/5';
+            document.querySelectorAll('[data-user-rating]').forEach(el => { el.textContent = rating; });
+            renderPopularServices();
+        }
+        async function loadWebsiteMetrics() {
+            try {
+                const { data, error } = await supabase.from('website_metrics').select('revision,stats').eq('id', true).single();
+                if (error) throw error;
+                applyWebsiteMetrics(data);
+            } catch (error) { console.warn('Statistik belum dapat dimuat.', error); }
+        }
+        function startWebsiteMetrics() {
+            loadWebsiteMetrics();
+            supabase.channel('website-metrics')
+                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'website_metrics' }, event => applyWebsiteMetrics(event.new))
+                .subscribe(status => { if (status === 'SUBSCRIBED') loadWebsiteMetrics(); });
+            document.addEventListener('visibilitychange', () => { if (!document.hidden) loadWebsiteMetrics(); });
+        }
+        function renderPopularServices() {
+            const scores = websiteMetrics?.stats.services || {};
+            const popular = [...CONFIG.PRODUCTS].sort((a, b) =>
+                (scores[b.serviceId]?.score || 0) - (scores[a.serviceId]?.score || 0)
+                || (Number(a.serviceId) || 0) - (Number(b.serviceId) || 0));
+            document.getElementById('preview-layanan').innerHTML = popular.slice(0, 4).map(p => `<div class="service-card" data-price="${escapeHTML(productPriceLabel(p))}" data-sale="${p.hasSale}"><div class="service-icon">${p.icon}</div><h3>${escapeHTML(p.title)}</h3><span class="category-badge">${p.category}</span><p>${escapeHTML(p.desc)}</p>
             <button class="btn-outline" style="width:100%; border:none; padding:0; text-align:left; justify-content:flex-start;" onclick="window.switchTab('layanan')">Lihat Detail →</button></div>`).join('');
+        }
+
+        function renderApp() {
+            renderPopularServices();
 
             document.getElementById('full-layanan').innerHTML = CONFIG.PRODUCTS.map(p => `<div class="service-card">${serviceVisual(p)}<h3>${escapeHTML(p.title)}</h3><p style="margin-bottom:10px;">${escapeHTML(p.desc)}</p><div class="layanan-section-title">Apa yang kamu dapatkan?</div><ul class="layanan-check-list">${p.benefits.slice(0, 4).map(b => `<li>${b}</li>`).join('')}</ul><div class="layanan-target"><strong>Cocok untuk:</strong> ${p.target}</div><div style="display:flex; gap:10px; margin-top:auto;"><button class="btn-wa" style="flex:none; padding:12px; box-shadow:none;" onclick="window.consultService('${p.id}')">Hubungi Admin</button><button class="btn-outline" style="flex:1; padding:12px;" onclick="window.openServiceDetail('${p.id}')">Lihat Detail</button></div></div>`).join('');
 
@@ -9414,7 +9445,7 @@ Teman tugas mahasiswa.`;
         window.processGuestTrack = () => processTracking('trackInput', 'trackError', true);
 
         async function initializeApp() {
-            renderApp(); bindCheckoutFileDropzone(); bindCheckoutValidation(); loadPromo();
+            renderApp(); bindCheckoutFileDropzone(); bindCheckoutValidation(); loadPromo(); startWebsiteMetrics();
             // GitHub Pages memakai 404.html untuk fallback SPA; pulihkan rute aslinya setelah redirect.
             let fallbackPath = '';
             try { fallbackPath = sessionStorage.getItem('jokiin_spa_fallback_path') || localStorage.getItem('jokiin_spa_fallback_path') || ''; } catch (_) { }
