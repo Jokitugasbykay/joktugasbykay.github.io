@@ -6697,7 +6697,7 @@
             const el = document.getElementById('authError'); el.textContent = message; el.style.display = 'block';
         }
         async function saveUserToSupabase(user, fallbackName) {
-            const { data: existing, error: readError } = await supabase.from('profiles').select('id,name,email,phone,photo_url,role,created_at').eq('id', user.id).maybeSingle();
+            const { data: existing, error: readError } = await supabase.from('profiles').select('id,name,email,phone,photo_url,role,workplace_role,created_at').eq('id', user.id).maybeSingle();
             if (readError) throw readError;
             const photo = [user.user_metadata?.avatar_url, user.user_metadata?.picture, ...(user.identities || []).map(identity => identity.identity_data?.avatar_url || identity.identity_data?.picture)].find(value => typeof value === 'string' && /^https:\/\//.test(value)) || '';
             if (existing) {
@@ -6714,7 +6714,7 @@
             };
             const { error } = await supabase.from('profiles').insert(profile);
             if (error && error.code !== '23505') throw error;
-            const { data, error: reloadError } = await supabase.from('profiles').select('id,name,email,phone,photo_url,role,created_at').eq('id', user.id).single();
+            const { data, error: reloadError } = await supabase.from('profiles').select('id,name,email,phone,photo_url,role,workplace_role,created_at').eq('id', user.id).single();
             if (reloadError) throw reloadError;
             return data;
         }
@@ -6731,7 +6731,11 @@
                 document.getElementById('chkEmail').value = '';
                 document.getElementById('chkWA').value = '';
             }
-            if (!user) { currentUser = null; updateHeaderAuth(); loadPromo(); await loadCart(); return; }
+            if (!user) {
+                currentUser = null; updateHeaderAuth(); loadPromo(); await loadCart();
+                if (document.getElementById('testimoni-list-view').style.display === 'none') window.showProductReviews(currentReviewProductId);
+                return;
+            }
             const fallbackName = String(user.user_metadata?.full_name || user.email?.split('@')[0] || 'Pengguna').slice(0, 120);
             currentUser = { uid: user.id, name: fallbackName, email: user.email || '', photo: '', phone: '', role: 'user', ...(previousId === nextId ? currentUser : {}) };
             updateHeaderAuth();
@@ -6743,7 +6747,7 @@
                     if (version !== authVersion || currentUser?.uid !== user.id) return;
                     currentUser = {
                         uid: user.id, name: profile.name || fallbackName, email: user.email || '',
-                        photo: profile.photo_url || user.user_metadata?.avatar_url || user.user_metadata?.picture || '', phone: profile.phone || '', role: profile.role
+                        photo: profile.photo_url || user.user_metadata?.avatar_url || user.user_metadata?.picture || '', phone: profile.phone || '', role: profile.role, workplaceRole: profile.workplace_role
                     };
                     profileUserId = user.id;
                 } catch (error) { console.error('Profil belum dapat dimuat:', error.message); }
@@ -6752,6 +6756,7 @@
             await loadCart();
             updateHeaderAuth();
             if (currentTab === 'checkout') fillCheckoutGuestData();
+            if (document.getElementById('testimoni-list-view').style.display === 'none') window.showProductReviews(currentReviewProductId);
         }
         // Callback tidak menunggu query Supabase; proses sesi berjalan setelah callback selesai.
         supabase.auth.onAuthStateChange((_event, session) => {
@@ -8903,7 +8908,7 @@ Teman tugas mahasiswa.`;
                             </ul>
                             <footer class="tr-03__rf">
                                 <time datetime="${r.date || ''}">${rDate}</time>
-                                ${Number(r.rating) <= 4 && currentUser && (r.userId === currentUser.uid || currentUser.role === 'admin') ? `<button type="button" class="tr-03__help review-delete" title="Hapus komentar" onclick="window.deleteCustomerReview(${Number(r.id)}, this)">Hapus komentar</button>` : ''}
+                                ${canDeleteReview(r) ? `<button type="button" class="tr-03__help review-delete" title="Hapus komentar" onclick="window.deleteCustomerReview(${Number(r.id)}, this)">Hapus komentar</button>` : ''}
                                 <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><button class="tr-03__help" type="button" data-review-id="${r.id}" aria-pressed="${r.helpfulVoted === true}" onclick="window.markTr03Helpful(this)">
                                     <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 17V8.6l3.6-5.2c.9-1.3 2.9-.6 2.9 1V8h3.3c1 0 1.8.9 1.6 1.9l-1.1 5.6c-.2.9-1 1.5-1.9 1.5H6z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><rect x="2" y="8.4" width="3.2" height="8.6" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
                                     <span class="tr-03__hn">${r.helpfulVoted ? 'Ditandai membantu' : 'Tandai membantu'}</span>
@@ -8948,11 +8953,20 @@ Teman tugas mahasiswa.`;
         }
         starElems.forEach(star => star.addEventListener('click', () => { currentStarRating = Number(star.dataset.val); updateReviewRating(); }));
         document.getElementById('revText').addEventListener('input', event => { document.getElementById('reviewCharCount').textContent = `${event.target.value.length} / 500`; });
+        function canModerateReviews() {
+            return currentUser?.role === 'admin' && ['founder', 'supervisor'].includes(currentUser.workplaceRole);
+        }
+        function canDeleteReview(review) {
+            return Boolean(currentUser && (canModerateReviews() ||
+                (Number(review.rating) <= 4 && (review.userId === currentUser.uid || currentUser.role === 'admin'))));
+        }
         window.deleteCustomerReview = async (id, button) => {
             if (!await requireUser() || !confirm('Hapus komentar ini?')) return;
             button.disabled = true;
             try {
-                const { data, error } = await supabase.from('reviews').delete().eq('id', id).lte('rating', 4).select('id');
+                let query = supabase.from('reviews').delete().eq('id', id);
+                if (!canModerateReviews()) query = query.lte('rating', 4);
+                const { data, error } = await query.select('id');
                 if (error) throw error;
                 if (!data?.length) throw new Error('Komentar ini tidak dapat dihapus oleh akun Anda.');
                 await loadReviews(); window.showToast('Komentar dihapus.');
