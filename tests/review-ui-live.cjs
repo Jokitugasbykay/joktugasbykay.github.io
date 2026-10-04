@@ -5,10 +5,12 @@ const { chromium } = require('C:/Users/Maulana Riski/.cache/codex-runtimes/codex
  const browser=await chromium.launch({channel:'chrome',headless:true,args:['--host-resolver-rules=MAP jokiin.my.id 172.67.156.92']});
  try {
   const context=await browser.newContext();
-  await context.route('https://jokiin.my.id/?review-preview',r=>r.fulfill({contentType:'text/html',body:fs.readFileSync('index.html','utf8')}));
-  for(const asset of ['review-compose.css','review-moderation.js']) await context.route('**/assets/'+asset+'?*',r=>r.fulfill({contentType:asset.endsWith('css')?'text/css':'application/javascript',body:fs.readFileSync('assets/'+asset,'utf8')}));
+  if(!process.argv.includes('--live')) {
+   await context.route('https://jokiin.my.id/?review-preview',r=>r.fulfill({contentType:'text/html',body:fs.readFileSync('index.html','utf8')}));
+   for(const asset of ['review-compose.css','review-moderation.js']) await context.route('**/assets/'+asset+'?*',r=>r.fulfill({contentType:asset.endsWith('css')?'text/css':'application/javascript',body:fs.readFileSync('assets/'+asset,'utf8')}));
+  }
   const page=await context.newPage();
-  await page.goto('https://jokiin.my.id/?review-preview',{waitUntil:'load'});
+  await page.goto(process.argv.includes('--live')?'https://jokiin.my.id/?review-live='+Date.now():'https://jokiin.my.id/?review-preview',{waitUntil:'load'});
   await page.waitForFunction(()=>typeof window.switchTab==='function');
   for(const width of [390,1440]) for(const theme of ['light','dark']) {
    await page.setViewportSize({width,height:900});
