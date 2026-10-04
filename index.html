@@ -641,6 +641,8 @@
             grid-template-columns: repeat(4, minmax(0, 1fr));
         }
 
+        .popular-grid .service-icon { display: flex; align-items: center; min-height: 2em; }
+
         .popular-grid .service-card {
             padding: 16px;
             border-radius: 16px;
@@ -9222,7 +9224,7 @@ Teman tugas mahasiswa.`;
             const popular = [...CONFIG.PRODUCTS].sort((a, b) =>
                 (scores[b.serviceId]?.score || 0) - (scores[a.serviceId]?.score || 0)
                 || (Number(a.serviceId) || 0) - (Number(b.serviceId) || 0));
-            document.getElementById('preview-layanan').innerHTML = popular.slice(0, 4).map(p => `<div class="service-card" data-price="${escapeHTML(productPriceLabel(p))}" data-sale="${p.hasSale}"><div class="service-icon">${p.icon}</div><h3>${escapeHTML(p.title)}</h3><span class="category-badge">${p.category}</span><p>${escapeHTML(p.desc)}</p>
+            document.getElementById('preview-layanan').innerHTML = popular.slice(0, 4).map(p => `<div class="service-card" data-price="${escapeHTML(productPriceLabel(p))}" data-sale="${p.hasSale}"><div class="service-icon">${p.icon || '📄'}</div><h3>${escapeHTML(p.title)}</h3><span class="category-badge">${p.category}</span><p>${escapeHTML(p.desc)}</p>
             <button class="btn-outline" style="width:100%; border:none; padding:0; text-align:left; justify-content:flex-start;" onclick="window.switchTab('layanan')">Lihat Detail →</button></div>`).join('');
         }
 
