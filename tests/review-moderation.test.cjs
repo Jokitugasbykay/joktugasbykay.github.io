@@ -14,9 +14,8 @@ const cases = [
 ];
 for (const [text, expected] of cases) assert.equal(blocked(text), expected, text);
 const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
-assert(html.includes('if (hasReviewProfanity(text))'));
-assert(html.includes('REVIEWS = REVIEWS.filter(review => !hasReviewProfanity(review.comment))'));
-const sql = fs.readFileSync(path.join(__dirname, '../database/review_moderation.sql'), 'utf8');
-assert(sql.includes("before insert or update of comment on public.reviews"));
-assert(sql.includes('public.has_review_profanity(new.comment)'));
+assert(html.includes('censorReviewText(document.getElementById'));
+assert(html.includes('comment: censorReviewText(review.comment)'));
+const sql = fs.readFileSync(path.join(__dirname, '../database/review_censorship.sql'), 'utf8');
+assert(sql.includes('new.comment := public.censor_review_comment(new.comment)'));
 console.log('PASS: profanity, obfuscated variants, polite criticism, cached review filtering and database trigger guard.');

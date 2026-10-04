@@ -114,7 +114,7 @@ Deno.serve(async(req:Request)=>{
   if(!user)throw new ApiError(401,'Silakan login untuk menulis ulasan.');
   const requestKey=uuid(input.requestKey);
   const rating=input.rating;if(!Number.isInteger(rating)||rating<1||rating>5)throw new ApiError(400,'Pilih rating 1–5.');
-  const comment=str(input.comment,'Ulasan',3000);const slug=str(input.productId,'Layanan',80);
+  const comment=await db('rpc/censor_review_comment','POST',{value:str(input.comment,'Ulasan',500)});const slug=str(input.productId,'Layanan',80);
   if(!/^[a-z0-9-]+$/.test(slug))throw new ApiError(400,'Layanan tidak valid.');
   const services=await db(`services?slug=eq.${slug}&select=id&limit=1`);if(!services.length)throw new ApiError(400,'Layanan tidak ditemukan.');
   const existing=await db(`reviews?request_key=eq.${requestKey}&select=id,user_id,rating,comment,service_id&limit=1`);
