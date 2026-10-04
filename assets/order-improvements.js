@@ -59,7 +59,7 @@
   document.querySelectorAll('.modal-overlay').forEach(modal => modalObserver.observe(modal,{attributes:true,attributeFilter:['style','class']}));
   syncScroll();
 
-  const iconNames = {'📄':'file-text','📝':'file-pen-line','📊':'chart-no-axes-column','📚':'book-open','⌨️':'keyboard','🎨':'palette','📈':'chart-line','💬':'message-circle','🛒':'shopping-cart','💳':'credit-card','📋':'clipboard-list','📁':'folder','👤':'user','🔄':'refresh-cw','⚠️':'triangle-alert','⏳':'hourglass','🔗':'link','🧾':'receipt','📎':'paperclip','🟢':'circle-check','🟡':'clock','🔵':'circle','❌':'circle-x','✅':'check','💰':'wallet','🚀':'arrow-up-right','🎓':'graduation-cap'};
+  const iconNames = {'📄':'file-text','📝':'file-pen-line','📊':'chart-no-axes-column','📚':'book-open','⌨️':'keyboard','🎨':'palette','📈':'chart-line','💬':'message-circle','🛒':'shopping-cart','💳':'credit-card','📋':'clipboard-list','📁':'folder','👤':'user','🔄':'refresh-cw','⚠️':'triangle-alert','⏳':'hourglass','🔗':'link','🧾':'receipt','📎':'paperclip','🟢':'circle-check','🟡':'clock','🔵':'circle','❌':'circle-x','✅':'check','💰':'wallet','🚀':'arrow-up-right','🎓':'graduation-cap','🔎':'clipboard-list','📑':'book-open'};
   const emojiPattern = /(?:\p{Extended_Pictographic}|[\u{1F1E6}-\u{1F1FF}])(?:\uFE0F|\u200D\p{Extended_Pictographic})*/gu;
   function replaceEmoji(root) {
     const walker = document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
