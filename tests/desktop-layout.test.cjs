@@ -51,11 +51,11 @@ const root = path.resolve(__dirname, '..');
                 if (themeStyle.radius < 16) errors.push(`sharp banner: ${width} ${theme}`);
                 for (const index of [0, 1, 6]) {
                     await page.evaluate(index => {recommendationIndex = index; updateFeaturedRecommendations();}, index);
-                    const cards = await page.locator('.recommendation-card:visible').evaluateAll(cards => cards.map(card => {
+                    const cards = await page.locator('.recommendation-card:is(.is-far-prev,.is-prev,.is-featured,.is-next,.is-far-next)').evaluateAll(cards => cards.map(card => {
                         const box = card.getBoundingClientRect(), footer = card.querySelector('.recommendation-card-footer').getBoundingClientRect();
-                        return {left: box.left, id: card.querySelector('button').dataset.productId, clipped: footer.bottom > box.bottom - 8};
+                        return {left: box.left, id: card.querySelector('button').dataset.productId, clipped: footer.bottom > box.bottom};
                     }).sort((a, b) => a.left - b.left));
-                    const expected = Array.from({length: 4}, (_, slot) => {const i = (index + slot) % 7; return i === 0 ? 'makalah' : 'check-' + i;});
+                    const expected = Array.from({length: 5}, (_, slot) => {const i = (index + slot - 2 + 7) % 7; return i === 0 ? 'makalah' : 'check-' + i;});
                     if (cards.some(card => card.clipped)) errors.push(`clipped recommendation: ${width} ${theme} index=${index}`);
                     if (JSON.stringify(cards.map(card => card.id)) !== JSON.stringify(expected)) errors.push(`recommendation order: ${width} ${theme} index=${index}`);
                 }

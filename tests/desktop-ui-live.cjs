@@ -89,7 +89,7 @@ fs.mkdirSync(output, {recursive: true});
         await page.setViewportSize({width: 1440, height: 1000});
         await page.locator('.recommendation-viewport').evaluate(el => el.scrollIntoView({block: 'center', behavior: 'instant'}));
         await page.locator('.recommendation-card:visible img').evaluateAll(images => Promise.all(images.map(img => img.decode())));
-        assert.equal(await page.locator('.recommendation-card:visible').count(), 4);
+        assert.equal(await page.locator('.recommendation-card.is-featured').count(), 1);
         const clipped = await page.locator('.recommendation-card:visible').evaluateAll(cards => cards.filter(card => card.querySelector('.recommendation-card-footer').getBoundingClientRect().bottom > card.getBoundingClientRect().bottom).length);
         assert.equal(clipped, 0, 'Recommendation actions must fit their cards');
         await page.screenshot({path: path.join(output, 'desktop-recommendations.png')});

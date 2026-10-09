@@ -6177,7 +6177,7 @@
                         <div id="errChkTitle" class="error-msg" style="text-align:left;">Judul tugas wajib diisi.</div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Deadline <span style="color:var(--error);">*</span></label>
+                        <label class="form-label" for="chkTaskDeadline">Deadline <span style="color:var(--error);">*</span></label>
                         <input type="date" id="chkTaskDeadline" class="form-control">
                         <div id="errChkDeadline" class="error-msg" style="text-align:left;">Deadline wajib diisi.</div>
                     </div>
@@ -9105,7 +9105,6 @@ Teman tugas mahasiswa.`;
                 else if (delta === total - 1) card.classList.add('is-prev');
                 else if (delta === 2) card.classList.add('is-far-next');
                 else if (delta === total - 2) card.classList.add('is-far-prev');
-                if (delta === 3) card.classList.add('is-after-next');
             });
             dots.forEach((dot, index) => dot.classList.toggle('active', index === recommendationIndex));
         }
@@ -9714,10 +9713,14 @@ Teman tugas mahasiswa.`;
     <script src="assets/invoice-render.js?v=1.06"></script>
     <link rel="stylesheet" href="assets/order-improvements.css?v=1.06">
     <script src="assets/order-improvements.js?v=1.09"></script>
-    <link rel="stylesheet" href="assets/ui-refinements.css?v=20261009-select">
+    <link rel="stylesheet" href="assets/vendor/flatpickr/flatpickr.min.css">
+    <script src="assets/vendor/flatpickr/flatpickr.min.js"></script>
+    <script src="assets/vendor/flatpickr/id.js"></script>
+    <link rel="stylesheet" href="assets/ui-refinements.css?v=20261009-calendar">
+    <script src="assets/deadline-calendar.js?v=20261009"></script>
     <script src="assets/ui-refinements.js?v=1.04"></script>
     <link rel="stylesheet" href="assets/mobile-fixes.css?v=1.06">
-    <link rel="stylesheet" href="assets/desktop-storefront.css?v=20261009.3">
+    <link rel="stylesheet" href="assets/desktop-storefront.css?v=20261009.4">
 
 </body>
 
