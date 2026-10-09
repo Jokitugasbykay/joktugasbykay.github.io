@@ -106,6 +106,13 @@ fs.mkdirSync(output, {recursive: true});
         assert(await buy.isVisible(), 'Price action must be visible without hovering');
         const actionRows = await page.locator('#full-harga .cf-card-actions').evaluateAll(rows => rows.slice(0, 4).map(row => row.getBoundingClientRect().y));
         assert(actionRows.every(y => Math.abs(y - actionRows[0]) < 1), 'First price row actions must align');
+        for (const value of ['light', 'dark']) {
+            await theme(value);
+            await page.locator('#hargaSortSelect').click();
+            assert(await page.locator('#hargaSortSelect').evaluate(el => el.matches(':open')));
+            await page.screenshot({path: path.join(output, 'price-dropdown-' + value + '.png')});
+            await page.keyboard.press('Escape');
+        }
         await page.evaluate(() => window.switchTab('beranda'));
         const search = page.locator('#tab-beranda .searchInputGlobal');
         await search.fill('Makalah');

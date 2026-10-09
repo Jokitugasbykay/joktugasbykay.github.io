@@ -45,3 +45,18 @@
 @media(prefers-reduced-motion:reduce) {
   .recommendation-card,.testimonial-product-card,.tab-content.active { animation:none!important; transition:none!important; }
 }
+
+#hargaSortSelect:focus-visible { outline:2px solid var(--primary); outline-offset:3px; }
+@supports (appearance:base-select) {
+  #hargaSortSelect,#hargaSortSelect::picker(select) { appearance:base-select; }
+  #hargaSortSelect { min-width:176px; max-width:100%; min-height:42px; display:inline-flex; align-items:center; justify-content:space-between; gap:12px; line-height:1.4; background:var(--card-solid); }
+  #hargaSortSelect:open { border-color:var(--primary); }
+  #hargaSortSelect::picker-icon { color:var(--text-secondary); }
+  #hargaSortSelect:open::picker-icon { rotate:180deg; }
+  #hargaSortSelect::picker(select) { background:var(--card-solid); color:var(--text-main); border:1px solid var(--border-color); border-radius:8px; padding:4px; margin-block-start:6px; box-shadow:0 8px 24px rgba(0,0,0,.16); font:inherit; }
+  #hargaSortSelect option { display:flex; align-items:center; gap:12px; min-height:44px; padding:10px 12px; border-radius:4px; background:transparent; color:var(--text-main); font:inherit; cursor:pointer; }
+  #hargaSortSelect option:checked { background:var(--surface-secondary); font-weight:700; }
+  #hargaSortSelect option:is(:hover,:focus-visible) { background:color-mix(in srgb,var(--primary) 14%,var(--card-solid)); }
+  #hargaSortSelect option:focus-visible { outline:2px solid var(--primary); outline-offset:-2px; }
+  #hargaSortSelect option::checkmark { order:1; margin-inline-start:auto; color:var(--primary); }
+}
