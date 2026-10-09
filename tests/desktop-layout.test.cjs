@@ -38,14 +38,16 @@ const root = path.resolve(__dirname, '..');
                 const header = await page.locator('.container > header').evaluate(el => ({height: el.getBoundingClientRect().height,
                     buttons: [...el.querySelectorAll('.header-actions button')].map(btn => btn.getBoundingClientRect().width)}));
                 if (header.height > 100 || header.buttons.some(width => width > 170)) errors.push(`header stretched: ${width} ${theme} ${JSON.stringify(header)}`);
-                if (width <= 1024) continue;
                 const themeStyle = await page.evaluate(() => {
                     const swatch = document.createElement('span'); swatch.style.backgroundColor = 'var(--bg-color)'; document.body.append(swatch);
                     const expected = getComputedStyle(swatch).backgroundColor; swatch.remove();
                     return {expected, actual: getComputedStyle(document.body).backgroundColor,
+                        image: getComputedStyle(document.body).backgroundImage,
                         radius: parseFloat(getComputedStyle(document.querySelector('.home-banner')).borderRadius)};
                 });
                 if (themeStyle.expected !== themeStyle.actual) errors.push(`background drift: ${width} ${theme}`);
+                if (themeStyle.image !== 'none') errors.push(`tinted background: ${width} ${theme}`);
+                if (width <= 1024) continue;
                 if (themeStyle.radius < 16) errors.push(`sharp banner: ${width} ${theme}`);
                 for (const index of [0, 1, 6]) {
                     await page.evaluate(index => {recommendationIndex = index; updateFeaturedRecommendations();}, index);

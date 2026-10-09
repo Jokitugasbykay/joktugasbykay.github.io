@@ -63,7 +63,7 @@ fs.mkdirSync(output, {recursive: true});
             await page.evaluate(tab => window.switchTab(tab), tab);
             await unchanged('mobile ' + tab);
         }
-        for (const width of [390, 1440]) {
+        for (const width of [390, 789, 1440]) {
             await page.setViewportSize({width, height: 1000});
             await page.evaluate(() => window.directCheckout('makalah'));
             for (const value of ['light', 'dark']) {

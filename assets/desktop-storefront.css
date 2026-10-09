@@ -1,5 +1,6 @@
 /* Desktop only. Checkout keeps its existing layout, palette and controls. */
 @media (min-width: 761px) and (hover: hover) and (pointer: fine) {
+    body:not(:has(.container > header.checkout-mode)) { background: var(--bg-color) !important; }
     .container > header:not(.checkout-mode) {
         display: flex !important;
         flex-direction: row !important;
