@@ -60,7 +60,18 @@
   #hargaSortSelect option:focus-visible { outline:2px solid var(--primary); outline-offset:-2px; }
   #hargaSortSelect option::checkmark { order:1; margin-inline-start:auto; color:var(--primary); }
 }
-.flatpickr-calendar {background:var(--card-solid);color:var(--text-main);border:1px solid var(--border-color);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.16);font-family:inherit;}
+.flatpickr-wrapper:has(#chkTaskDeadline) {display:block;width:100%;}
+#chkTaskDeadline {cursor:pointer;}
+.flatpickr-calendar {background:var(--card-solid);color:var(--text-main);border:1px solid var(--border-color);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.2);font-family:inherit;padding:12px;width:332px;max-width:100%;}
+.flatpickr-calendar.static {top:calc(100% + 8px);left:0;}
+.flatpickr-calendar:before,.flatpickr-calendar:after {display:none;}
+.flatpickr-calendar .flatpickr-days,.flatpickr-calendar .dayContainer {width:100%;min-width:0;max-width:100%;}
+.flatpickr-calendar .flatpickr-months {margin-bottom:12px;}
+.flatpickr-calendar .flatpickr-current-month {font-size:16px;padding-top:7px;}
+.flatpickr-calendar .flatpickr-weekdays {border-bottom:1px solid var(--border-color);margin-bottom:8px;padding-bottom:8px;height:32px;}
+.flatpickr-calendar .flatpickr-weekday {font-size:12px;font-weight:500;}
+.flatpickr-calendar .flatpickr-day {height:40px;line-height:38px;border-radius:8px;font-size:14px;font-variant-numeric:tabular-nums;max-width:none;}
+.flatpickr-calendar .flatpickr-day:focus-visible {outline:2px solid var(--primary);outline-offset:-2px;}
 .flatpickr-calendar .flatpickr-months .flatpickr-month,.flatpickr-calendar .flatpickr-weekday,.flatpickr-calendar .flatpickr-day {color:var(--text-main);fill:var(--text-main);}
 .flatpickr-calendar .flatpickr-day:is(.prevMonthDay,.nextMonthDay) {color:var(--text-secondary);}
 .flatpickr-calendar .flatpickr-day:is(:hover,:focus) {background:var(--surface-secondary);border-color:var(--border-color);}
