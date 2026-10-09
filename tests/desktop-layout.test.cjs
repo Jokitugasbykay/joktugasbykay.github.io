@@ -48,6 +48,14 @@ const root = path.resolve(__dirname, '..');
                 if (themeStyle.expected !== themeStyle.actual) errors.push(`background drift: ${width} ${theme}`);
                 if (themeStyle.image !== 'none') errors.push(`tinted background: ${width} ${theme}`);
                 if (width <= 1024) continue;
+                const brandBox = () => page.locator('.container > header .header-brand-lockup:visible').evaluate(el => {
+                    const box = el.getBoundingClientRect();
+                    return {left:box.left,top:box.top,width:box.width,height:box.height};
+                });
+                const homeBrand = await brandBox();
+                await page.locator('.container > header').evaluate(el => el.classList.add('checkout-mode'));
+                assert.deepEqual(await brandBox(), homeBrand, `Checkout brand must match home at ${width} ${theme}`);
+                await page.locator('.container > header').evaluate(el => el.classList.remove('checkout-mode'));
                 if (themeStyle.radius < 16) errors.push(`sharp banner: ${width} ${theme}`);
                 for (const index of [0, 1, 6]) {
                     await page.evaluate(index => {recommendationIndex = index; updateFeaturedRecommendations();}, index);

@@ -1,4 +1,4 @@
-/* Desktop only. Checkout keeps its existing layout, palette and controls. */
+/* Desktop only. Checkout shares brand alignment; its form and controls stay intact. */
 @media (min-width: 761px) and (hover: hover) and (pointer: fine) {
     body:not(:has(.container > header.checkout-mode)) { background: var(--bg-color) !important; }
     .container > header:not(.checkout-mode) {
@@ -39,19 +39,19 @@
         max-width: 1440px;
         padding-inline: 32px;
     }
-    .container > header:not(.checkout-mode) {
+    .container > header {
         min-height: 80px;
         padding: 16px max(32px, calc((100vw - 1376px) / 2)) !important;
-        background: var(--desktop-paper) !important;
-        border-bottom: 1px solid var(--desktop-line);
+        background: var(--card-solid) !important;
+        border-bottom: 1px solid var(--border-color);
         box-shadow: none !important;
         backdrop-filter: none;
     }
-    .container > header:not(.checkout-mode).is-compact {
+    .container > header.is-compact {
         min-height: 72px;
         box-shadow: 0 4px 16px #0000000c !important;
     }
-    .container > header:not(.checkout-mode) .header-brand-lockup {
+    .container > header .header-brand-lockup {
         width: 144px;
         height: 48px;
         object-fit: contain;
