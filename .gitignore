@@ -4,3 +4,6 @@ storage/*.sqlite-shm
 storage/*.sqlite-wal
 .env.*
 !.env.example
+node_modules/
+tests/output/
+tests/*.png

@@ -9,6 +9,9 @@
 /storage/**
 /api/**
 /tests/**
+/node_modules/**
+/docs/**
+/*.md
 /worker.js
 /wrangler.*
 /package*.json

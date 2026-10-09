@@ -661,7 +661,11 @@
                 }
                 showAlert('Berhasil masuk! Mengalihkan...', true);
                 setTimeout(() => {
-                    const redirect = new URLSearchParams(window.location.search).get('redirect') || '/';
+                    let redirect = '/';
+                    try {
+                        const url = new URL(new URLSearchParams(window.location.search).get('redirect') || '/', window.location.origin);
+                        if (url.origin === window.location.origin && /^https?:$/.test(url.protocol)) redirect = url.pathname + url.search + url.hash;
+                    } catch (_) { }
                     window.location.replace(redirect);
                 }, 800);
             } catch (err) {

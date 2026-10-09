@@ -29,7 +29,7 @@ for (const className of ['tr-24__avatar-circle', 'tr-03__ava']) {
   assert(line.includes(`<div class="${className}"`));
   assert(!line.includes('href="https://jokiin.my.id/testimonials"'));
   assert(line.includes("setData('text/uri-list','https://jokiin.my.id/testimonials')"));
-  assert(line.includes('draggable="false"'));
 }
+assert(html.slice(html.indexOf('function reviewAvatar('), html.indexOf('async function loadReviews(')).includes('draggable="false"'));
 console.log('PASS: 207 customers, 86 unique supplied photos, default fallback, no generated avatars, account-photo guard and page-link drag.');
 

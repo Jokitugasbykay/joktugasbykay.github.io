@@ -1,11 +1,13 @@
 {
-  "name": "jokiin-workplace-website",
+  "name": "jokiin-website",
   "version": "1.0.0",
-  "description": "JOKI.IN Workplace Admin Web Application & iOS Safari PWA",
-  "main": "server.js",
+  "description": "JOKI.IN storefront with Cloudflare payment API and Supabase",
+  "private": true,
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "test": "node --test tests/*.test.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
   },
   "keywords": [
     "jokiin",

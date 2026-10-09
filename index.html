@@ -6624,7 +6624,6 @@
         let authSettings = null;
         let authBusy = false;
 
-        const PROMO_API_URL = 'https://jokiin-payment-api.gamingyoga14.workers.dev/api/promo';
         const DEFAULT_PROMO = {
             active: false,
             label: 'PROMO TERBATAS',
@@ -7231,18 +7230,6 @@
 
         // Welcome modal uses closing animation before it is hidden.
         let welcomeCloseTimer = null;
-        function openWelcomeModal() {
-            const modal = document.getElementById('welcomeModal');
-            if (!modal) return;
-            if (welcomeCloseTimer) clearTimeout(welcomeCloseTimer);
-            modal.classList.remove('welcome-opening', 'welcome-closing');
-            modal.style.display = 'flex';
-            void modal.offsetWidth;
-            modal.classList.add('welcome-opening');
-            document.body.classList.add('modal-open');
-            window.setTimeout(() => modal.classList.remove('welcome-opening'), 480);
-        }
-
         window.closeWelcomeModal = () => {
             const modal = document.getElementById('welcomeModal');
             if (!modal || modal.style.display === 'none' || modal.classList.contains('welcome-closing')) return;

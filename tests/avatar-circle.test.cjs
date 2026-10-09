@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { chromium } = require('C:/Users/Maulana Riski/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const { chromium } = require('playwright');
 (async () => {
   const root = path.join(__dirname, '..');
   const css = fs.readFileSync(path.join(root, 'assets/ui-enhancements.css'), 'utf8');
@@ -23,7 +23,7 @@ const { chromium } = require('C:/Users/Maulana Riski/.cache/codex-runtimes/codex
         assert(Math.abs(shape.imageWidth - shape.imageHeight) < 0.1, `${selector} picture: ${JSON.stringify(shape)}`);
         assert(shape.imageWidth <= shape.width && shape.imageHeight <= shape.height);
       }
-      await page.screenshot({ path: path.join(root, `../../avatar-inspection/circle-${width}.png`) });
+      await page.screenshot({ path: path.join(root, `tests/output/circle-${width}.png`) });
     }
   } finally { await browser.close(); }
   console.log('PASS: portrait pictures stay square inside circular avatars at 320px and 1440px.');

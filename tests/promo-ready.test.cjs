@@ -1,7 +1,7 @@
 const fs = require('node:fs');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
-const html = fs.readFileSync(process.argv[2],'utf8');
+const html = fs.readFileSync(process.argv[2] || require('node:path').join(__dirname, '../index.html'),'utf8');
 const start = html.indexOf('async function loadPromo()');
 const code = html.slice(start,html.indexOf('function readStored',start));
 (async () => {

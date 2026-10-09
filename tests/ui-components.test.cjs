@@ -13,8 +13,8 @@ function element(id) {
   if (!elements.has(id)) elements.set(id, {style:{}, dataset:{}, attrs:{}, innerHTML:'', textContent:'', value:'', disabled:false, setAttribute(k,v){this.attrs[k]=v}, getAttribute(k){return this.attrs[k] ?? null}});
   return elements.get(id);
 }
-const context = vm.createContext({URL, document:{getElementById:element}, CART:[], formatRupiah:n=>'Rp'+n, DEFAULT_PROMO:{}, clearInterval:()=>{}, setInterval:()=>1, Date, promoTimer:null});
-for (const name of ['validDriveUrl','validateTaskFiles','updateThresholdProgress','renderPromo']) vm.runInContext(fn(name),context);
+const context = vm.createContext({URL, document:{getElementById:element,querySelector:element}, sessionStorage:{getItem:()=>null}, CART:[], formatRupiah:n=>'Rp'+n, DEFAULT_PROMO:{}, clearInterval:()=>{}, setInterval:()=>1, Date, promoTimer:null, activePromoId:'', promoDismissedUntil:0});
+for (const name of ['validDriveUrl','validateTaskFiles','updateThresholdProgress','isPromoDismissed','renderPromo']) vm.runInContext(fn(name),context);
 assert.equal(context.validDriveUrl('https://drive.google.com/file/d/abc/view'), true);
 assert.equal(context.validDriveUrl('https://drive.google.com.attacker.test/a'), false);
 assert.equal(context.validDriveUrl('javascript:alert(1)'), false);
@@ -33,10 +33,10 @@ assert.equal(element('cartThresholdBanner').dataset.state,'unlocked');
 context.updateThresholdProgress(0);
 assert.equal(element('cartThresholdFill').style.width,'0%');
 context.renderPromo({ends_at:'2000-01-01',label:'Test',text:'Expired',coupon:'X'});
-assert.equal(element('promoClaim').disabled,true);
+assert.equal(element('promoStrip').hidden,true);
 context.renderPromo({ends_at:'invalid',label:'Test'});
-assert.equal(element('promoSeconds').textContent,'00');
-context.renderPromo({ends_at:new Date(Date.now()+60000).toISOString()});
+assert.equal(element('promoStrip').hidden,true);
+context.renderPromo({active:true,ends_at:new Date(Date.now()+60000).toISOString()});
 assert.equal(element('promoClaim').disabled,false);
 const rules=html.slice(html.indexOf('        const checkoutValidationRules ='),html.indexOf('        function validateCheckoutField'));
 vm.runInContext(rules+'\n'+fn('validateCheckoutField'),context);

@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const { chromium } = require('C:/Users/Maulana Riski/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const { chromium } = require('playwright');
 
 (async () => {
     const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--host-resolver-rules=MAP jokiin.my.id 172.67.156.92'] });

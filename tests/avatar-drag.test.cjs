@@ -1,8 +1,8 @@
 const fs = require('node:fs');
 const assert = require('node:assert/strict');
-const {chromium} = require('C:/Users/Maulana Riski/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const {chromium} = require('playwright');
 (async () => {
-    const html = fs.readFileSync(process.argv[2], 'utf8');
+    const html = fs.readFileSync(process.argv[2] || require('node:path').join(__dirname, '../index.html'), 'utf8');
     const browser = await chromium.launch({channel:'chrome',headless:true});
     try {
         const page = await browser.newPage();

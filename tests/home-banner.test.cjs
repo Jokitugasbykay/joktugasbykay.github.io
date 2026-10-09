@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { chromium } = require('C:/Users/Maulana Riski/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const { chromium } = require('playwright');
 const root = path.join(__dirname, '..');
 (async () => {
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
@@ -44,7 +44,7 @@ const root = path.join(__dirname, '..');
       await hero.getByRole('button', { name: 'Konsultasi via WhatsApp' }).click();
       assert(await page.evaluate(() => window.clickedAdmin));
       await hero.evaluate(el => window.scrollTo(0, window.scrollY + el.getBoundingClientRect().top - 120));
-      await hero.screenshot({ path: path.join(root, `../../avatar-inspection/banner-${width}.png`) });
+      await hero.screenshot({ path: path.join(root, `tests/output/banner-${width}.png`) });
       await page.evaluate(() => document.documentElement.setAttribute('data-theme','dark'));
       if (!mobile) {
         assert(await hero.locator('.home-banner__photo--dark').isVisible());
@@ -52,7 +52,7 @@ const root = path.join(__dirname, '..');
         await hero.locator('img:visible').evaluate(img => img.decode());
         assert.equal(await hero.evaluate(el => getComputedStyle(el).borderRadius), '24px');
       }
-      await hero.screenshot({ path: path.join(root, `../../avatar-inspection/banner-dark-${width}.png`) });
+      await hero.screenshot({ path: path.join(root, `tests/output/banner-dark-${width}.png`) });
       console.log(`PASS: ${mobile ? 'original mobile hero without image' : 'new desktop banner'}, text fit and actions at ${width}px.`);
     }
   } finally { await browser.close(); }
