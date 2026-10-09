@@ -50,7 +50,7 @@ fs.mkdirSync(output, {recursive: true});
             assert.equal(after.length, before.length, label + ': visible element count changed');
             console.log('PASS unchanged:', label);
         }
-        for (const width of [320, 390, 430, 768, 820, 1024]) {
+        for (const width of [320, 390, 430, 700]) {
             await page.setViewportSize({width, height: 950});
             await page.evaluate(() => window.switchTab('beranda'));
             for (const value of ['light', 'dark']) {

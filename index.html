@@ -9105,6 +9105,7 @@ Teman tugas mahasiswa.`;
                 else if (delta === total - 1) card.classList.add('is-prev');
                 else if (delta === 2) card.classList.add('is-far-next');
                 else if (delta === total - 2) card.classList.add('is-far-prev');
+                if (delta === 3) card.classList.add('is-after-next');
             });
             dots.forEach((dot, index) => dot.classList.toggle('active', index === recommendationIndex));
         }
@@ -9716,7 +9717,7 @@ Teman tugas mahasiswa.`;
     <link rel="stylesheet" href="assets/ui-refinements.css?v=1.04">
     <script src="assets/ui-refinements.js?v=1.04"></script>
     <link rel="stylesheet" href="assets/mobile-fixes.css?v=1.06">
-    <link rel="stylesheet" href="assets/desktop-storefront.css?v=20261009">
+    <link rel="stylesheet" href="assets/desktop-storefront.css?v=20261009.2">
 
 </body>
 

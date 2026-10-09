@@ -50,7 +50,7 @@ const root = path.join(__dirname, '..');
         assert(await hero.locator('.home-banner__photo--dark').isVisible());
         assert(!(await hero.locator('.home-banner__photo--light').isVisible()));
         await hero.locator('img:visible').evaluate(img => img.decode());
-        assert.equal(await hero.evaluate(el => getComputedStyle(el).borderRadius), width > 1024 ? '0px' : '24px');
+        assert.equal(await hero.evaluate(el => getComputedStyle(el).borderRadius), '24px');
       }
       await hero.screenshot({ path: path.join(root, `tests/output/banner-dark-${width}.png`) });
       console.log(`PASS: ${mobile ? 'original mobile hero without image' : 'new desktop banner'}, text fit and actions at ${width}px.`);

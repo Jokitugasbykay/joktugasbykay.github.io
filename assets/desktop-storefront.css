@@ -1,22 +1,38 @@
 /* Desktop only. Checkout keeps its existing layout, palette and controls. */
+@media (min-width: 761px) and (hover: hover) and (pointer: fine) {
+    .container > header:not(.checkout-mode) {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+    }
+    .container > header:not(.checkout-mode) .logo { width: auto !important; flex: none; }
+    .container > header:not(.checkout-mode) .header-actions {
+        display: flex !important;
+        width: auto !important;
+        flex: none;
+        margin-left: auto;
+        flex-wrap: nowrap;
+    }
+    .container > header:not(.checkout-mode) .header-actions button {
+        width: auto !important;
+        flex: none !important;
+        min-height: 42px;
+        padding: 10px 14px !important;
+        font-size: 13px !important;
+    }
+}
 @media (min-width: 1025px) {
     body:not(:has(.container > header.checkout-mode)) {
-        --desktop-paper: #fff;
-        --desktop-soft: #f4f7f5;
-        --desktop-line: #dce5df;
-        --desktop-ink: #17221e;
-        --desktop-muted: #53665c;
+        --desktop-paper: var(--card-solid);
+        --desktop-soft: var(--surface-secondary);
+        --desktop-line: var(--border-color);
+        --desktop-ink: var(--text-main);
+        --desktop-muted: var(--text-secondary);
         --desktop-accent: #007e5b;
-        background: #f8fcfa !important;
+        background: var(--bg-color) !important;
     }
     [data-theme="dark"] body:not(:has(.container > header.checkout-mode)) {
-        --desktop-paper: #181d1b;
-        --desktop-soft: #212824;
-        --desktop-line: #35423b;
-        --desktop-ink: #f0f5f2;
-        --desktop-muted: #b9c8bf;
         --desktop-accent: #69dfb0;
-        background: #101613 !important;
     }
     .container:not(:has(> header.checkout-mode)) {
         max-width: 1440px;
@@ -107,8 +123,8 @@
         min-height: 480px;
         margin-bottom: 24px;
         padding: 40px 44px 32px;
-        border: 0;
-        border-radius: 0;
+        border: 1px solid var(--desktop-line);
+        border-radius: 24px;
         box-shadow: none;
     }
     .home-banner__content { width: 54%; max-width: 640px; }
@@ -174,14 +190,14 @@
         box-shadow: none !important;
         backdrop-filter: none;
     }
-    .recommendation-card:is(.is-far-prev, .is-prev, .is-featured, .is-next) {
+    .recommendation-card:is(.is-featured, .is-next, .is-far-next, .is-after-next) {
         visibility: visible;
         opacity: 1;
         pointer-events: auto;
     }
-    .recommendation-card.is-prev { left: calc((100% + 20px) / 4); }
-    .recommendation-card.is-featured { left: calc((100% + 20px) / 2); }
-    .recommendation-card.is-next { left: calc((100% + 20px) * 3 / 4); }
+    .recommendation-card.is-next { left: calc((100% + 20px) / 4); }
+    .recommendation-card.is-far-next { left: calc((100% + 20px) / 2); }
+    .recommendation-card.is-after-next { left: calc((100% + 20px) * 3 / 4); }
     .recommendation-card-image { height: 164px; flex: none; }
     .recommendation-card-body { padding: 18px; }
     .recommendation-card h4 { font-size: 16px; line-height: 1.4; }
