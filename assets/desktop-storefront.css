@@ -1,0 +1,271 @@
+/* Desktop only. Checkout keeps its existing layout, palette and controls. */
+@media (min-width: 1025px) {
+    body:not(:has(.container > header.checkout-mode)) {
+        --desktop-paper: #fff;
+        --desktop-soft: #f4f7f5;
+        --desktop-line: #dce5df;
+        --desktop-ink: #17221e;
+        --desktop-muted: #53665c;
+        --desktop-accent: #007e5b;
+        background: #f8fcfa !important;
+    }
+    [data-theme="dark"] body:not(:has(.container > header.checkout-mode)) {
+        --desktop-paper: #181d1b;
+        --desktop-soft: #212824;
+        --desktop-line: #35423b;
+        --desktop-ink: #f0f5f2;
+        --desktop-muted: #b9c8bf;
+        --desktop-accent: #69dfb0;
+        background: #101613 !important;
+    }
+    .container:not(:has(> header.checkout-mode)) {
+        max-width: 1440px;
+        padding-inline: 32px;
+    }
+    .container > header:not(.checkout-mode) {
+        min-height: 80px;
+        padding: 16px max(32px, calc((100vw - 1376px) / 2)) !important;
+        background: var(--desktop-paper) !important;
+        border-bottom: 1px solid var(--desktop-line);
+        box-shadow: none !important;
+        backdrop-filter: none;
+    }
+    .container > header:not(.checkout-mode).is-compact {
+        min-height: 72px;
+        box-shadow: 0 4px 16px #0000000c !important;
+    }
+    .container > header:not(.checkout-mode) .header-brand-lockup {
+        width: 144px;
+        height: 48px;
+        object-fit: contain;
+    }
+    .container > header:not(.checkout-mode) .header-actions { gap: 12px; }
+    .container > header:not(.checkout-mode) .header-actions button {
+        min-height: 42px;
+        border-radius: 6px;
+        box-shadow: none;
+        font-size: 13px;
+    }
+    .container > header:not(.checkout-mode) .btn-cart {
+        background: transparent;
+        border-color: var(--desktop-line);
+        color: var(--desktop-ink);
+    }
+    .container > header:not(.checkout-mode) .btn-header {
+        background: #00875f;
+        border-color: #00875f;
+        color: #fff;
+    }
+    #nav-container {
+        width: 100%;
+        max-width: none;
+        min-height: 60px;
+        justify-content: flex-start;
+        gap: 8px;
+        margin: 0 0 24px;
+        padding: 0;
+        border: 0;
+        border-bottom: 1px solid var(--desktop-line);
+        border-radius: 0;
+        background: transparent !important;
+        box-shadow: none !important;
+        backdrop-filter: none;
+        overflow: visible;
+    }
+    #nav-container .nav-liquid-indicator { display: none; }
+    #nav-container .pill {
+        display: inline-flex;
+        align-items: center;
+        align-self: stretch;
+        min-height: 60px;
+        padding: 16px 18px;
+        border-radius: 0;
+        border: 0;
+        border-bottom: 3px solid transparent;
+        color: var(--desktop-muted);
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0;
+    }
+    #nav-container .pill.active {
+        border-bottom-color: var(--desktop-accent);
+        color: var(--desktop-accent) !important;
+    }
+    #nav-container .pill:hover:not(.active) {
+        background: var(--desktop-soft);
+        color: var(--desktop-ink);
+    }
+    #nav-container #themeToggle {
+        margin-left: auto;
+        width: 40px;
+        height: 40px;
+        border-radius: 6px;
+        color: var(--desktop-muted);
+    }
+    #nav-container :focus-visible { outline-offset: 3px; }
+    .home-banner {
+        min-height: 480px;
+        margin-bottom: 24px;
+        padding: 40px 44px 32px;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
+    .home-banner__content { width: 54%; max-width: 640px; }
+    .home-banner h1 {
+        font-size: 46px;
+        line-height: 1.25;
+        font-weight: 700;
+        margin-bottom: 24px;
+        text-wrap: balance;
+    }
+    .home-banner__description { max-width: 510px; font-size: 16px; line-height: 1.75; }
+    .home-banner__actions { margin-top: 24px; }
+    .home-banner__actions button { min-height: 46px; font-size: 14px; border-radius: 6px; }
+    .home-banner__stats { margin-top: 30px; gap: 16px; font-size: 12px; font-variant-numeric: tabular-nums; }
+    .home-banner__stats strong { margin-bottom: 2px; font-size: 22px; }
+    .container :is(#tab-beranda, #tab-layanan, #tab-harga, #tab-search, #tab-testimoni) .search-box {
+        min-height: 58px;
+        border: 1px solid var(--desktop-line);
+        border-radius: 6px;
+        background: var(--desktop-paper);
+        box-shadow: none;
+        backdrop-filter: none;
+    }
+    .container .search-box:focus-within { border-color: var(--desktop-accent); }
+    .home-categories {
+        gap: 0;
+        padding: 16px 0;
+        margin-bottom: 40px;
+        border-bottom: 1px solid var(--desktop-line);
+    }
+    .home-category {
+        min-height: 92px;
+        padding: 8px;
+        gap: 8px;
+        border: 0;
+        border-radius: 0;
+        background: transparent !important;
+        box-shadow: none !important;
+        color: var(--desktop-ink);
+        font-size: 12px;
+        transform: none !important;
+    }
+    .home-category + .home-category { border-left: 1px solid var(--desktop-line); }
+    .home-category:hover { background: var(--desktop-soft) !important; }
+    .home-category > span:first-child { width: 44px !important; height: 44px !important; }
+    .home-category .ui-art-icon { width: 44px; height: 44px; }
+    .container .section-title { color: var(--desktop-ink); font-size: 26px; letter-spacing: 0; }
+    .container .section-subtitle { color: var(--desktop-accent); font-size: 12px; letter-spacing: 0; }
+    .recommendations-section { margin-bottom: 48px; }
+    .recommendations-heading { margin-bottom: 24px; }
+    .recommendation-viewport { height: 390px; border-radius: 0; }
+    .recommendation-card {
+        width: calc((100% - 60px) / 4);
+        height: 376px;
+        aspect-ratio: auto;
+        left: 0;
+        visibility: hidden;
+        transform: none !important;
+        filter: none !important;
+        border: 1px solid var(--desktop-line);
+        border-radius: 8px;
+        background: var(--desktop-paper) !important;
+        box-shadow: none !important;
+        backdrop-filter: none;
+    }
+    .recommendation-card:is(.is-far-prev, .is-prev, .is-featured, .is-next) {
+        visibility: visible;
+        opacity: 1;
+        pointer-events: auto;
+    }
+    .recommendation-card.is-prev { left: calc((100% + 20px) / 4); }
+    .recommendation-card.is-featured { left: calc((100% + 20px) / 2); }
+    .recommendation-card.is-next { left: calc((100% + 20px) * 3 / 4); }
+    .recommendation-card-image { height: 164px; flex: none; }
+    .recommendation-card-body { padding: 18px; }
+    .recommendation-card h4 { font-size: 16px; line-height: 1.4; }
+    .recommendation-card p { margin: 10px 0 16px; font-size: 13px; -webkit-line-clamp: 2; }
+    .recommendation-card-price { font-size: 14px; color: var(--desktop-accent); }
+    .recommendation-card .category-badge { padding: 0; color: var(--desktop-muted); background: none; }
+    .recommendation-dots { justify-content: flex-start; margin-top: 8px; }
+    .popular-title-row { margin-bottom: 24px; }
+    .popular-grid { gap: 20px; margin-bottom: 56px; }
+    .popular-grid .service-card {
+        min-height: 218px;
+        padding: 24px;
+        gap: 0;
+        border: 1px solid var(--desktop-line);
+        border-radius: 8px;
+        background: var(--desktop-paper) !important;
+        box-shadow: none !important;
+        backdrop-filter: none;
+    }
+    .popular-grid .service-icon { min-height: 36px; margin-bottom: 18px; }
+    .popular-grid .service-card h3 { margin: 0 0 8px; color: var(--desktop-ink); font-size: 16px; }
+    .popular-grid .category-badge { display: block; width: fit-content; padding: 0; background: none; color: var(--desktop-muted); font-size: 12px; }
+    .popular-grid .service-card::after { content: attr(data-price); color: var(--desktop-accent); font-size: 14px; line-height: 1.6; margin-top: 12px; }
+    .container :is(#full-layanan, #full-harga, #searchResultsGrid) { gap: 24px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .container :is(#full-layanan, #full-harga, #searchResultsGrid) .service-card {
+        padding: 18px !important;
+        border: 1px solid var(--desktop-line);
+        border-radius: 8px;
+        background: var(--desktop-paper) !important;
+        box-shadow: none !important;
+        backdrop-filter: none;
+        transform: none !important;
+    }
+    .container :is(#full-layanan, #full-harga, #searchResultsGrid) .service-card:hover { border-color: var(--desktop-accent); }
+    .container :is(#full-layanan, #full-harga, #searchResultsGrid) .service-photo { border-radius: 4px; aspect-ratio: 16 / 10; }
+    .container :is(#full-layanan, #full-harga, #searchResultsGrid) .service-photo img { transform: none; }
+    .container :is(#full-layanan, #full-harga, #searchResultsGrid) .service-card h3 { font-size: 17px; color: var(--desktop-ink); }
+    .container :is(#full-layanan, #full-harga, #searchResultsGrid) .service-card p { font-size: 14px; color: var(--desktop-muted); }
+    .container #full-harga { align-items: stretch !important; }
+    .container #full-harga .service-card.cf-price-card { height: 100% !important; }
+    .container #full-harga .cf-card-actions { transform: none; }
+    .container :is(#tab-harga, #tab-testimoni) .filter-sort-bar {
+        padding: 16px 0;
+        border: 0;
+        border-top: 1px solid var(--desktop-line);
+        border-bottom: 1px solid var(--desktop-line);
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+    }
+    .container #tab-testimoni .testimonial-product-card {
+        border-radius: 8px;
+        background: var(--desktop-paper);
+        border-color: var(--desktop-line);
+        box-shadow: none;
+        backdrop-filter: none;
+    }
+    .container :is(#tab-informasi, #tab-carapesan, #tab-bantuan) :is(.info-container, .order-flow-wrapper, .help-hero, .track-section) {
+        padding: 32px 0;
+        border: 0;
+        border-bottom: 1px solid var(--desktop-line);
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+    }
+    .container :is(#tab-informasi, #tab-carapesan, #tab-bantuan) :is(.info-card, .step-card, .help-cat-card, .tip-card, .faq-item) {
+        border-radius: 8px;
+        background: var(--desktop-paper);
+        border-color: var(--desktop-line);
+        box-shadow: none;
+        backdrop-filter: none;
+    }
+    #globalFooter { background: var(--desktop-paper); }
+    #globalFooter .footer-container { max-width: 1440px; padding-inline: 32px; }
+    .tr-24__card { background: var(--desktop-paper); border-color: var(--desktop-line); border-radius: 8px; box-shadow: none; }
+    @media (max-width: 1279px) {
+        .container :is(#full-layanan, #full-harga, #searchResultsGrid) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        #nav-container { gap: 0; }
+        #nav-container .pill { padding-inline: 14px; }
+        .home-banner { padding-inline: 32px; }
+        .home-banner h1 { font-size: 40px; }
+    }
+    @media (min-width: 1600px) {
+        .home-banner { min-height: 520px; padding-top: 48px; }
+        .home-banner h1 { font-size: 52px; }
+    }
+}
