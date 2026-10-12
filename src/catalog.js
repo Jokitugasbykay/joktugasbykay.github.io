@@ -100,73 +100,87 @@
       .jokiin-stock-pill { display:inline-block; font-size:11px; font-weight:700; color:#8a9a95; margin-top:4px; }
       .jokiin-stock-pill.habis { color:#ef4444; font-weight:800; }
 
-      /* Special Checkout Page (Desktop & Mobile) */
+      /* Special Checkout Page (Desktop & Mobile — Dark Theme + #1fd18b & #ffd54a) */
       #tab-checkout-spesial { font-family: "Plus Jakarta Sans", system-ui, sans-serif; color: #eef3f1; }
-      .spcl-checkout-wrap { max-width: 1040px; margin: 0 auto; padding: 12px 0 48px; }
-      .spcl-back-btn { background: transparent; border: none; color: #8a9a95; font: 600 14px "Plus Jakarta Sans", sans-serif; min-height: 44px; padding: 0 8px 0 0; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px; }
-      .spcl-back-btn:hover { color: #1fd18b; }
-      .spcl-title { font-size: clamp(22px, 2.8vw, 28px); font-weight: 800; margin: 0 0 20px; color: #eef3f1; }
-      .spcl-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
-      .spcl-main-col { display: flex; flex-direction: column; gap: 20px; }
-      .spcl-card { background: #0f161a; border: 1px solid #1d262b; border-radius: 16px; padding: 22px; }
-      .spcl-side-card { position: sticky; top: 24px; }
-      .spcl-card-h2 { font-size: 16px; font-weight: 800; margin: 0 0 14px; color: #eef3f1; display: flex; align-items: center; gap: 8px; }
-      .spcl-item-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px; background: #121b20; border: 1px solid #243038; border-radius: 12px; }
-      .spcl-item-info { display: flex; flex-direction: column; gap: 4px; }
-      .spcl-item-info b { font-size: 16px; color: #eef3f1; font-weight: 700; }
-      .spcl-item-info small { color: #8a9a95; font-size: 12px; font-weight: 600; }
-      .spcl-le-badge { align-self: flex-start; background: rgba(255, 213, 74, 0.16); color: #ffd54a; border: 1px solid rgba(255, 213, 74, 0.45); font-size: 10px; font-weight: 800; letter-spacing: 0.08em; padding: 3px 9px; border-radius: 999px; display: inline-block; margin-bottom: 2px; }
-      .spcl-item-price { font-size: 18px; font-weight: 800; color: #1fd18b; white-space: nowrap; }
-      .spcl-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-      .spcl-field { display: flex; flex-direction: column; }
-      .spcl-field-full { grid-column: 1 / -1; }
-      .spcl-field label { font-size: 12px; color: #9aa8a4; margin-bottom: 6px; font-weight: 600; }
-      .spcl-req { color: #1fd18b; }
-      .spcl-opt { color: #6e7d78; font-weight: 500; }
-      .spcl-field input, .spcl-wa-prefix { width: 100%; min-height: 48px; border-radius: 10px; border: 1px solid #253238; background: #121a1f; color: #eef3f1; padding: 0 14px; font: 500 14px "Plus Jakarta Sans", sans-serif; transition: border-color .15s ease, box-shadow .15s ease; }
-      .spcl-field input:focus, .spcl-wa-prefix:focus { outline: none; border-color: #1fd18b; box-shadow: 0 0 0 3px rgba(31, 209, 139, 0.14); }
-      .spcl-field input[aria-invalid="true"] { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15); }
-      .spcl-wa-group { display: grid; grid-template-columns: 98px 1fr; gap: 8px; }
-      .spcl-wa-prefix { padding: 0 10px; cursor: pointer; font-weight: 700; }
-      .spcl-field-error { min-height: 18px; margin-top: 5px; font-size: 12px; font-weight: 600; color: #ef4444; line-height: 1.35; display: none; }
-      .spcl-field-error.is-visible { display: block; }
-      .spcl-sum-row { display: flex; justify-content: space-between; align-items: center; color: #b9c5c0; font-size: 14px; margin: 10px 0; }
-      .spcl-sum-product-line { align-items: flex-start; gap: 10px; }
-      .spcl-sum-total { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #1f2b30; padding-top: 14px; margin-top: 12px; font-size: 18px; font-weight: 800; color: #eef3f1; }
-      .spcl-sum-total span:last-child { color: #1fd18b; }
-      .spcl-btn-buy { width: 100%; min-height: 52px; border: 0; border-radius: 12px; background: #1fd18b; color: #05261b; font: 800 15px "Plus Jakarta Sans", sans-serif; margin-top: 16px; cursor: pointer; transition: transform .15s ease, filter .15s ease; }
-      .spcl-btn-buy:hover:not(:disabled) { filter: brightness(1.06); transform: translateY(-1px); }
-      .spcl-btn-buy:disabled { opacity: 0.55; cursor: not-allowed; }
-      .spcl-safe-note { margin: 12px 0 0; font-size: 12px; color: #8a9a95; text-align: center; line-height: 1.45; }
-      .spcl-mobile-cta { display: none; }
+      #tab-checkout-spesial .spcl-checkout-wrap { max-width: 1040px; margin: 0 auto; padding: 16px 0 48px; }
+      #tab-checkout-spesial .spcl-back-btn { background: transparent; border: none; color: #1fd18b; font: 700 14px "Plus Jakarta Sans", sans-serif; min-height: 44px; padding: 0 8px 0 0; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+      #tab-checkout-spesial .spcl-back-btn:hover { text-decoration: underline; }
+      #tab-checkout-spesial .spcl-page-title { font-size: clamp(22px, 2.8vw, 28px); font-weight: 800; margin: 0 0 6px; color: #eef3f1; line-height: 1.2; }
+      #tab-checkout-spesial .spcl-page-sub { margin: 0 0 22px; color: #8a9a95; font-size: 14px; line-height: 1.5; }
+      #tab-checkout-spesial .spcl-grid { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
+      #tab-checkout-spesial .spcl-col-main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+      #tab-checkout-spesial .spcl-col-side { position: sticky; top: 24px; min-width: 0; }
+      #tab-checkout-spesial .spcl-card { background: #0f161a; border: 1px solid #1d262b; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.22); }
+      #tab-checkout-spesial .spcl-step-row { display: flex; align-items: center; gap: 12px; }
+      #tab-checkout-spesial .spcl-step-num { width: 32px; height: 32px; border-radius: 50%; background: #1fd18b; color: #04251a; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; flex: none; }
+      #tab-checkout-spesial .spcl-step-row h2, #tab-checkout-spesial .spcl-step-row b { margin: 0; font-size: 18px; font-weight: 800; color: #eef3f1; line-height: 1.25; }
+      #tab-checkout-spesial .spcl-req-tag { font-style: normal; color: #ff8a8a; font-size: 12px; font-weight: 700; margin-left: 2px; }
+      #tab-checkout-spesial .spcl-prod-item { display: flex; gap: 14px; align-items: center; background: #141c20; border: 1px solid #243038; border-radius: 12px; padding: 14px; }
+      #tab-checkout-spesial .spcl-prod-thumb { width: 64px; height: 64px; border-radius: 12px; background: linear-gradient(135deg, #1b3b8f, #6a4bd8 55%, #1fd18b); background-size: cover; background-position: center; flex: none; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 12px; text-align: center; line-height: 1.15; }
+      #tab-checkout-spesial .spcl-prod-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+      #tab-checkout-spesial .spcl-prod-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      #tab-checkout-spesial .spcl-prod-head b { font-size: 16px; font-weight: 800; color: #eef3f1; }
+      #tab-checkout-spesial .spcl-le-badge { border: 1px solid #ffd54a; background: rgba(255, 213, 74, 0.14); color: #ffd54a; font-weight: 800; font-size: 10px; letter-spacing: 0.08em; padding: 3px 8px; border-radius: 999px; display: inline-flex; align-items: center; white-space: nowrap; align-self: flex-start; }
+      #tab-checkout-spesial .spcl-prod-info small { color: #8a9a95; font-size: 13px; font-weight: 500; }
+      #tab-checkout-spesial .spcl-prod-total { color: #ffd54a; font-weight: 800; font-size: 16px; white-space: nowrap; }
+      #tab-checkout-spesial .spcl-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      #tab-checkout-spesial .spcl-field { display: flex; flex-direction: column; gap: 6px; }
+      #tab-checkout-spesial .spcl-field-full { grid-column: 1 / -1; }
+      #tab-checkout-spesial .spcl-field label { font-weight: 600; font-size: 13px; color: #c4cfca; display: inline-flex; align-items: center; gap: 4px; margin: 0; }
+      #tab-checkout-spesial .spcl-req { color: #ff8a8a; font-weight: 700; }
+      #tab-checkout-spesial .spcl-opt { color: #8a9a95; font-weight: 500; font-size: 12px; }
+      #tab-checkout-spesial .spcl-field input,
+      #tab-checkout-spesial .spcl-wa-row select { min-height: 48px; height: 48px; border: 1px solid #243038 !important; border-radius: 12px !important; background: #0a0e11 !important; color: #eef3f1 !important; padding: 0 14px !important; font: 400 15px "Plus Jakarta Sans", sans-serif !important; width: 100%; box-sizing: border-box; transition: border-color .15s ease, box-shadow .15s ease; }
+      #tab-checkout-spesial .spcl-field input::placeholder { color: #6c7c77 !important; }
+      #tab-checkout-spesial .spcl-field input:focus,
+      #tab-checkout-spesial .spcl-wa-row select:focus { outline: none !important; border-color: #1fd18b !important; box-shadow: 0 0 0 3px rgba(31, 209, 139, 0.16) !important; }
+      #tab-checkout-spesial .spcl-field input[aria-invalid="true"] { border-color: #ef4444 !important; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.16) !important; }
+      #tab-checkout-spesial .spcl-wa-row { display: flex; gap: 8px; align-items: stretch; }
+      #tab-checkout-spesial .spcl-wa-row select { width: 112px !important; flex: none !important; font-weight: 700 !important; padding: 0 10px !important; cursor: pointer; }
+      #tab-checkout-spesial .spcl-field-hint { font-size: 12px; color: #8a9a95; line-height: 1.5; margin-top: 2px; }
+      #tab-checkout-spesial .spcl-field-error { font-size: 12px; font-weight: 600; color: #ef4444; line-height: 1.4; margin-top: 2px; display: none; }
+      #tab-checkout-spesial .spcl-field-error.is-visible { display: block !important; }
+      #tab-checkout-spesial .spcl-summary-prod { display: flex; gap: 12px; align-items: center; background: #141c20; border: 1px solid #243038; border-radius: 12px; padding: 12px; }
+      #tab-checkout-spesial .spcl-summary-thumb { width: 48px; height: 48px; border-radius: 10px; background: linear-gradient(135deg, #1b3b8f, #6a4bd8 55%, #1fd18b); background-size: cover; background-position: center; flex: none; }
+      #tab-checkout-spesial .spcl-summary-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+      #tab-checkout-spesial .spcl-summary-meta b { font-size: 14px; font-weight: 800; color: #eef3f1; line-height: 1.25; }
+      #tab-checkout-spesial .spcl-summary-unit { color: #ffd54a; font-weight: 800; font-size: 14px; white-space: nowrap; }
+      #tab-checkout-spesial .spcl-sum-row { display: flex; justify-content: space-between; align-items: center; color: #c4cfca; font-size: 14px; }
+      #tab-checkout-spesial .spcl-sum-row.spcl-sum-total { font-weight: 800; font-size: 18px; color: #1fd18b; border-top: 1px dashed #243038; padding-top: 14px; margin-top: 2px; }
+      #tab-checkout-spesial .spcl-cta-btn { min-height: 52px; border-radius: 14px; border: 0; background: #1fd18b; color: #04251a; font: 800 16px "Plus Jakarta Sans", sans-serif; width: 100%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: filter .15s ease, transform .15s ease; }
+      #tab-checkout-spesial .spcl-cta-btn:hover:not(:disabled) { filter: brightness(1.06); transform: translateY(-1px); }
+      #tab-checkout-spesial .spcl-cta-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+      #tab-checkout-spesial .spcl-safe-note { margin: 0; text-align: center; font-size: 12px; color: #8a9a95; line-height: 1.45; }
+      #tab-checkout-spesial .spcl-mobile-bar { display: none; }
 
       @keyframes jokiin-promo-spin { to { transform:rotate(360deg); } }
       @keyframes jokiin-promo-glow { 50% { box-shadow:0 0 56px rgba(255,213,74,.28); } }
       @media (prefers-reduced-motion: reduce) {
-        .jokiin-lim, .jokiin-lim::before, .spcl-btn-buy, .jokiin-lim-btn { animation:none !important; transition:none !important; }
+        .jokiin-lim, .jokiin-lim::before, .spcl-cta-btn, .jokiin-lim-btn { animation:none !important; transition:none !important; }
       }
       @media (max-width: 760px) {
         .jokiin-lim-in { flex-direction:column; padding:16px; gap:16px; }
         .jokiin-lim-vis { flex:none; min-height:150px; font-size:26px; }
         #hargaFilterContainer { flex-wrap:nowrap !important; overflow-x:auto !important; padding-bottom:6px; }
-        .spcl-checkout-wrap { padding: 4px 0 120px; }
-        .spcl-grid { grid-template-columns: 1fr; gap: 16px; }
-        .spcl-form-grid { grid-template-columns: 1fr; }
-        .spcl-side-card { position: static; }
-        .spcl-side-card #btnSpclSubmitDesktop { display: none; }
-        .spcl-mobile-cta {
+        #tab-checkout-spesial .spcl-checkout-wrap { padding: 8px 0 116px; }
+        #tab-checkout-spesial .spcl-grid { grid-template-columns: 1fr; gap: 16px; }
+        #tab-checkout-spesial .spcl-form-grid { grid-template-columns: 1fr; }
+        #tab-checkout-spesial .spcl-col-side { position: static; }
+        #tab-checkout-spesial .spcl-cta-desktop { display: none !important; }
+        #tab-checkout-spesial .spcl-mobile-bar {
           display: block;
           position: fixed;
-          left: 16px;
-          right: 16px;
-          bottom: calc(16px + env(safe-area-inset-bottom));
-          z-index: 95;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+          background: rgba(10, 14, 17, 0.94);
+          backdrop-filter: blur(10px);
+          border-top: 1px solid #1d262b;
+          z-index: 990;
         }
-        .spcl-mobile-cta .spcl-btn-buy {
-          margin-top: 0;
-          min-height: 52px;
-          border-radius: 14px;
-          box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
+        #tab-checkout-spesial .spcl-cta-mobile {
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
         }
       }
     `;
@@ -276,7 +290,7 @@
     state.pendingConflictAction = onConfirmClear;
     const modal = document.getElementById('cartTypeConflictModal');
     const msgEl = document.getElementById('cartConflictMessage');
-    const clearBtn = document.getElementById('btnConflictClearCart');
+    const clearBtn = document.getElementById('btnConfirmClearConflictCart') || document.getElementById('btnConflictClearCart');
     if (!modal) {
       if (typeof onConfirmClear === 'function') onConfirmClear();
       return;
@@ -332,6 +346,7 @@
       if (errEl) {
         errEl.textContent = '';
         errEl.classList.remove('is-visible');
+        errEl.setAttribute('hidden', '');
       }
       if (inputEl) {
         inputEl.removeAttribute('aria-invalid');
@@ -344,6 +359,7 @@
     const inputEl = document.getElementById('spcl' + fieldSuffix);
     if (errEl) {
       errEl.textContent = message;
+      errEl.removeAttribute('hidden');
       errEl.classList.add('is-visible');
     }
     if (inputEl) {
@@ -363,7 +379,11 @@
         const digits = waInput.value.replace(/\D/g, '').replace(/^0+/, '');
         if (waInput.value !== digits) waInput.value = digits;
         const errEl = document.getElementById('errSpclWa');
-        if (errEl) { errEl.textContent = ''; errEl.classList.remove('is-visible'); }
+        if (errEl) {
+          errEl.textContent = '';
+          errEl.classList.remove('is-visible');
+          errEl.setAttribute('hidden', '');
+        }
         waInput.removeAttribute('aria-invalid');
       });
     }
@@ -374,7 +394,11 @@
       const suffix = id.replace(/^spcl/, '');
       el.addEventListener('input', () => {
         const errEl = document.getElementById('errSpcl' + suffix);
-        if (errEl) { errEl.textContent = ''; errEl.classList.remove('is-visible'); }
+        if (errEl) {
+          errEl.textContent = '';
+          errEl.classList.remove('is-visible');
+          errEl.setAttribute('hidden', '');
+        }
         el.removeAttribute('aria-invalid');
       });
       // Pastikan keyboard di mobile tidak menutupi field yang sedang diisi
@@ -388,31 +412,47 @@
     });
   }
 
-  window.openSpecialCheckout = function (qtyOverride) {
+  window.hydrateSpecialCheckoutUI = function (qtyOverride) {
     injectCatalogStyles();
     ensureFeaturedProductInStorefront();
     bindSpecialCheckoutInputs();
-    clearSpecialCheckoutErrors();
 
     const fp = state.featuredProduct;
-    const qty = Math.max(1, Number(qtyOverride) || 1);
+    const qty = Math.max(1, Number(qtyOverride) || state.specialCheckoutQty || 1);
     state.specialCheckoutQty = qty;
     const unitPrice = Math.round((fp.harga_dasar || 0) * (1 - (fp.diskon_persen || 0) / 100));
     const total = unitPrice * qty;
 
-    const nameEl = document.getElementById('spclProductName');
-    const sumNameEl = document.getElementById('spclSumProductName');
-    const descEl = document.getElementById('spclProductDesc');
-    const priceEl = document.getElementById('spclProductPrice');
-    const subEl = document.getElementById('spclSubtotal');
-    const totEl = document.getElementById('spclTotal');
+    const prodTitleEl = document.getElementById('spclProdTitle');
+    const prodQtyPriceEl = document.getElementById('spclProdQtyPrice');
+    const prodSubtotalEl = document.getElementById('spclProdSubtotal');
+    const prodThumbEl = document.getElementById('spclProdThumb');
+    const sumThumbEl = document.getElementById('spclSumThumb');
+    const sumProdNameEl = document.getElementById('spclSumProdName');
+    const sumUnitPriceEl = document.getElementById('spclSumUnitPrice');
+    const sumSubtotalEl = document.getElementById('spclSumSubtotal');
+    const sumTotalEl = document.getElementById('spclSumTotal');
+    const mobileBtnTotalEl = document.getElementById('spclMobileBtnTotal');
 
-    if (nameEl) nameEl.textContent = fp.nama || 'Gemini Pro 18 Bulan';
-    if (sumNameEl) sumNameEl.textContent = fp.nama || 'Gemini Pro 18 Bulan';
-    if (descEl) descEl.textContent = `${qty}x Akun Pribadi · Garansi penuh`;
-    if (priceEl) priceEl.textContent = formatRupiah(unitPrice);
-    if (subEl) subEl.textContent = formatRupiah(total);
-    if (totEl) totEl.textContent = formatRupiah(total);
+    if (prodTitleEl) prodTitleEl.textContent = fp.nama || 'Gemini Pro 18 Bulan';
+    if (prodQtyPriceEl) prodQtyPriceEl.textContent = `${qty} × ${formatRupiah(unitPrice)} · Akun Pribadi · Garansi penuh`;
+    if (prodSubtotalEl) prodSubtotalEl.textContent = formatRupiah(total);
+    if (sumProdNameEl) sumProdNameEl.textContent = fp.nama || 'Gemini Pro 18 Bulan';
+    if (sumUnitPriceEl) sumUnitPriceEl.textContent = formatRupiah(unitPrice);
+    if (sumSubtotalEl) sumSubtotalEl.textContent = formatRupiah(total);
+    if (sumTotalEl) sumTotalEl.textContent = formatRupiah(total);
+    if (mobileBtnTotalEl) mobileBtnTotalEl.textContent = formatRupiah(total);
+
+    const bannerImg = state.banners[0]?.gambar_url || fp.gambar_url || '';
+    if (bannerImg) {
+      if (prodThumbEl) {
+        prodThumbEl.style.backgroundImage = `url('${bannerImg}')`;
+        prodThumbEl.textContent = '';
+      }
+      if (sumThumbEl) {
+        sumThumbEl.style.backgroundImage = `url('${bannerImg}')`;
+      }
+    }
 
     // Pre-fill user data if logged in
     const user = getStore()?.getCurrentUser?.();
@@ -426,6 +466,11 @@
         wInput.value = String(user.phone).replace(/\D/g, '').replace(/^(62|0)+/, '');
       }
     }
+  };
+
+  window.openSpecialCheckout = function (qtyOverride) {
+    clearSpecialCheckoutErrors();
+    window.hydrateSpecialCheckoutUI(qtyOverride || 1);
 
     if (typeof window.closeModal === 'function') {
       window.closeModal('cartModal');
@@ -501,14 +546,19 @@
     }
 
     state.specialCheckoutInFlight = true;
-    const btnDesktop = document.getElementById('btnSpclSubmitDesktop');
-    const btnMobile = document.getElementById('btnSpclSubmitMobile');
-    [btnDesktop, btnMobile].forEach(b => {
-      if (b) {
-        b.disabled = true;
-        b.textContent = 'Memproses...';
-      }
-    });
+    const btnDesktop = document.getElementById('spclSubmitBtnDesktop');
+    const btnMobile = document.getElementById('spclSubmitBtnMobile');
+    const unitPrice = Math.round((fp.harga_dasar || 0) * (1 - (fp.diskon_persen || 0) / 100));
+    const total = unitPrice * (state.specialCheckoutQty || 1);
+
+    if (btnDesktop) {
+      btnDesktop.disabled = true;
+      btnDesktop.textContent = 'Memproses...';
+    }
+    if (btnMobile) {
+      btnMobile.disabled = true;
+      btnMobile.textContent = 'Memproses...';
+    }
 
     try {
       const res = await fetch(`${CATALOG_API}/api/checkout/spesial`, {
@@ -594,12 +644,14 @@
       setSpecialFieldError('Gmail', err?.message || 'Gagal menghubungi server checkout.');
     } finally {
       state.specialCheckoutInFlight = false;
-      [btnDesktop, btnMobile].forEach(b => {
-        if (b) {
-          b.disabled = false;
-          b.textContent = 'Beli Sekarang';
-        }
-      });
+      if (btnDesktop) {
+        btnDesktop.disabled = false;
+        btnDesktop.textContent = 'Beli Sekarang';
+      }
+      if (btnMobile) {
+        btnMobile.disabled = false;
+        btnMobile.innerHTML = `Beli Sekarang — <span id="spclMobileBtnTotal">${escapeHtml(formatRupiah(total))}</span>`;
+      }
     }
   };
 
@@ -1023,6 +1075,7 @@
     } catch (_) {}
 
     renderPromoBanner();
+    window.hydrateSpecialCheckoutUI();
   }
 
   window.addEventListener('jokiin:store-ready', () => {
@@ -1032,6 +1085,7 @@
       applyCatalogProductsToStorefront(state.lastApiProducts);
     }
     renderPromoBanner();
+    window.hydrateSpecialCheckoutUI();
   });
 
   window.addEventListener('storage', (e) => {

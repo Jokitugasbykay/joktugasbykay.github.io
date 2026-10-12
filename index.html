@@ -6383,19 +6383,19 @@
         <div id="tab-checkout-spesial" class="tab-content">
             <div class="spcl-checkout-wrap">
                 <button type="button" class="spcl-back-btn" onclick="window.cancelSpecialCheckout()" aria-label="Kembali ke katalog">
-                    ← Kembali ke Katalog
+                    ‹ Kembali ke Katalog
                 </button>
-                <h1 class="spcl-page-title">Checkout Penawaran Spesial</h1>
+                <h1 class="spcl-page-title">Penyelesaian Pesanan Spesial</h1>
                 <p class="spcl-page-sub">Lengkapi detail kontak untuk menerima akses akun Penawaran Spesial.</p>
 
                 <div class="spcl-grid">
                     <!-- KOLOM KIRI: Produk & Detail Kontak -->
                     <div class="spcl-col-main">
-                        <!-- Produk yang Dibeli -->
+                        <!-- Step 1: Produk yang Dibeli -->
                         <div class="spcl-card">
                             <div class="spcl-step-row">
-                                <span class="spcl-step-num" aria-hidden="true">★</span>
-                                <b>Produk yang Dibeli</b>
+                                <span class="spcl-step-num" aria-hidden="true">1</span>
+                                <h2>Produk yang Dibeli</h2>
                             </div>
                             <div class="spcl-prod-item">
                                 <div class="spcl-prod-thumb" id="spclProdThumb">Gemini<br>Pro</div>
@@ -6404,49 +6404,52 @@
                                         <b id="spclProdTitle">Gemini Pro 18 Bulan</b>
                                         <span class="spcl-le-badge">LIMITED EDITION</span>
                                     </div>
-                                    <small id="spclProdQtyPrice">1 x Rp 20.000</small>
+                                    <small id="spclProdQtyPrice">1 × Rp 20.000 · Akun Pribadi · Garansi penuh</small>
                                 </div>
                                 <b class="spcl-prod-total" id="spclProdSubtotal">Rp 20.000</b>
                             </div>
                         </div>
 
-                        <!-- Step 1: Detail Kontak (Wajib) -->
+                        <!-- Step 2: Detail Kontak (Wajib) -->
                         <div class="spcl-card">
                             <div class="spcl-step-row">
-                                <span class="spcl-step-num">1</span>
-                                <b>Detail Kontak</b>
+                                <span class="spcl-step-num" aria-hidden="true">2</span>
+                                <h2>Detail Kontak</h2>
+                                <em class="spcl-req-tag">*wajib</em>
                             </div>
 
-                            <div class="spcl-field">
-                                <label for="spclNama">Nama Lengkap</label>
-                                <input id="spclNama" type="text" autocomplete="name" aria-label="Nama Lengkap" placeholder="Masukkan nama lengkap">
-                                <div id="errSpclNama" class="spcl-field-error" role="alert" hidden></div>
-                            </div>
-
-                            <div class="spcl-field">
-                                <label for="spclNim">NIM <small style="color:#8a9993;font-weight:400;">(opsional)</small></label>
-                                <input id="spclNim" type="text" inputmode="numeric" aria-label="NIM (opsional)" placeholder="Masukkan NIM customer">
-                                <div id="errSpclNim" class="spcl-field-error" role="alert" hidden></div>
-                            </div>
-
-                            <div class="spcl-field">
-                                <label for="spclWa">Nomor WhatsApp</label>
-                                <div class="spcl-wa-row">
-                                    <select id="spclWaCountry" aria-label="Kode Negara WhatsApp">
-                                        <option value="62">ID +62</option>
-                                        <option value="60">MY +60</option>
-                                    </select>
-                                    <input id="spclWa" type="tel" inputmode="numeric" autocomplete="tel-national" aria-label="Nomor WhatsApp" placeholder="81234567890">
+                            <div class="spcl-form-grid">
+                                <div class="spcl-field">
+                                    <label for="spclNama">Nama Lengkap <span class="spcl-req">*</span></label>
+                                    <input id="spclNama" type="text" autocomplete="name" aria-label="Nama Lengkap" placeholder="Masukkan nama lengkap">
+                                    <div id="errSpclNama" class="spcl-field-error" role="alert" hidden></div>
                                 </div>
-                                <div class="spcl-field-hint">Pastikan nomor WhatsApp aktif. Masukkan angka saja tanpa awalan 0.</div>
-                                <div id="errSpclWa" class="spcl-field-error" role="alert" hidden></div>
-                            </div>
 
-                            <div class="spcl-field" style="margin-bottom:0;">
-                                <label for="spclGmail">Gmail</label>
-                                <input id="spclGmail" type="email" autocomplete="email" aria-label="Alamat Gmail" placeholder="nama@gmail.com">
-                                <div class="spcl-field-hint">Akses akun &amp; bukti transaksi dikirim ke alamat @gmail.com ini.</div>
-                                <div id="errSpclGmail" class="spcl-field-error" role="alert" hidden></div>
+                                <div class="spcl-field">
+                                    <label for="spclNim">NIM <small class="spcl-opt">(opsional)</small></label>
+                                    <input id="spclNim" type="text" inputmode="numeric" aria-label="NIM (opsional)" placeholder="Masukkan NIM (opsional)">
+                                    <div id="errSpclNim" class="spcl-field-error" role="alert" hidden></div>
+                                </div>
+
+                                <div class="spcl-field spcl-field-full">
+                                    <label for="spclWa">Nomor WhatsApp <span class="spcl-req">*</span></label>
+                                    <div class="spcl-wa-row">
+                                        <select id="spclWaCountry" class="spcl-wa-prefix" aria-label="Kode Negara WhatsApp">
+                                            <option value="62">ID +62</option>
+                                            <option value="60">MY +60</option>
+                                        </select>
+                                        <input id="spclWa" type="tel" inputmode="numeric" autocomplete="tel-national" aria-label="Nomor WhatsApp" placeholder="81234567890">
+                                    </div>
+                                    <div class="spcl-field-hint">Pastikan nomor WhatsApp aktif. Masukkan tanpa angka 0 di depan.</div>
+                                    <div id="errSpclWa" class="spcl-field-error" role="alert" hidden></div>
+                                </div>
+
+                                <div class="spcl-field spcl-field-full" style="margin-bottom:0;">
+                                    <label for="spclGmail">Gmail <span class="spcl-req">*</span></label>
+                                    <input id="spclGmail" type="email" autocomplete="email" aria-label="Alamat Gmail" placeholder="Masukkan alamat @gmail.com">
+                                    <div class="spcl-field-hint">Hasil &amp; bukti transaksi dikirim ke alamat Gmail ini setelah selesai.</div>
+                                    <div id="errSpclGmail" class="spcl-field-error" role="alert" hidden></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -6455,24 +6458,29 @@
                     <div class="spcl-col-side">
                         <div class="spcl-card spcl-summary-card">
                             <div class="spcl-step-row">
-                                <span class="spcl-step-num">2</span>
-                                <b>Konfirmasi Transaksi</b>
+                                <span class="spcl-step-num" aria-hidden="true">3</span>
+                                <h2>Konfirmasi Transaksi</h2>
                             </div>
                             <div class="spcl-summary-prod">
-                                <span id="spclSumProdName">Gemini Pro 18 Bulan</span>
-                                <span class="spcl-le-badge">LIMITED EDITION</span>
+                                <div class="spcl-summary-thumb" id="spclSumThumb" aria-hidden="true"></div>
+                                <div class="spcl-summary-meta">
+                                    <b id="spclSumProdName">Gemini Pro 18 Bulan</b>
+                                    <span class="spcl-le-badge">LIMITED EDITION</span>
+                                </div>
+                                <span class="spcl-summary-unit" id="spclSumUnitPrice">Rp 20.000</span>
                             </div>
                             <div class="spcl-sum-row">
-                                <span>Subtotal Produk</span>
+                                <span>Subtotal produk</span>
                                 <b id="spclSumSubtotal">Rp 20.000</b>
                             </div>
                             <div class="spcl-sum-row spcl-sum-total">
-                                <b>Total Pembayaran</b>
+                                <b>Total pembayaran</b>
                                 <b id="spclSumTotal">Rp 20.000</b>
                             </div>
                             <button type="button" class="spcl-cta-btn spcl-cta-desktop" id="spclSubmitBtnDesktop" onclick="window.submitSpecialCheckout()">
                                 Beli Sekarang
                             </button>
+                            <p class="spcl-safe-note">Dengan menekan Beli Sekarang, kamu menyetujui syarat pemesanan.</p>
                         </div>
                     </div>
                 </div>
@@ -6497,10 +6505,10 @@
                     Penawaran Spesial harus dibayar terpisah. Kosongkan keranjang reguler atau selesaikan pesanan reguler dulu?
                 </p>
                 <div style="display:flex; flex-direction:column; gap:10px;">
-                    <button type="button" id="btnConfirmClearConflictCart" style="min-height:48px; border-radius:12px; border:0; background:#1fd18b; color:#04251a; font:800 14px 'Plus Jakarta Sans',sans-serif; cursor:pointer;">
+                    <button type="button" id="btnConfirmClearConflictCart" onclick="window.confirmClearCartForConflict()" style="min-height:48px; border-radius:12px; border:0; background:#1fd18b; color:#04251a; font:800 14px 'Plus Jakarta Sans',sans-serif; cursor:pointer;">
                         Kosongkan Keranjang Reguler
                     </button>
-                    <button type="button" id="btnCancelConflictCart" onclick="window.closeModal('cartTypeConflictModal')" style="min-height:48px; border-radius:12px; border:1px solid #243138; background:transparent; color:#eef3f1; font:700 14px 'Plus Jakarta Sans',sans-serif; cursor:pointer;">
+                    <button type="button" id="btnCancelConflictCart" onclick="window.closeCartConflictModal()" style="min-height:48px; border-radius:12px; border:1px solid #243138; background:transparent; color:#eef3f1; font:700 14px 'Plus Jakarta Sans',sans-serif; cursor:pointer;">
                         Batal
                     </button>
                 </div>
@@ -9918,7 +9926,82 @@ Teman tugas mahasiswa.`;
             header:not(.checkout-mode) #ordersHeaderBtn { width:104px!important; }
             header:not(.checkout-mode) #authHeaderBtn { width:64px!important; min-width:64px!important; max-width:64px!important; padding:8px 5px!important; font-size:10px!important; }
         }
-        @media (prefers-reduced-motion:reduce) { #full-harga .cf-price-card .cf-sale-ribbon { animation:none; transition:none; } }
+        @media (prefers-reduced-motion:reduce) { #full-harga .cf-price-card .cf-sale-ribbon, .spcl-cta-btn { animation:none!important; transition:none!important; } }
+
+        /* Special Checkout Page (Desktop & Mobile — Dark Theme + #1fd18b & #ffd54a) */
+        #tab-checkout-spesial { font-family: "Plus Jakarta Sans", system-ui, sans-serif; color: #eef3f1; }
+        #tab-checkout-spesial .spcl-checkout-wrap { max-width: 1040px; margin: 0 auto; padding: 16px 0 48px; }
+        #tab-checkout-spesial .spcl-back-btn { background: transparent; border: none; color: #1fd18b; font: 700 14px "Plus Jakarta Sans", sans-serif; min-height: 44px; padding: 0 8px 0 0; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+        #tab-checkout-spesial .spcl-back-btn:hover { text-decoration: underline; }
+        #tab-checkout-spesial .spcl-page-title { font-size: clamp(22px, 2.8vw, 28px); font-weight: 800; margin: 0 0 6px; color: #eef3f1; line-height: 1.2; }
+        #tab-checkout-spesial .spcl-page-sub { margin: 0 0 22px; color: #8a9a95; font-size: 14px; line-height: 1.5; }
+        #tab-checkout-spesial .spcl-grid { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
+        #tab-checkout-spesial .spcl-col-main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+        #tab-checkout-spesial .spcl-col-side { position: sticky; top: 24px; min-width: 0; }
+        #tab-checkout-spesial .spcl-card { background: #0f161a; border: 1px solid #1d262b; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.22); }
+        #tab-checkout-spesial .spcl-step-row { display: flex; align-items: center; gap: 12px; }
+        #tab-checkout-spesial .spcl-step-num { width: 32px; height: 32px; border-radius: 50%; background: #1fd18b; color: #04251a; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; flex: none; }
+        #tab-checkout-spesial .spcl-step-row h2, #tab-checkout-spesial .spcl-step-row b { margin: 0; font-size: 18px; font-weight: 800; color: #eef3f1; line-height: 1.25; }
+        #tab-checkout-spesial .spcl-req-tag { font-style: normal; color: #ff8a8a; font-size: 12px; font-weight: 700; margin-left: 2px; }
+        #tab-checkout-spesial .spcl-prod-item { display: flex; gap: 14px; align-items: center; background: #141c20; border: 1px solid #243038; border-radius: 12px; padding: 14px; }
+        #tab-checkout-spesial .spcl-prod-thumb { width: 64px; height: 64px; border-radius: 12px; background: linear-gradient(135deg, #1b3b8f, #6a4bd8 55%, #1fd18b); background-size: cover; background-position: center; flex: none; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 12px; text-align: center; line-height: 1.15; }
+        #tab-checkout-spesial .spcl-prod-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+        #tab-checkout-spesial .spcl-prod-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        #tab-checkout-spesial .spcl-prod-head b { font-size: 16px; font-weight: 800; color: #eef3f1; }
+        #tab-checkout-spesial .spcl-le-badge { border: 1px solid #ffd54a; background: rgba(255, 213, 74, 0.14); color: #ffd54a; font-weight: 800; font-size: 10px; letter-spacing: 0.08em; padding: 3px 8px; border-radius: 999px; display: inline-flex; align-items: center; white-space: nowrap; align-self: flex-start; }
+        #tab-checkout-spesial .spcl-prod-info small { color: #8a9a95; font-size: 13px; font-weight: 500; }
+        #tab-checkout-spesial .spcl-prod-total { color: #ffd54a; font-weight: 800; font-size: 16px; white-space: nowrap; }
+        #tab-checkout-spesial .spcl-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        #tab-checkout-spesial .spcl-field { display: flex; flex-direction: column; gap: 6px; }
+        #tab-checkout-spesial .spcl-field-full { grid-column: 1 / -1; }
+        #tab-checkout-spesial .spcl-field label { font-weight: 600; font-size: 13px; color: #c4cfca; display: inline-flex; align-items: center; gap: 4px; margin: 0; }
+        #tab-checkout-spesial .spcl-req { color: #ff8a8a; font-weight: 700; }
+        #tab-checkout-spesial .spcl-opt { color: #8a9a95; font-weight: 500; font-size: 12px; }
+        #tab-checkout-spesial .spcl-field input,
+        #tab-checkout-spesial .spcl-wa-row select { min-height: 48px; height: 48px; border: 1px solid #243038 !important; border-radius: 12px !important; background: #0a0e11 !important; color: #eef3f1 !important; padding: 0 14px !important; font: 400 15px "Plus Jakarta Sans", sans-serif !important; width: 100%; box-sizing: border-box; transition: border-color .15s ease, box-shadow .15s ease; }
+        #tab-checkout-spesial .spcl-field input::placeholder { color: #6c7c77 !important; }
+        #tab-checkout-spesial .spcl-field input:focus,
+        #tab-checkout-spesial .spcl-wa-row select:focus { outline: none !important; border-color: #1fd18b !important; box-shadow: 0 0 0 3px rgba(31, 209, 139, 0.16) !important; }
+        #tab-checkout-spesial .spcl-field input[aria-invalid="true"] { border-color: #ef4444 !important; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.16) !important; }
+        #tab-checkout-spesial .spcl-wa-row { display: flex; gap: 8px; align-items: stretch; }
+        #tab-checkout-spesial .spcl-wa-row select { width: 112px !important; flex: none !important; font-weight: 700 !important; padding: 0 10px !important; cursor: pointer; }
+        #tab-checkout-spesial .spcl-field-hint { font-size: 12px; color: #8a9a95; line-height: 1.5; margin-top: 2px; }
+        #tab-checkout-spesial .spcl-field-error { font-size: 12px; font-weight: 600; color: #ef4444; line-height: 1.4; margin-top: 2px; display: none; }
+        #tab-checkout-spesial .spcl-field-error.is-visible { display: block !important; }
+        #tab-checkout-spesial .spcl-summary-prod { display: flex; gap: 12px; align-items: center; background: #141c20; border: 1px solid #243038; border-radius: 12px; padding: 12px; }
+        #tab-checkout-spesial .spcl-summary-thumb { width: 48px; height: 48px; border-radius: 10px; background: linear-gradient(135deg, #1b3b8f, #6a4bd8 55%, #1fd18b); background-size: cover; background-position: center; flex: none; }
+        #tab-checkout-spesial .spcl-summary-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+        #tab-checkout-spesial .spcl-summary-meta b { font-size: 14px; font-weight: 800; color: #eef3f1; line-height: 1.25; }
+        #tab-checkout-spesial .spcl-summary-unit { color: #ffd54a; font-weight: 800; font-size: 14px; white-space: nowrap; }
+        #tab-checkout-spesial .spcl-sum-row { display: flex; justify-content: space-between; align-items: center; color: #c4cfca; font-size: 14px; }
+        #tab-checkout-spesial .spcl-sum-row.spcl-sum-total { font-weight: 800; font-size: 18px; color: #1fd18b; border-top: 1px dashed #243038; padding-top: 14px; margin-top: 2px; }
+        #tab-checkout-spesial .spcl-cta-btn { min-height: 52px; border-radius: 14px; border: 0; background: #1fd18b; color: #04251a; font: 800 16px "Plus Jakarta Sans", sans-serif; width: 100%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: filter .15s ease, transform .15s ease; }
+        #tab-checkout-spesial .spcl-cta-btn:hover:not(:disabled) { filter: brightness(1.06); transform: translateY(-1px); }
+        #tab-checkout-spesial .spcl-cta-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+        #tab-checkout-spesial .spcl-safe-note { margin: 0; text-align: center; font-size: 12px; color: #8a9a95; line-height: 1.45; }
+        #tab-checkout-spesial .spcl-mobile-bar { display: none; }
+        @media (max-width: 760px) {
+            #tab-checkout-spesial .spcl-checkout-wrap { padding: 8px 0 116px; }
+            #tab-checkout-spesial .spcl-grid { grid-template-columns: 1fr; gap: 16px; }
+            #tab-checkout-spesial .spcl-form-grid { grid-template-columns: 1fr; }
+            #tab-checkout-spesial .spcl-col-side { position: static; }
+            #tab-checkout-spesial .spcl-cta-desktop { display: none !important; }
+            #tab-checkout-spesial .spcl-mobile-bar {
+                display: block;
+                position: fixed;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+                background: rgba(10, 14, 17, 0.94);
+                backdrop-filter: blur(10px);
+                border-top: 1px solid #1d262b;
+                z-index: 990;
+            }
+            #tab-checkout-spesial .spcl-cta-mobile {
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+            }
+        }
     </style>
     <link rel="stylesheet" href="assets/invoice.css?v=1.06">
     <script src="assets/invoice-render.js?v=1.06"></script>
@@ -9932,7 +10015,7 @@ Teman tugas mahasiswa.`;
     <script src="assets/ui-refinements.js?v=1.04"></script>
     <link rel="stylesheet" href="assets/mobile-fixes.css?v=1.06">
     <link rel="stylesheet" href="assets/desktop-storefront.css?v=20261009.5">
-    <script src="assets/catalog.js?v=3"></script>
+    <script src="assets/catalog.js?v=20261013-spcl4"></script>
 
 </body>
 
