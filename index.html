@@ -5295,7 +5295,7 @@
                         <span class="track-input-prefix" aria-hidden="true">
                             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="13" x2="13" y2="13"/></svg>
                         </span>
-                        <input type="text" id="trackInput" class="track-input-control" placeholder="Contoh: NUG-20260908-8967" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter') window.processGuestTrack()">
+                        <input type="text" id="trackInput" class="track-input-control" placeholder="Contoh: NUG7K9M2P4Q8R3T5V6W7X8Y9Z2A3B atau SPCL..." autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter') window.processGuestTrack()">
                         <button type="button" class="track-paste-btn" onclick="window.pasteTrackingCode()" title="Tempel dari Clipboard">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
                         </button>
@@ -5372,7 +5372,7 @@
                 <img class="invoice-brand invoice-brand-light" src="assets/brand-light-lockup.png?v=20261001-wordmark" alt="JOKI.IN">
                 <img class="invoice-brand invoice-brand-dark" src="assets/brand-dark-lockup.png?v=20261001-wordmark" alt="JOKI.IN">
                 <h2>Detail Pesanan</h2>
-                <p id="detOrderId" style="font-weight:700; color:var(--primary); margin-top:5px;">#NUG-0000</p>
+                <p id="detOrderId" style="font-weight:700; color:var(--primary); margin-top:5px;">-</p>
             </div>
             <div class="modal-body" style="padding-top:10px;">
                 <div class="order-info-row">
@@ -6074,7 +6074,7 @@
                 <h3>Sudah melakukan pemesanan?</h3>
                 <p>Cek status pesananmu tanpa harus login.</p>
                 <div class="track-input-group">
-                    <input type="text" id="helpTrackInput" placeholder="Contoh: NUG-20260908-8967">
+                    <input type="text" id="helpTrackInput" placeholder="Contoh: NUG7K9M2P4Q8R3T5V6W7X8Y9Z2A3B atau SPCL...">
                     <button onclick="window.processHelpTrack()">🔎 Cek Pesanan</button>
                 </div>
                 <div id="helpTrackError" class="error-msg" style="margin-top:10px;"></div>
@@ -6370,9 +6370,139 @@
                             <span id="chkTotal">Rp0</span>
                         </div>
                         <button class="btn-modal-primary"
-                            style="width:100%; margin-top:20px; padding:15px; font-size:1.1em;"
+                            style="width:100%; margin-top:20px; padding:15px; font-size:1.1em; min-height:48px;"
                             onclick="window.processCheckout()">Beli </button>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB BARU: CHECKOUT PENAWARAN SPESIAL (LIMITED EDITION) -->
+        <!-- ============================================== -->
+        <div id="tab-checkout-spesial" class="tab-content">
+            <div class="spcl-checkout-wrap">
+                <button type="button" class="spcl-back-btn" onclick="window.cancelSpecialCheckout()" aria-label="Kembali ke katalog">
+                    ← Kembali ke Katalog
+                </button>
+                <h1 class="spcl-page-title">Checkout Penawaran Spesial</h1>
+                <p class="spcl-page-sub">Lengkapi detail kontak untuk menerima akses akun Penawaran Spesial.</p>
+
+                <div class="spcl-grid">
+                    <!-- KOLOM KIRI: Produk & Detail Kontak -->
+                    <div class="spcl-col-main">
+                        <!-- Produk yang Dibeli -->
+                        <div class="spcl-card">
+                            <div class="spcl-step-row">
+                                <span class="spcl-step-num" aria-hidden="true">★</span>
+                                <b>Produk yang Dibeli</b>
+                            </div>
+                            <div class="spcl-prod-item">
+                                <div class="spcl-prod-thumb" id="spclProdThumb">Gemini<br>Pro</div>
+                                <div class="spcl-prod-info">
+                                    <div class="spcl-prod-head">
+                                        <b id="spclProdTitle">Gemini Pro 18 Bulan</b>
+                                        <span class="spcl-le-badge">LIMITED EDITION</span>
+                                    </div>
+                                    <small id="spclProdQtyPrice">1 x Rp 20.000</small>
+                                </div>
+                                <b class="spcl-prod-total" id="spclProdSubtotal">Rp 20.000</b>
+                            </div>
+                        </div>
+
+                        <!-- Step 1: Detail Kontak (Wajib) -->
+                        <div class="spcl-card">
+                            <div class="spcl-step-row">
+                                <span class="spcl-step-num">1</span>
+                                <b>Detail Kontak</b>
+                            </div>
+
+                            <div class="spcl-field">
+                                <label for="spclNama">Nama Lengkap</label>
+                                <input id="spclNama" type="text" autocomplete="name" aria-label="Nama Lengkap" placeholder="Masukkan nama lengkap">
+                                <div id="errSpclNama" class="spcl-field-error" role="alert" hidden></div>
+                            </div>
+
+                            <div class="spcl-field">
+                                <label for="spclNim">NIM <small style="color:#8a9993;font-weight:400;">(opsional)</small></label>
+                                <input id="spclNim" type="text" inputmode="numeric" aria-label="NIM (opsional)" placeholder="Masukkan NIM customer">
+                                <div id="errSpclNim" class="spcl-field-error" role="alert" hidden></div>
+                            </div>
+
+                            <div class="spcl-field">
+                                <label for="spclWa">Nomor WhatsApp</label>
+                                <div class="spcl-wa-row">
+                                    <select id="spclWaCountry" aria-label="Kode Negara WhatsApp">
+                                        <option value="62">ID +62</option>
+                                        <option value="60">MY +60</option>
+                                    </select>
+                                    <input id="spclWa" type="tel" inputmode="numeric" autocomplete="tel-national" aria-label="Nomor WhatsApp" placeholder="81234567890">
+                                </div>
+                                <div class="spcl-field-hint">Pastikan nomor WhatsApp aktif. Masukkan angka saja tanpa awalan 0.</div>
+                                <div id="errSpclWa" class="spcl-field-error" role="alert" hidden></div>
+                            </div>
+
+                            <div class="spcl-field" style="margin-bottom:0;">
+                                <label for="spclGmail">Gmail</label>
+                                <input id="spclGmail" type="email" autocomplete="email" aria-label="Alamat Gmail" placeholder="nama@gmail.com">
+                                <div class="spcl-field-hint">Akses akun &amp; bukti transaksi dikirim ke alamat @gmail.com ini.</div>
+                                <div id="errSpclGmail" class="spcl-field-error" role="alert" hidden></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KOLOM KANAN (Sticky Desktop): Konfirmasi Transaksi -->
+                    <div class="spcl-col-side">
+                        <div class="spcl-card spcl-summary-card">
+                            <div class="spcl-step-row">
+                                <span class="spcl-step-num">2</span>
+                                <b>Konfirmasi Transaksi</b>
+                            </div>
+                            <div class="spcl-summary-prod">
+                                <span id="spclSumProdName">Gemini Pro 18 Bulan</span>
+                                <span class="spcl-le-badge">LIMITED EDITION</span>
+                            </div>
+                            <div class="spcl-sum-row">
+                                <span>Subtotal Produk</span>
+                                <b id="spclSumSubtotal">Rp 20.000</b>
+                            </div>
+                            <div class="spcl-sum-row spcl-sum-total">
+                                <b>Total Pembayaran</b>
+                                <b id="spclSumTotal">Rp 20.000</b>
+                            </div>
+                            <button type="button" class="spcl-cta-btn spcl-cta-desktop" id="spclSubmitBtnDesktop" onclick="window.submitSpecialCheckout()">
+                                Beli Sekarang
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TOMBOL MELAYANG MOBILE (Fixed bottom + safe-area) -->
+                <div class="spcl-mobile-bar">
+                    <button type="button" class="spcl-cta-btn spcl-cta-mobile" id="spclSubmitBtnMobile" onclick="window.submitSpecialCheckout()">
+                        Beli Sekarang — <span id="spclMobileBtnTotal">Rp 20.000</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- DIALOG KONFIRMASI PISAH KERANJANG (REGULER vs SPESIAL) -->
+        <div id="cartTypeConflictModal" class="modal-overlay" style="display:none; z-index:9999;" role="dialog" aria-modal="true" aria-labelledby="cartConflictTitle">
+            <div class="modal-content" style="max-width:440px; background:#0f161a; color:#eef3f1; border:1px solid #1d262b; border-radius:18px; padding:24px;">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+                    <span style="background:rgba(255,213,74,.16); color:#ffd54a; border:1px solid rgba(255,213,74,.4); font-weight:800; font-size:11px; padding:4px 10px; border-radius:999px;">PISAH KERANJANG</span>
+                </div>
+                <h3 id="cartConflictTitle" style="margin:0 0 10px; font-size:18px; font-weight:800; color:#eef3f1;">Alur Pembayaran Terpisah</h3>
+                <p id="cartConflictMessage" style="margin:0 0 22px; font-size:14px; line-height:1.6; color:#c4cfca;">
+                    Penawaran Spesial harus dibayar terpisah. Kosongkan keranjang reguler atau selesaikan pesanan reguler dulu?
+                </p>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <button type="button" id="btnConfirmClearConflictCart" style="min-height:48px; border-radius:12px; border:0; background:#1fd18b; color:#04251a; font:800 14px 'Plus Jakarta Sans',sans-serif; cursor:pointer;">
+                        Kosongkan Keranjang Reguler
+                    </button>
+                    <button type="button" id="btnCancelConflictCart" onclick="window.closeModal('cartTypeConflictModal')" style="min-height:48px; border-radius:12px; border:1px solid #243138; background:transparent; color:#eef3f1; font:700 14px 'Plus Jakarta Sans',sans-serif; cursor:pointer;">
+                        Batal
+                    </button>
                 </div>
             </div>
         </div>
@@ -6393,11 +6523,19 @@
 
             <div class="checkout-card"
                 style="text-align:left; background:var(--card-solid); padding:25px; border-radius:var(--radius); box-shadow:var(--shadow-card); border:1px solid var(--border-color);">
-                <div
-                    style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
-                    <span style="color:var(--text-secondary);">Nomor Pesanan</span>
-                    <strong id="succOrderId" style="color:var(--primary);">#NUG-00000000-0000</strong>
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px; border-bottom:1px solid var(--border-color); padding-bottom:12px; flex-wrap:wrap;">
+                    <div>
+                        <span style="color:var(--text-secondary); font-size:0.85em; display:block;">ID Pesanan</span>
+                        <div style="display:flex; align-items:center; gap:8px; margin-top:4px; flex-wrap:wrap;">
+                            <strong id="succOrderId" style="color:var(--primary); font-size:1.05em; letter-spacing:0.03em; word-break:break-all;">-</strong>
+                            <span id="succOrderTypeBadge" style="display:none; font-size:10px; font-weight:800; padding:3px 8px; border-radius:999px; letter-spacing:0.06em;"></span>
+                        </div>
+                    </div>
+                    <button type="button" id="btnCopySuccessOrderId" onclick="window.copySuccessOrderId()" aria-label="Salin ID Pesanan" style="min-height:44px; padding:0 14px; border-radius:10px; border:1px solid #1fd18b; background:rgba(31,209,139,0.12); color:#1fd18b; font:700 13px 'Plus Jakarta Sans',sans-serif; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                        📋 Salin ID
+                    </button>
                 </div>
+                <div id="succEmailNotice" style="display:none; margin-bottom:14px; padding:10px 12px; border-radius:10px; background:rgba(31,209,139,0.08); border:1px solid rgba(31,209,139,0.25); font-size:12.5px; color:var(--text-secondary);"></div>
                 <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
                     <span style="color:var(--text-secondary);">Total Pembayaran</span>
                     <strong id="succTotal" style="font-size:1.2em; color:var(--text-main);">Rp0</strong>
@@ -6420,16 +6558,16 @@
                     <div id="midtransQrisExpiry" style="margin-top:12px; color:var(--text-muted); font-size:0.9em;">
                     </div>
                     <a id="midtransQrisDownload" class="btn-outline" href="#" target="_blank" rel="noopener"
-                        style="width:100%; padding:13px; margin-top:16px; justify-content:center; display:flex;">Unduh
+                        style="width:100%; padding:13px; margin-top:16px; justify-content:center; display:flex; min-height:44px;">Unduh
                         QR</a>
                 </div>
 
                 <!-- TOMBOL ORDER SUCCESS -->
                 <button id="successOrderDetailsButton" class="btn-outline"
-                    style="width:100%; padding:15px; margin-top:20px; font-size: 1.05em; justify-content:center; display:flex;"
+                    style="width:100%; padding:15px; margin-top:20px; font-size: 1.05em; justify-content:center; display:flex; min-height:48px;"
                     onclick="window.viewOrderDetailsFromSuccess()">📄 Lihat Detail Pesanan</button>
                 <button id="successHomeButton"
-                    style="width:100%; border:none; padding:15px; margin-top:5px; font-size: 0.95em; font-weight: 600; background: transparent; color: var(--text-secondary); cursor: pointer; transition: color 0.3s;"
+                    style="width:100%; border:none; padding:15px; margin-top:5px; font-size: 0.95em; font-weight: 600; background: transparent; color: var(--text-secondary); cursor: pointer; transition: color 0.3s; min-height:44px;"
                     onmouseover="this.style.color='var(--primary)'"
                     onmouseout="this.style.color='var(--text-secondary)'" onclick="window.switchTab('beranda')"> Kembali
                     ke Beranda</button>
@@ -7131,17 +7269,20 @@
         }
         function orderFromDatabase(row) {
             const statusMap = { pending: 'PENDING_ORDER', processing: 'IN_PROGRESS', revision: 'REVISION', completed: 'COMPLETED', cancelled: 'CANCELLED' };
+            const code = row.order_code || String(row.id || '');
+            const tipe = row.tipe || (code.startsWith('SPCL') ? 'SPESIAL' : 'REGULER');
             return {
-                id: row.order_code || String(row.id), databaseId: row.id, userId: row.user_id || 'guest',
+                id: code, orderCode: code, tipe, databaseId: row.id, userId: row.user_id || 'guest',
                 items: Array.isArray(row.items) ? row.items.map(i => ({ ...i, name: String(i.name || 'Layanan'), price: Number(i.price) || 0, quantity: Number(i.quantity) || 0 })) : [],
-                customer: row.customer || {}, task: { title: '', deadline: '', notes: row.notes || '', googleDriveUrl: '', ...(row.task || {}) },
-                paymentMethod: row.payment_method || '', subtotal: Number(row.subtotal) || 0, discount: Number(row.discount) || 0,
-                serviceFee: Number(row.service_fee) || 0, paymentFee: Number(row.payment_fee) || 0, total: Number(row.total_price) || 0,
+                customer: row.customer || { name: row.nama || '', nim: row.nim || '', whatsapp: row.whatsapp || '', email: row.gmail || '' },
+                task: { title: row.judul_tugas || '', deadline: row.deadline || '', notes: row.notes || row.catatan || '', googleDriveUrl: '', ...(row.task || {}) },
+                paymentMethod: row.payment_method || '', subtotal: Number(row.subtotal ?? row.total ?? row.total_price) || 0, discount: Number(row.discount) || 0,
+                serviceFee: Number(row.service_fee) || 0, paymentFee: Number(row.payment_fee) || 0, total: Number(row.total ?? row.total_price) || 0,
                 paymentStatus: String(row.payment_status || 'PENDING').toUpperCase(), orderStatus: statusMap[row.status] || 'PENDING_ORDER',
                 detailRestricted: row.detail_restricted === true, estimatedCompletion: row.estimated_completion, createdAt: row.created_at
             };
         }
-        const ORDER_SELECT = 'id,order_code,user_id,items,customer,task,notes,payment_method,subtotal,discount,service_fee,payment_fee,total_price,payment_status,status,estimated_completion,created_at';
+        const ORDER_SELECT = 'id,order_code,tipe,user_id,items,customer,task,notes,payment_method,subtotal,discount,service_fee,payment_fee,total_price,total,nama,nim,whatsapp,gmail,judul_tugas,deadline,catatan,payment_status,status,estimated_completion,created_at';
         function cacheServerOrder(order) {
             const index = ORDERS.findIndex(o => o.id === order.id);
             if (index < 0) ORDERS.push(order); else ORDERS[index] = order;
@@ -7974,9 +8115,39 @@
             }
         };
 
+        window.copySuccessOrderId = () => {
+            const el = document.getElementById('succOrderId');
+            const code = el ? el.textContent.trim() : '';
+            if (!code) return;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(code).catch(() => {});
+            }
+            window.showToast('ID pesanan ' + code + ' berhasil disalin!');
+        };
+
         function renderOrderSuccess(order) {
-            document.getElementById('succOrderId').textContent = order.orderCode || order.id;
+            const code = String(order.orderCode || order.id || '');
+            const isSpesial = code.startsWith('SPCL') || order.tipe === 'SPESIAL';
+            document.getElementById('succOrderId').textContent = code;
             document.getElementById('succTotal').textContent = formatRupiah(order.total);
+            const typeBadge = document.getElementById('succOrderTypeBadge');
+            if (typeBadge) {
+                typeBadge.style.display = 'inline-flex';
+                typeBadge.textContent = isSpesial ? 'PENAWARAN SPESIAL · LIMITED EDITION' : 'PESANAN REGULER';
+                typeBadge.style.background = isSpesial ? 'rgba(255,213,74,0.16)' : 'rgba(31,209,139,0.14)';
+                typeBadge.style.color = isSpesial ? '#ffd54a' : '#1fd18b';
+                typeBadge.style.border = isSpesial ? '1px solid rgba(255,213,74,0.4)' : '1px solid rgba(31,209,139,0.35)';
+            }
+            const emailNotice = document.getElementById('succEmailNotice');
+            const emailAddr = order.emailConfirmation?.to || order.customer?.email || order.gmail || '';
+            if (emailNotice) {
+                if (emailAddr) {
+                    emailNotice.style.display = 'block';
+                    emailNotice.textContent = `📧 Email konfirmasi memuat ID pesanan ${code} telah dikirim ke ${emailAddr}.`;
+                } else {
+                    emailNotice.style.display = 'none';
+                }
+            }
             const paid = String(order.paymentStatus || '').toUpperCase() === 'PAID';
             const methodRow = document.getElementById('succMethodRow');
             methodRow.hidden = !paid;
@@ -8000,8 +8171,8 @@
                 qrisDownload.textContent = 'Unduh QR';
                 qrisExpiry.textContent = '';
             }
-            document.querySelector('#tab-order-success h2').textContent = order.paymentUrl ? 'Menunggu Pembayaran' : 'Pesanan Berhasil Disimpan';
-            document.querySelector('#tab-order-success > p').textContent = order.paymentUrl ? 'Klik tombol di bawah untuk membuka halaman pembayaran.' : (order.paymentStatus === 'PAID' ? 'Pembayaran telah dikonfirmasi.' : 'Pembayaran menunggu konfirmasi admin. Simpan nomor pesanan dan hubungi Admin Salsa untuk instruksi pembayaran.');
+            document.querySelector('#tab-order-success h2').textContent = order.paymentUrl ? 'Menunggu Pembayaran' : 'Pesanan Berhasil Dibuat';
+            document.querySelector('#tab-order-success > p').textContent = order.paymentUrl ? 'Klik tombol di bawah untuk membuka halaman pembayaran.' : (order.paymentStatus === 'PAID' ? 'Pembayaran telah dikonfirmasi.' : 'Simpan ID pesanan di bawah dan hubungi Admin Salsa untuk konfirmasi pembayaran.');
             applyMayarStatusView(order);
         }
 
@@ -8392,7 +8563,7 @@ Teman tugas mahasiswa.`;
             if (currentUser) {
                 userOrders = ORDERS.filter(o => o.userId === currentUser.uid);
             } else if (currentTrackWA) {
-                if (currentTrackWA.startsWith('NUG-')) {
+                if (/^(NUG|SPCL)/.test(currentTrackWA)) {
                     userOrders = ORDERS.filter(o => o.id === currentTrackWA);
                 } else {
                     userOrders = ORDERS.filter(o => o.customer.whatsapp === currentTrackWA);
@@ -8442,11 +8613,15 @@ Teman tugas mahasiswa.`;
 
                 const estDate = o.estimatedCompletion ? new Date(o.estimatedCompletion).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-';
                 const estText = (mappedStatus === 'Selesai') ? `✓ Selesai pada ${estDate}` : `Estimasi selesai: ${estDate}`;
+                const isSpesial = String(o.id || '').startsWith('SPCL') || o.tipe === 'SPESIAL';
+                const tipePill = isSpesial
+                    ? '<span style="background:rgba(255,213,74,0.18);color:#ffd54a;border:1px solid rgba(255,213,74,0.4);padding:2px 8px;border-radius:999px;font-size:0.72em;font-weight:800;margin-left:6px;">SPESIAL</span>'
+                    : '<span style="background:rgba(31,209,139,0.14);color:#1fd18b;border:1px solid rgba(31,209,139,0.35);padding:2px 8px;border-radius:999px;font-size:0.72em;font-weight:800;margin-left:6px;">REGULER</span>';
 
                 return `
             <div class="order-history-item" data-order-code="${escapeHTML(o.id)}">
                 <div class="order-history-header">
-                    <span class="order-id">${escapeHTML(o.id)}</span>
+                    <span class="order-id">${escapeHTML(o.id)}${tipePill}</span>
                     <span class="status-badge ${statusClass}">${mappedStatus}</span>
                 </div>
                 <div style="font-size:0.95em; color:var(--text-main); font-weight:600; margin-bottom:5px;">
@@ -9252,7 +9427,7 @@ Teman tugas mahasiswa.`;
         // NAVIGATION & SEARCH
         // ==========================================
         let lastActiveTab = 'beranda'; let currentTab = 'beranda';
-        const ROUTES = { beranda: '/', layanan: '/services', harga: '/prices', testimoni: '/testimonials', informasi: '/information', carapesan: '/how-to-order', bantuan: '/help', checkout: '/payment', 'order-success': '/payment/pending' };
+        const ROUTES = { beranda: '/', layanan: '/services', harga: '/prices', testimoni: '/testimonials', informasi: '/information', carapesan: '/how-to-order', bantuan: '/help', checkout: '/payment', 'checkout-spesial': '/checkout/spesial', 'order-success': '/payment/pending' };
         const TAB_BY_ROUTE = Object.fromEntries(Object.entries(ROUTES).map(([tab, path]) => [path, tab]));
         document.addEventListener('dragstart', event => {
             const picture = event.target.closest('.home-banner, .recommendation-card-image, .service-photo img');
@@ -9300,9 +9475,9 @@ Teman tugas mahasiswa.`;
                 nav.scrollTo({ left:active.offsetLeft - (nav.clientWidth - active.offsetWidth) / 2, behavior:animate && !window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'smooth' : 'instant' });
             }
         }
-        window.goHome = () => { if (currentTab !== 'checkout' && currentTab !== 'order-success') window.switchTab('beranda'); };
+        window.goHome = () => { if (currentTab !== 'checkout' && currentTab !== 'checkout-spesial' && currentTab !== 'order-success') window.switchTab('beranda'); };
         window.switchTab = (tabId) => {
-            if (tabId !== 'checkout' && tabId !== 'order-success') lastActiveTab = tabId;
+            if (tabId !== 'checkout' && tabId !== 'checkout-spesial' && tabId !== 'order-success') lastActiveTab = tabId;
 
             const searchInput = document.getElementById('searchInput');
             document.querySelectorAll('#searchInput, .searchInputGlobal').forEach(field => { field.value = ''; });
@@ -9311,7 +9486,7 @@ Teman tugas mahasiswa.`;
             else searchInput.placeholder = "Cari layanan, harga, atau pertanyaan...";
 
             // LOCKED CHECKOUT FLOW LOGIC
-            const isCheckoutFlow = (tabId === 'checkout' || tabId === 'order-success');
+            const isCheckoutFlow = (tabId === 'checkout' || tabId === 'checkout-spesial' || tabId === 'order-success');
             document.getElementById('nav-container').style.display = isCheckoutFlow ? 'none' : 'flex';
             document.getElementById('searchBoxContainer').style.display = isCheckoutFlow ? 'none' : 'flex';
             document.querySelector('header .header-actions').style.display = isCheckoutFlow ? 'none' : 'flex';
@@ -9486,6 +9661,26 @@ Teman tugas mahasiswa.`;
             let lastOrderId = ''; try { lastOrderId = localStorage.getItem('jokiin_last_order_id') || localStorage.getItem(LEGACY_STORAGE_KEYS.lastOrderId) || ''; } catch (_) { }
             if (lastOrderId) document.getElementById('helpTrackInput').value = lastOrderId;
         }
+        window.CONFIG = CONFIG;
+        window.__JOKIIN_STORE__ = {
+            CONFIG,
+            getCart: () => CART,
+            setCart: (next) => { CART = Array.isArray(next) ? next : []; saveCart(); renderCartItems(); },
+            saveCart: () => saveCart(),
+            renderCartItems: () => renderCartItems(),
+            updateCartBadge: () => updateCartBadge(),
+            triggerCartBounce: () => triggerCartBounce(),
+            minimumOrderQuantity: (id) => minimumOrderQuantity(id),
+            getCurrentUser: () => currentUser,
+            getCurrentTab: () => currentTab,
+            getLastActiveTab: () => lastActiveTab || 'beranda',
+            setCurrentOrder: (ord) => { currentOrder = ord; if (ord) cacheServerOrder(ord); },
+            renderOrderSuccess: (ord) => renderOrderSuccess(ord),
+            savePendingMayarOrder: (ord) => savePendingMayarOrder(ord),
+            renderApp: () => renderApp(),
+        };
+        window.dispatchEvent(new CustomEvent('jokiin:store-ready'));
+
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => initializeApp().catch(console.error), { once: true });
         else initializeApp().catch(console.error);
         // Saat kembali dari tab lain, status pesanan yang sedang dilihat diperbarui dari server.

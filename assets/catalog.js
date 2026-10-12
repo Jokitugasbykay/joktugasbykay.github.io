@@ -1,5 +1,6 @@
-// JOKI.IN Storefront — Dynamic Promo Banner & Live Catalog Sync
+// JOKI.IN Storefront — Dynamic Promo Banner, Cart Type Separation & Special Checkout
 // Mengambil data produk, stok, diskon, dan status Penawaran Spesial dari jokiin-catalog API
+// serta memisahkan keranjang & alur checkout REGULER (NUG...) vs SPESIAL (SPCL...)
 (function () {
   'use strict';
 
@@ -27,9 +28,26 @@
       is_limited_edition: true,
       gambar_url: null
     },
+    specialCheckoutQty: 1,
+    specialCheckoutInFlight: false,
+    pendingConflictAction: null,
     countdownTimer: null,
-    isDecorating: false
+    isDecorating: false,
+    hooksInstalled: false
   };
+
+  function getCartSessionId() {
+    try {
+      let id = localStorage.getItem('jokiin_cart_session_id');
+      if (!id) {
+        id = (globalThis.crypto?.randomUUID?.() || ('cart-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2)));
+        localStorage.setItem('jokiin_cart_session_id', id);
+      }
+      return id;
+    } catch (_) {
+      return 'guest-default';
+    }
+  }
 
   function formatRupiah(num) {
     return new Intl.NumberFormat('id-ID', {
@@ -55,7 +73,7 @@
     style.textContent = `
       #promo-banner-section { margin: 24px 0 10px; font-family: "Plus Jakarta Sans", system-ui, sans-serif; }
       .jokiin-promo-head { display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin:16px 0 18px; }
-      .jokiin-promo-tag { display:inline-block; background:#f59e0b; color:#2b2100; font-weight:800; font-size:12px; letter-spacing:.08em; padding:6px 12px; border-radius:999px; }
+      .jokiin-promo-tag { display:inline-block; background:#ffd54a; color:#2b2100; font-weight:800; font-size:12px; letter-spacing:.08em; padding:6px 12px; border-radius:999px; }
       .jokiin-promo-title { margin:10px 0 0; font-size:clamp(24px, 3vw, 34px); font-weight:800; color:var(--text-main, #eef3f1); line-height:1.2; }
       .jokiin-cd { display:flex; gap:8px; }
       .jokiin-cd > div { background:#141c20; color:#eef3f1; border:1px solid #243038; border-radius:10px; padding:6px 10px; text-align:center; font-weight:800; min-width:54px; }
@@ -67,7 +85,7 @@
       .jokiin-lim-inf { flex:1; display:flex; flex-direction:column; gap:14px; }
       .jokiin-lim-inf h2 { margin:0; font-size:clamp(22px, 2.6vw, 30px); color:#eef3f1; font-weight:800; }
       .jokiin-lim-inf ul { margin:0; padding-left:18px; color:#c4cfca; line-height:1.7; font-size:15px; }
-      .jokiin-le-badge { align-self:flex-start; border:1px solid #1fd18b; color:#1fd18b; font-weight:800; font-size:11px; letter-spacing:.1em; padding:5px 10px; border-radius:999px; display:inline-block; }
+      .jokiin-le-badge { align-self:flex-start; background:rgba(255,213,74,.14); border:1px solid #ffd54a; color:#ffd54a; font-weight:800; font-size:11px; letter-spacing:.1em; padding:5px 10px; border-radius:999px; display:inline-block; }
       .jokiin-lim-pr { font-size:32px; font-weight:800; color:#1fd18b; }
       .jokiin-lim-pr s { font-size:15px; color:#7d8c87; font-weight:400; margin-left:8px; }
       .jokiin-lim-bar { height:8px; border-radius:8px; background:#1d2a2f; overflow:hidden; margin-top:4px; }
@@ -81,15 +99,75 @@
       .jokiin-catalog-div::before, .jokiin-catalog-div::after { content:""; flex:1; height:1px; background:#1d262b; }
       .jokiin-stock-pill { display:inline-block; font-size:11px; font-weight:700; color:#8a9a95; margin-top:4px; }
       .jokiin-stock-pill.habis { color:#ef4444; font-weight:800; }
+
+      /* Special Checkout Page (Desktop & Mobile) */
+      #tab-checkout-spesial { font-family: "Plus Jakarta Sans", system-ui, sans-serif; color: #eef3f1; }
+      .spcl-checkout-wrap { max-width: 1040px; margin: 0 auto; padding: 12px 0 48px; }
+      .spcl-back-btn { background: transparent; border: none; color: #8a9a95; font: 600 14px "Plus Jakarta Sans", sans-serif; min-height: 44px; padding: 0 8px 0 0; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+      .spcl-back-btn:hover { color: #1fd18b; }
+      .spcl-title { font-size: clamp(22px, 2.8vw, 28px); font-weight: 800; margin: 0 0 20px; color: #eef3f1; }
+      .spcl-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
+      .spcl-main-col { display: flex; flex-direction: column; gap: 20px; }
+      .spcl-card { background: #0f161a; border: 1px solid #1d262b; border-radius: 16px; padding: 22px; }
+      .spcl-side-card { position: sticky; top: 24px; }
+      .spcl-card-h2 { font-size: 16px; font-weight: 800; margin: 0 0 14px; color: #eef3f1; display: flex; align-items: center; gap: 8px; }
+      .spcl-item-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px; background: #121b20; border: 1px solid #243038; border-radius: 12px; }
+      .spcl-item-info { display: flex; flex-direction: column; gap: 4px; }
+      .spcl-item-info b { font-size: 16px; color: #eef3f1; font-weight: 700; }
+      .spcl-item-info small { color: #8a9a95; font-size: 12px; font-weight: 600; }
+      .spcl-le-badge { align-self: flex-start; background: rgba(255, 213, 74, 0.16); color: #ffd54a; border: 1px solid rgba(255, 213, 74, 0.45); font-size: 10px; font-weight: 800; letter-spacing: 0.08em; padding: 3px 9px; border-radius: 999px; display: inline-block; margin-bottom: 2px; }
+      .spcl-item-price { font-size: 18px; font-weight: 800; color: #1fd18b; white-space: nowrap; }
+      .spcl-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      .spcl-field { display: flex; flex-direction: column; }
+      .spcl-field-full { grid-column: 1 / -1; }
+      .spcl-field label { font-size: 12px; color: #9aa8a4; margin-bottom: 6px; font-weight: 600; }
+      .spcl-req { color: #1fd18b; }
+      .spcl-opt { color: #6e7d78; font-weight: 500; }
+      .spcl-field input, .spcl-wa-prefix { width: 100%; min-height: 48px; border-radius: 10px; border: 1px solid #253238; background: #121a1f; color: #eef3f1; padding: 0 14px; font: 500 14px "Plus Jakarta Sans", sans-serif; transition: border-color .15s ease, box-shadow .15s ease; }
+      .spcl-field input:focus, .spcl-wa-prefix:focus { outline: none; border-color: #1fd18b; box-shadow: 0 0 0 3px rgba(31, 209, 139, 0.14); }
+      .spcl-field input[aria-invalid="true"] { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15); }
+      .spcl-wa-group { display: grid; grid-template-columns: 98px 1fr; gap: 8px; }
+      .spcl-wa-prefix { padding: 0 10px; cursor: pointer; font-weight: 700; }
+      .spcl-field-error { min-height: 18px; margin-top: 5px; font-size: 12px; font-weight: 600; color: #ef4444; line-height: 1.35; display: none; }
+      .spcl-field-error.is-visible { display: block; }
+      .spcl-sum-row { display: flex; justify-content: space-between; align-items: center; color: #b9c5c0; font-size: 14px; margin: 10px 0; }
+      .spcl-sum-product-line { align-items: flex-start; gap: 10px; }
+      .spcl-sum-total { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #1f2b30; padding-top: 14px; margin-top: 12px; font-size: 18px; font-weight: 800; color: #eef3f1; }
+      .spcl-sum-total span:last-child { color: #1fd18b; }
+      .spcl-btn-buy { width: 100%; min-height: 52px; border: 0; border-radius: 12px; background: #1fd18b; color: #05261b; font: 800 15px "Plus Jakarta Sans", sans-serif; margin-top: 16px; cursor: pointer; transition: transform .15s ease, filter .15s ease; }
+      .spcl-btn-buy:hover:not(:disabled) { filter: brightness(1.06); transform: translateY(-1px); }
+      .spcl-btn-buy:disabled { opacity: 0.55; cursor: not-allowed; }
+      .spcl-safe-note { margin: 12px 0 0; font-size: 12px; color: #8a9a95; text-align: center; line-height: 1.45; }
+      .spcl-mobile-cta { display: none; }
+
       @keyframes jokiin-promo-spin { to { transform:rotate(360deg); } }
       @keyframes jokiin-promo-glow { 50% { box-shadow:0 0 56px rgba(255,213,74,.28); } }
       @media (prefers-reduced-motion: reduce) {
-        .jokiin-lim, .jokiin-lim::before { animation:none !important; }
+        .jokiin-lim, .jokiin-lim::before, .spcl-btn-buy, .jokiin-lim-btn { animation:none !important; transition:none !important; }
       }
       @media (max-width: 760px) {
         .jokiin-lim-in { flex-direction:column; padding:16px; gap:16px; }
         .jokiin-lim-vis { flex:none; min-height:150px; font-size:26px; }
         #hargaFilterContainer { flex-wrap:nowrap !important; overflow-x:auto !important; padding-bottom:6px; }
+        .spcl-checkout-wrap { padding: 4px 0 120px; }
+        .spcl-grid { grid-template-columns: 1fr; gap: 16px; }
+        .spcl-form-grid { grid-template-columns: 1fr; }
+        .spcl-side-card { position: static; }
+        .spcl-side-card #btnSpclSubmitDesktop { display: none; }
+        .spcl-mobile-cta {
+          display: block;
+          position: fixed;
+          left: 16px;
+          right: 16px;
+          bottom: calc(16px + env(safe-area-inset-bottom));
+          z-index: 95;
+        }
+        .spcl-mobile-cta .spcl-btn-buy {
+          margin-top: 0;
+          min-height: 52px;
+          border-radius: 14px;
+          box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
+        }
       }
     `;
     document.head.appendChild(style);
@@ -99,16 +177,25 @@
     return Date.now() + state.serverTimeOffsetMs;
   }
 
+  function getStore() {
+    return window.__JOKIIN_STORE__ || null;
+  }
+
+  function getProductsList() {
+    return window.CONFIG?.PRODUCTS || getStore()?.CONFIG?.PRODUCTS || [];
+  }
+
   function ensureFeaturedProductInStorefront() {
-    if (!window.CONFIG || !Array.isArray(window.CONFIG.PRODUCTS)) return;
+    const products = getProductsList();
+    if (!Array.isArray(products)) return;
     const fp = state.featuredProduct;
-    const slug = fp.slug || fp.id;
+    const slug = fp.slug || fp.id || 'gemini-pro-18-bulan';
     const finalPrice = Math.round((fp.harga_dasar || 0) * (1 - (fp.diskon_persen || 0) / 100));
-    const existing = window.CONFIG.PRODUCTS.find(p => p.id === slug);
+    const existing = products.find(p => p.id === slug);
     if (!existing) {
-      window.CONFIG.PRODUCTS.push({
+      products.push({
         id: slug,
-        title: fp.nama,
+        title: fp.nama || 'Gemini Pro 18 Bulan',
         category: fp.kategori || 'Digital',
         price: formatRupiah(finalPrice),
         priceNum: finalPrice,
@@ -129,7 +216,479 @@
       existing.hasSale = (fp.diskon_persen || 0) > 0;
       existing.price = formatRupiah(finalPrice);
       existing.stok = fp.stok;
+      existing.isLimitedEdition = true;
       existing._isBannerOnly = true;
+    }
+  }
+
+  function isProductSpesial(productId) {
+    if (!productId) return false;
+    const fp = state.featuredProduct;
+    if (productId === 'gemini-pro-18-bulan' || productId === fp.slug || productId === fp.id) return true;
+    const prod = getProductsList().find(p => p.id === productId);
+    if (prod && (prod.isLimitedEdition || prod.is_limited_edition)) return true;
+    const apiProd = state.lastApiProducts.find(p => p.slug === productId || p.id === productId);
+    return Boolean(apiProd && apiProd.is_limited_edition);
+  }
+
+  function getActiveCartItems() {
+    const store = getStore();
+    if (store && typeof store.getCart === 'function') {
+      return store.getCart() || [];
+    }
+    return [];
+  }
+
+  function getActiveCartTipe() {
+    const items = getActiveCartItems();
+    if (items.length > 0) {
+      const hasSpesial = items.some(item => isProductSpesial(item.productId));
+      return hasSpesial ? 'SPESIAL' : 'REGULER';
+    }
+    const currentTab = getStore()?.getCurrentTab?.() || '';
+    if (currentTab === 'checkout-spesial') return 'SPESIAL';
+    return null;
+  }
+
+  async function syncServerCartAdd(productId, qty) {
+    try {
+      await fetch(`${CATALOG_API}/api/cart/items`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cart_id: getCartSessionId(),
+          product_slug: productId,
+          qty: qty || 1
+        })
+      });
+    } catch (_) {}
+  }
+
+  async function syncServerCartClear() {
+    try {
+      await fetch(`${CATALOG_API}/api/cart?cart_id=${encodeURIComponent(getCartSessionId())}`, {
+        method: 'DELETE'
+      });
+    } catch (_) {}
+  }
+
+  function showCartConflictModal(conflictExistingTipe, onConfirmClear) {
+    state.pendingConflictAction = onConfirmClear;
+    const modal = document.getElementById('cartTypeConflictModal');
+    const msgEl = document.getElementById('cartConflictMessage');
+    const clearBtn = document.getElementById('btnConflictClearCart');
+    if (!modal) {
+      if (typeof onConfirmClear === 'function') onConfirmClear();
+      return;
+    }
+    if (conflictExistingTipe === 'REGULER') {
+      if (msgEl) {
+        msgEl.textContent = 'Penawaran Spesial harus dibayar terpisah. Kosongkan keranjang reguler atau selesaikan pesanan reguler dulu?';
+      }
+      if (clearBtn) {
+        clearBtn.textContent = 'Kosongkan Keranjang Reguler';
+      }
+    } else {
+      if (msgEl) {
+        msgEl.textContent = 'Penawaran Spesial harus dibayar terpisah. Kosongkan keranjang Penawaran Spesial atau selesaikan pesanan spesial dulu?';
+      }
+      if (clearBtn) {
+        clearBtn.textContent = 'Kosongkan Keranjang Reguler';
+      }
+    }
+    modal.style.display = 'flex';
+    document.body.classList.add('modal-open');
+  }
+
+  window.closeCartConflictModal = function () {
+    state.pendingConflictAction = null;
+    const modal = document.getElementById('cartTypeConflictModal');
+    if (modal) modal.style.display = 'none';
+    if (!document.querySelector('.modal-overlay[style*="display: flex"]')) {
+      document.body.classList.remove('modal-open');
+    }
+  };
+
+  window.confirmClearCartForConflict = async function () {
+    const action = state.pendingConflictAction;
+    state.pendingConflictAction = null;
+    window.closeCartConflictModal();
+    const store = getStore();
+    if (store && typeof store.setCart === 'function') {
+      store.setCart([]);
+    } else if (typeof window.clearCart === 'function') {
+      window.clearCart();
+    }
+    await syncServerCartClear();
+    if (typeof action === 'function') {
+      action();
+    }
+  };
+
+  function clearSpecialCheckoutErrors() {
+    ['Nama', 'Nim', 'Wa', 'Gmail'].forEach(field => {
+      const errEl = document.getElementById('errSpcl' + field);
+      const inputEl = document.getElementById('spcl' + field);
+      if (errEl) {
+        errEl.textContent = '';
+        errEl.classList.remove('is-visible');
+      }
+      if (inputEl) {
+        inputEl.removeAttribute('aria-invalid');
+      }
+    });
+  }
+
+  function setSpecialFieldError(fieldSuffix, message) {
+    const errEl = document.getElementById('errSpcl' + fieldSuffix);
+    const inputEl = document.getElementById('spcl' + fieldSuffix);
+    if (errEl) {
+      errEl.textContent = message;
+      errEl.classList.add('is-visible');
+    }
+    if (inputEl) {
+      inputEl.setAttribute('aria-invalid', 'true');
+    }
+  }
+
+  function bindSpecialCheckoutInputs() {
+    const wrap = document.getElementById('tab-checkout-spesial');
+    if (!wrap || wrap.dataset.boundInputs === '1') return;
+    wrap.dataset.boundInputs = '1';
+
+    const waInput = document.getElementById('spclWa');
+    if (waInput) {
+      waInput.addEventListener('input', () => {
+        // Hanya angka, dan hilangkan angka 0 di awal jika diketik
+        const digits = waInput.value.replace(/\D/g, '').replace(/^0+/, '');
+        if (waInput.value !== digits) waInput.value = digits;
+        const errEl = document.getElementById('errSpclWa');
+        if (errEl) { errEl.textContent = ''; errEl.classList.remove('is-visible'); }
+        waInput.removeAttribute('aria-invalid');
+      });
+    }
+
+    ['spclNama', 'spclNim', 'spclWa', 'spclGmail'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const suffix = id.replace(/^spcl/, '');
+      el.addEventListener('input', () => {
+        const errEl = document.getElementById('errSpcl' + suffix);
+        if (errEl) { errEl.textContent = ''; errEl.classList.remove('is-visible'); }
+        el.removeAttribute('aria-invalid');
+      });
+      // Pastikan keyboard di mobile tidak menutupi field yang sedang diisi
+      el.addEventListener('focus', () => {
+        setTimeout(() => {
+          try {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          } catch (_) {}
+        }, 180);
+      });
+    });
+  }
+
+  window.openSpecialCheckout = function (qtyOverride) {
+    injectCatalogStyles();
+    ensureFeaturedProductInStorefront();
+    bindSpecialCheckoutInputs();
+    clearSpecialCheckoutErrors();
+
+    const fp = state.featuredProduct;
+    const qty = Math.max(1, Number(qtyOverride) || 1);
+    state.specialCheckoutQty = qty;
+    const unitPrice = Math.round((fp.harga_dasar || 0) * (1 - (fp.diskon_persen || 0) / 100));
+    const total = unitPrice * qty;
+
+    const nameEl = document.getElementById('spclProductName');
+    const sumNameEl = document.getElementById('spclSumProductName');
+    const descEl = document.getElementById('spclProductDesc');
+    const priceEl = document.getElementById('spclProductPrice');
+    const subEl = document.getElementById('spclSubtotal');
+    const totEl = document.getElementById('spclTotal');
+
+    if (nameEl) nameEl.textContent = fp.nama || 'Gemini Pro 18 Bulan';
+    if (sumNameEl) sumNameEl.textContent = fp.nama || 'Gemini Pro 18 Bulan';
+    if (descEl) descEl.textContent = `${qty}x Akun Pribadi · Garansi penuh`;
+    if (priceEl) priceEl.textContent = formatRupiah(unitPrice);
+    if (subEl) subEl.textContent = formatRupiah(total);
+    if (totEl) totEl.textContent = formatRupiah(total);
+
+    // Pre-fill user data if logged in
+    const user = getStore()?.getCurrentUser?.();
+    if (user) {
+      const nInput = document.getElementById('spclNama');
+      const gInput = document.getElementById('spclGmail');
+      const wInput = document.getElementById('spclWa');
+      if (nInput && !nInput.value && user.name) nInput.value = user.name;
+      if (gInput && !gInput.value && user.email) gInput.value = user.email;
+      if (wInput && !wInput.value && user.phone) {
+        wInput.value = String(user.phone).replace(/\D/g, '').replace(/^(62|0)+/, '');
+      }
+    }
+
+    if (typeof window.closeModal === 'function') {
+      window.closeModal('cartModal');
+    }
+    if (typeof window.switchTab === 'function') {
+      window.switchTab('checkout-spesial');
+    }
+  };
+
+  window.cancelSpecialCheckout = function () {
+    const prev = getStore()?.getLastActiveTab?.() || 'harga';
+    if (typeof window.switchTab === 'function') {
+      window.switchTab(prev);
+    }
+  };
+
+  window.submitSpecialCheckout = async function () {
+    if (state.specialCheckoutInFlight) return;
+    clearSpecialCheckoutErrors();
+
+    const nama = (document.getElementById('spclNama')?.value || '').trim();
+    const nim = (document.getElementById('spclNim')?.value || '').trim();
+    const countryCode = (document.getElementById('spclWaCountry')?.value || '62').trim();
+    const waRaw = (document.getElementById('spclWa')?.value || '').trim();
+    const gmail = (document.getElementById('spclGmail')?.value || '').trim().toLowerCase();
+
+    let hasError = false;
+    let firstInvalidEl = null;
+
+    if (!nama || nama.length < 2) {
+      setSpecialFieldError('Nama', 'Nama lengkap wajib diisi (minimal 2 karakter).');
+      hasError = true;
+      firstInvalidEl = firstInvalidEl || document.getElementById('spclNama');
+    }
+
+    if (nim.length > 40) {
+      setSpecialFieldError('Nim', 'NIM maksimal 40 karakter.');
+      hasError = true;
+      firstInvalidEl = firstInvalidEl || document.getElementById('spclNim');
+    }
+
+    if (!waRaw) {
+      setSpecialFieldError('Wa', 'Nomor WhatsApp wajib diisi.');
+      hasError = true;
+      firstInvalidEl = firstInvalidEl || document.getElementById('spclWa');
+    } else if (!/^[1-9][0-9]{7,14}$/.test(waRaw)) {
+      setSpecialFieldError('Wa', 'Nomor WhatsApp hanya boleh angka dan tidak diawali 0 (contoh: 81234567890).');
+      hasError = true;
+      firstInvalidEl = firstInvalidEl || document.getElementById('spclWa');
+    }
+
+    if (!gmail) {
+      setSpecialFieldError('Gmail', 'Alamat Gmail wajib diisi.');
+      hasError = true;
+      firstInvalidEl = firstInvalidEl || document.getElementById('spclGmail');
+    } else if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(gmail)) {
+      setSpecialFieldError('Gmail', 'Masukkan alamat Gmail yang valid (@gmail.com).');
+      hasError = true;
+      firstInvalidEl = firstInvalidEl || document.getElementById('spclGmail');
+    }
+
+    if (hasError) {
+      if (firstInvalidEl) {
+        firstInvalidEl.focus();
+      }
+      return;
+    }
+
+    const fp = state.featuredProduct;
+    if ((fp.stok || 0) <= 0) {
+      setSpecialFieldError('Gmail', 'Maaf, stok Penawaran Spesial sudah habis.');
+      return;
+    }
+
+    state.specialCheckoutInFlight = true;
+    const btnDesktop = document.getElementById('btnSpclSubmitDesktop');
+    const btnMobile = document.getElementById('btnSpclSubmitMobile');
+    [btnDesktop, btnMobile].forEach(b => {
+      if (b) {
+        b.disabled = true;
+        b.textContent = 'Memproses...';
+      }
+    });
+
+    try {
+      const res = await fetch(`${CATALOG_API}/api/checkout/spesial`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          product_slug: fp.slug || 'gemini-pro-18-bulan',
+          qty: state.specialCheckoutQty || 1,
+          nama,
+          nim,
+          country_code: countryCode,
+          whatsapp: waRaw,
+          gmail,
+          cart_id: getCartSessionId()
+        })
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const msg = data.error || 'Pesanan belum dapat diproses. Silakan coba lagi.';
+        if (data.field === 'nama') {
+          setSpecialFieldError('Nama', msg);
+        } else if (data.field === 'whatsapp') {
+          setSpecialFieldError('Wa', msg);
+        } else {
+          setSpecialFieldError('Gmail', msg);
+        }
+        return;
+      }
+
+      const order = data.order || {};
+      const orderCode = order.id || order.orderCode;
+
+      if (typeof data.remaining_stock === 'number') {
+        state.featuredProduct.stok = data.remaining_stock;
+        ensureFeaturedProductInStorefront();
+        renderPromoBanner();
+      }
+
+      // Bersihkan keranjang jika berisi item spesial
+      const store = getStore();
+      if (store && typeof store.getCart === 'function') {
+        const currentCart = store.getCart();
+        if (currentCart.some(i => isProductSpesial(i.productId))) {
+          store.setCart([]);
+        }
+      }
+
+      try {
+        localStorage.setItem('jokiin_last_order_id', orderCode);
+      } catch (_) {}
+
+      const normalizedOrder = {
+        id: orderCode,
+        orderCode: orderCode,
+        tipe: 'SPESIAL',
+        status: order.status || 'pending',
+        orderStatus: 'PENDING_ORDER',
+        paymentStatus: order.paymentStatus || 'PENDING',
+        paymentMethod: 'QRIS / Konfirmasi Admin',
+        subtotal: Number(order.subtotal || order.total || 0),
+        discount: 0,
+        paymentFee: 0,
+        total: Number(order.total || 0),
+        customer: order.customer || { name: nama, nim, whatsapp: countryCode + waRaw, email: gmail },
+        task: order.task || { title: fp.nama || 'Gemini Pro 18 Bulan', deadline: '-', notes: 'Penawaran Spesial Limited Edition' },
+        items: order.items || [{ productId: fp.slug || 'gemini-pro-18-bulan', name: fp.nama || 'Gemini Pro 18 Bulan', price: Number(order.total || 20000), quantity: state.specialCheckoutQty || 1 }],
+        emailConfirmation: order.emailConfirmation || { sent: true, to: gmail, orderId: orderCode },
+        createdAt: order.createdAt || new Date().toISOString()
+      };
+
+      if (store) {
+        store.setCurrentOrder(normalizedOrder);
+        store.renderOrderSuccess(normalizedOrder);
+      }
+      if (typeof window.switchTab === 'function') {
+        window.switchTab('order-success');
+      }
+      if (typeof window.showToast === 'function') {
+        window.showToast(`Pesanan ${orderCode} berhasil dibuat!`, 'Penawaran Spesial', 'success');
+      }
+    } catch (err) {
+      setSpecialFieldError('Gmail', err?.message || 'Gagal menghubungi server checkout.');
+    } finally {
+      state.specialCheckoutInFlight = false;
+      [btnDesktop, btnMobile].forEach(b => {
+        if (b) {
+          b.disabled = false;
+          b.textContent = 'Beli Sekarang';
+        }
+      });
+    }
+  };
+
+  function installStorefrontHooks() {
+    if (state.hooksInstalled) return;
+    if (typeof window.addToCart !== 'function' || typeof window.directCheckout !== 'function' || typeof window.goToCheckout !== 'function') {
+      return;
+    }
+    state.hooksInstalled = true;
+
+    const origAddToCart = window.addToCart;
+    const origDirectCheckout = window.directCheckout;
+    const origGoToCheckout = window.goToCheckout;
+    const origClearCart = window.clearCart;
+
+    window.addToCart = function (productId) {
+      ensureFeaturedProductInStorefront();
+      const targetIsSpesial = isProductSpesial(productId);
+      const targetTipe = targetIsSpesial ? 'SPESIAL' : 'REGULER';
+      const activeTipe = getActiveCartTipe();
+
+      if (activeTipe && activeTipe !== targetTipe) {
+        showCartConflictModal(activeTipe, () => {
+          window.addToCart(productId);
+        });
+        return;
+      }
+
+      if (targetIsSpesial) {
+        const fp = state.featuredProduct;
+        if ((fp.stok || 0) <= 0) {
+          if (typeof window.showToast === 'function') window.showToast('Stok Penawaran Spesial sudah habis.', 'Stok Habis', 'error');
+          return;
+        }
+        const items = getActiveCartItems();
+        const existing = items.find(i => i.productId === productId);
+        const maxLimit = fp.batas_beli_per_orang || 1;
+        if (existing && existing.quantity >= maxLimit) {
+          if (typeof window.showToast === 'function') {
+            window.showToast(`Batas pembelian Penawaran Spesial maksimal ${maxLimit} per orang.`, 'Batas Pembelian', 'warn');
+          }
+          return;
+        }
+      }
+
+      origAddToCart(productId);
+      syncServerCartAdd(productId, 1);
+    };
+
+    window.directCheckout = function (productId) {
+      ensureFeaturedProductInStorefront();
+      const targetIsSpesial = isProductSpesial(productId);
+      const targetTipe = targetIsSpesial ? 'SPESIAL' : 'REGULER';
+      const activeTipe = getActiveCartTipe();
+
+      if (activeTipe && activeTipe !== targetTipe) {
+        showCartConflictModal(activeTipe, () => {
+          if (targetIsSpesial) {
+            window.openSpecialCheckout(1);
+          } else {
+            origDirectCheckout(productId);
+          }
+        });
+        return;
+      }
+
+      if (targetIsSpesial) {
+        window.openSpecialCheckout(1);
+        return;
+      }
+
+      origDirectCheckout(productId);
+    };
+
+    window.goToCheckout = function () {
+      const items = getActiveCartItems();
+      if (items.length > 0 && items.some(i => isProductSpesial(i.productId))) {
+        const spItem = items.find(i => isProductSpesial(i.productId));
+        window.openSpecialCheckout(spItem?.quantity || 1);
+        return;
+      }
+      origGoToCheckout();
+    };
+
+    if (typeof origClearCart === 'function') {
+      window.clearCart = function () {
+        origClearCart();
+        syncServerCartClear();
+      };
     }
   }
 
@@ -146,6 +705,9 @@
 
   function renderPromoBanner() {
     injectCatalogStyles();
+    ensureFeaturedProductInStorefront();
+    installStorefrontHooks();
+
     const container = document.getElementById('promo-banner-section');
     if (!container) return;
 
@@ -227,13 +789,15 @@
     if (buyBtn && !isSoldOut) {
       buyBtn.addEventListener('click', () => {
         ensureFeaturedProductInStorefront();
-        if (typeof window.directCheckout === 'function') window.directCheckout(fp.slug || fp.id);
+        installStorefrontHooks();
+        window.directCheckout(fp.slug || fp.id || 'gemini-pro-18-bulan');
       });
     }
     if (cartBtn && !isSoldOut) {
       cartBtn.addEventListener('click', () => {
         ensureFeaturedProductInStorefront();
-        if (typeof window.addToCart === 'function') window.addToCart(fp.slug || fp.id);
+        installStorefrontHooks();
+        window.addToCart(fp.slug || fp.id || 'gemini-pro-18-bulan');
       });
     }
 
@@ -283,8 +847,10 @@
       };
     }
 
-    // Merge into CONFIG.PRODUCTS if present
-    if (window.CONFIG && Array.isArray(window.CONFIG.PRODUCTS)) {
+    ensureFeaturedProductInStorefront();
+
+    const products = getProductsList();
+    if (Array.isArray(products)) {
       const aliasMap = {
         'cek-turnitin': 'turnitin',
         'joki-skripsi': 'skripsi',
@@ -299,7 +865,7 @@
 
         const finalPrice = Math.round((ap.harga_dasar || 0) * (1 - (ap.diskon_persen || 0) / 100));
         const mappedSlug = aliasMap[ap.slug] || ap.slug;
-        const existing = window.CONFIG.PRODUCTS.find(
+        const existing = products.find(
           cp => cp.id === ap.slug || cp.id === mappedSlug || cp.title.toLowerCase() === String(ap.nama || '').toLowerCase()
         );
         if (existing) {
@@ -311,7 +877,7 @@
           existing.isLimitedEdition = Boolean(ap.is_limited_edition);
           existing.batasBeli = ap.batas_beli_per_orang || 1;
         } else {
-          window.CONFIG.PRODUCTS.push({
+          products.push({
             id: ap.slug || ap.id,
             title: ap.nama,
             category: ap.kategori || 'Akademik',
@@ -336,17 +902,17 @@
   function decorateStockAndLimitedBadges() {
     if (state.isDecorating) return;
     const grid = document.getElementById('full-harga');
-    if (!grid || !window.CONFIG || !Array.isArray(window.CONFIG.PRODUCTS)) return;
+    const products = getProductsList();
+    if (!grid || !Array.isArray(products)) return;
 
     state.isDecorating = true;
     try {
       grid.querySelectorAll('.service-card').forEach(card => {
         const titleEl = card.querySelector('h3');
         if (!titleEl) return;
-        const product = window.CONFIG.PRODUCTS.find(p => p.title === titleEl.textContent.trim());
+        const product = products.find(p => p.title === titleEl.textContent.trim());
         if (!product) return;
 
-        // Separate LIMITED EDITION badge above title
         if (product.isLimitedEdition && !card.querySelector('.jokiin-card-le-badge')) {
           const badge = document.createElement('span');
           badge.className = 'jokiin-le-badge jokiin-card-le-badge';
@@ -355,7 +921,6 @@
           titleEl.parentNode.insertBefore(badge, titleEl);
         }
 
-        // Stock & sold-out handling
         if (typeof product.stok === 'number') {
           let stockEl = card.querySelector('.jokiin-stock-pill');
           if (!stockEl) {
@@ -398,9 +963,13 @@
   }
 
   async function syncFromCatalogApi() {
+    injectCatalogStyles();
     setupGridObserver();
+    ensureFeaturedProductInStorefront();
+    installStorefrontHooks();
+    bindSpecialCheckoutInputs();
 
-    // 1. Check local cache broadcast from Workplace admin (instant sync on same browser)
+    // 1. Check local cache broadcast from Workplace admin
     try {
       const rawCache = localStorage.getItem('jokiin_catalog_cache');
       if (rawCache) {
@@ -423,7 +992,6 @@
       }
     } catch (_) {}
 
-    // Render immediately with default/cached state so banner is visible with zero delay
     renderPromoBanner();
 
     // 2. Fetch live from Supabase jokiin-catalog Edge Function
@@ -456,6 +1024,15 @@
 
     renderPromoBanner();
   }
+
+  window.addEventListener('jokiin:store-ready', () => {
+    ensureFeaturedProductInStorefront();
+    installStorefrontHooks();
+    if (state.lastApiProducts.length) {
+      applyCatalogProductsToStorefront(state.lastApiProducts);
+    }
+    renderPromoBanner();
+  });
 
   window.addEventListener('storage', (e) => {
     if (e.key === 'jokiin_catalog_cache') {

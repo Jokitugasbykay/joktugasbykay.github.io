@@ -16,6 +16,7 @@ async function db(path:string,method='GET',body?:unknown,prefer?:string) {
   if(message.includes('PROMO_EXPIRED')) throw new ApiError(409,'Kode promo tidak berlaku atau sudah berakhir.');
   if(message.includes('PRICE_CHANGED')) throw new ApiError(409,'Harga layanan berubah. Muat ulang ringkasan lalu checkout kembali.');
   if(message.includes('SERVICE_UNAVAILABLE')) throw new ApiError(409,'Salah satu layanan sedang tidak tersedia.');
+  if(message.includes('CART_TYPE_CONFLICT')) throw new ApiError(409,'Penawaran Spesial harus dibayar terpisah. Kosongkan keranjang reguler atau selesaikan pesanan reguler dulu.');
   if(message.includes('CHECKOUT_CONFLICT')) throw new ApiError(409,'Data checkout berubah. Silakan buat permintaan checkout baru.');
   if(result?.code==='23505') throw new ApiError(409,'Permintaan sudah diproses. Silakan muat ulang data.');
   console.error('Database request failed',response.status,result?.code);
@@ -51,7 +52,7 @@ async function ensureProfile(user:any) {
  const profile={id:user.id,name:String(user.user_metadata?.full_name||user.email?.split('@')[0]||'Pengguna').slice(0,120),email:user.email||null,photo_url:null,role:'user'};
  await db('profiles?on_conflict=id','POST',profile,'resolution=ignore-duplicates');return profile;
 }
-const ORDER_FIELDS='id,order_code,user_id,service_id,items,customer,task,notes,status,total_price,subtotal,discount,service_fee,payment_fee,payment_method,payment_status,estimated_completion,created_at';
+const ORDER_FIELDS='id,order_code,tipe,total,nama,nim,whatsapp,gmail,judul_tugas,deadline,catatan,user_id,service_id,items,customer,task,notes,status,total_price,subtotal,discount,service_fee,payment_fee,payment_method,payment_status,estimated_completion,created_at';
 Deno.serve(async(req:Request)=>{
  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
  try{
@@ -69,13 +70,13 @@ Deno.serve(async(req:Request)=>{
   if(input.action==='checkout'){
    const requestKey=uuid(input.requestKey);
    if(!input.customer||!input.task)throw new ApiError(400,'Data pemesan dan tugas wajib diisi.');
-   const customer={name:str(input.customer.name,'Nama',120),whatsapp:str(input.customer.whatsapp,'WhatsApp',20),email:str(input.customer.email,'Email',254).toLowerCase()};
-   if(!/^\d{8,18}$/.test(customer.whatsapp)||!/^[^\s@]+@gmail\.com$/.test(customer.email))throw new ApiError(400,'Periksa nomor WhatsApp dan alamat Gmail.');
+   const customer={name:str(input.customer.name,'Nama',120),nim:str(input.customer.nim||'-','NIM',50,false)||'-',whatsapp:str(input.customer.whatsapp,'WhatsApp',20),email:str(input.customer.email,'Email',254).toLowerCase()};
+   if(!/^[1-9]\d{7,17}$/.test(customer.whatsapp)||customer.whatsapp.startsWith('620')||!/^[^\s@]+@gmail\.com$/.test(customer.email))throw new ApiError(400,'Periksa nomor WhatsApp (hanya angka tanpa awalan 0) dan alamat Gmail.');
    const task={title:str(input.task.title,'Judul tugas',250),deadline:str(input.task.deadline,'Deadline',40),notes:str(input.task.notes,'Catatan tugas',10000),googleDriveUrl:str(input.task.googleDriveUrl,'Link Drive',2000,false)};
    if(!/^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}(?::\d{2})?)?$/.test(task.deadline)||!Number.isFinite(Date.parse(task.deadline)))throw new ApiError(400,'Deadline tidak valid.');
    if(task.googleDriveUrl){let url:URL;try{url=new URL(task.googleDriveUrl);}catch{throw new ApiError(400,'Link Drive tidak valid.');}if(url.protocol!=='https:'||!['drive.google.com','docs.google.com'].includes(url.hostname)||url.username||url.password)throw new ApiError(400,'Gunakan link HTTPS Google Drive atau Google Docs.');}
    if(!Array.isArray(input.items)||input.items.length<1||input.items.length>20)throw new ApiError(400,'Keranjang tidak valid.');
-   const items=input.items.map((item:any)=>{if(!item||!Number.isInteger(item.quantity)||item.quantity<1||item.quantity>100)throw new ApiError(400,'Jumlah layanan harus 1–100.');const productId=str(item.productId,'Layanan',80);if(!/^[a-z0-9-]+$/.test(productId))throw new ApiError(400,'Layanan tidak valid.');return {productId,quantity:item.quantity};});
+   const items=input.items.map((item:any)=>{if(!item||!Number.isInteger(item.quantity)||item.quantity<1||item.quantity>100)throw new ApiError(400,'Jumlah layanan harus 1–100.');const productId=str(item.productId,'Layanan',80);if(!/^[a-z0-9-]+$/.test(productId))throw new ApiError(400,'Layanan tidak valid.');if(productId==='gemini-pro-18-bulan'||item.is_limited_edition===true||String(item.tipe||'').toUpperCase()==='SPESIAL')throw new ApiError(409,'Penawaran Spesial harus dibayar terpisah. Kosongkan keranjang reguler atau selesaikan pesanan reguler dulu.');return {productId,quantity:item.quantity};});
    const paymentMethod=str(input.paymentMethod,'Pembayaran',30);
    const promo=str(input.promo,'Promo',30,false).toUpperCase();
    const expectedTotal=input.expectedTotal;if(typeof expectedTotal!=='number'||!Number.isFinite(expectedTotal)||expectedTotal<0)throw new ApiError(400,'Total tidak valid.');
@@ -86,16 +87,9 @@ Deno.serve(async(req:Request)=>{
   }
   if(input.action==='track'){
    const code=str(input.orderCode,'Nomor order',80).toUpperCase().replace(/^#/,'');
-   if(!/^NUG-\d{8}-(?:[A-F0-9]{32}|[A-F0-9]{12}|\d{4})$/.test(code))throw new ApiError(404,'Pesanan tidak ditemukan. Gunakan nomor order lengkap.');
-   const secure=/^NUG-\d{8}-(?:[A-F0-9]{32}|[A-F0-9]{12})$/.test(code);
-   // Old short references are not credentials. They require ownership or an admin session.
-   let ownerFilter='';
-   if(!secure){
-    if(!user)throw new ApiError(404,'Nomor order lama perlu dicek melalui akun pemilik atau Admin Salsa.');
-    const profiles=await db(`profiles?id=eq.${user.id}&select=role`);
-    if(profiles[0]?.role!=='admin')ownerFilter=`&user_id=eq.${user.id}`;
-   }
-   const rows=await db(`orders?order_code=eq.${encodeURIComponent(code)}${ownerFilter}&select=${ORDER_FIELDS}&limit=1`);
+   if(!/^(NUG[A-HJ-NP-Z2-9]{26}|SPCL[A-HJ-NP-Z2-9]{23})$/.test(code))throw new ApiError(404,'Pesanan tidak ditemukan. Gunakan ID pesanan lengkap (NUG... atau SPCL...).');
+   const orderTipe=code.startsWith('SPCL')?'SPESIAL':'REGULER';
+   const rows=await db(`orders?order_code=eq.${encodeURIComponent(code)}&select=${ORDER_FIELDS}&limit=1`);
    if(!rows.length)throw new ApiError(404,'Pesanan tidak ditemukan. Periksa nomor order lengkap.');
    const row=rows[0];
    let fullAccess=Boolean(user && row.user_id===user.id);
@@ -103,9 +97,9 @@ Deno.serve(async(req:Request)=>{
     const profiles=await db(`profiles?id=eq.${user.id}&select=role`);
     fullAccess=profiles[0]?.role==='admin';
    }
-   // Knowing a reference grants status tracking, never access to personal/task data.
-   const order=fullAccess ? row : {
-    order_code:row.order_code,status:row.status,payment_status:row.payment_status,
+   const order=fullAccess ? {...row, tipe: orderTipe} : {
+    order_code:row.order_code,tipe:orderTipe,status:row.status,payment_status:row.payment_status,
+    total:row.total||row.total_price,total_price:row.total_price,
     estimated_completion:row.estimated_completion,created_at:row.created_at,
     detail_restricted:true
    };

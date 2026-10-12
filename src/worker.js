@@ -264,6 +264,9 @@ async function createPayment(request, env) {
   const task = input && typeof input.task === 'object' && input.task !== null ? input.task : {};
   if (!clean(customer.name, 100) || !/^\S+@\S+\.\S+$/.test(clean(customer.email, 254))) return json({ error: 'Data pelanggan tidak valid.' }, 400);
   if (!items.length || items.length > 20) return json({ error: 'Keranjang tidak valid.' }, 400);
+  if (items.some(it => it?.productId === 'gemini-pro-18-bulan' || it?.slug === 'gemini-pro-18-bulan' || it?.is_limited_edition === true || String(it?.tipe || '').toUpperCase() === 'SPESIAL')) {
+    return json({ error: 'Penawaran Spesial harus dibayar terpisah. Kosongkan keranjang reguler atau selesaikan pesanan reguler dulu.', code: 'CART_TYPE_CONFLICT' }, 409);
+  }
   if (!clean(task.title, 250) || !clean(task.notes, 3000) || !clean(task.deadline, 50)) return json({ error: 'Detail tugas belum lengkap.' }, 400);
 
   const slugs = [...new Set(items.map(item => clean(item?.productId, 80)).filter(Boolean))];
@@ -283,7 +286,7 @@ async function createPayment(request, env) {
     const price = Math.max(1, Math.round(originalPrice - (saleAmount > 0 ? saleAmount : originalPrice * salePercent / 100)));
     if (!Number.isSafeInteger(originalPrice) || originalPrice <= 0 || !Number.isSafeInteger(price) || price < 0) return json({ error: 'Harga layanan belum valid.' }, 503);
     total += price * quantity;
-    lines.push({ service_id: service.id, product_id: service.slug, name: service.name, quantity, unit_price: price, original_price: originalPrice, sale_percent: salePercent, sale_amount: saleAmount, sale_label: clean(service.sale_label, 50) });
+    lines.push({ service_id: service.id, product_id: service.slug, name: service.name, quantity, unit_price: price, original_price: originalPrice, sale_percent: salePercent, sale_amount: saleAmount, sale_label: clean(service.sale_label, 50), tipe: 'REGULER' });
   }
   const subtotal = total;
   const submittedPromo = clean(input.promo, 24).toUpperCase();
@@ -303,12 +306,9 @@ async function createPayment(request, env) {
     if (saved.payment_status === 'PAID') {
       return json({ order_id: saved.id, order_code: saved.order_code, payment_status: 'PAID', payment_method:saved.payment_method || null, total });
     }
-    // Link pending yang masih berlaku dikembalikan agar klik ulang tidak membuat tagihan ganda.
     if (saved.payment_status === 'PENDING' && saved.payment_url) {
       return json({ order_id: saved.id, order_code: saved.order_code, paymentUrl: saved.payment_url, payment_status: saved.payment_status, transaction_id: saved.mayar_transaction_id, expires_at: saved.expires_at, total });
     }
-    // Percobaan gagal/kedaluwarsa tidak boleh mengunci draft checkout selamanya.
-    // Lepaskan request_key lama (tetap menyimpan riwayat barisnya) lalu buat tagihan baru di bawah.
     await supabase(env, `payment_orders?id=eq.${encodeURIComponent(saved.id)}`, {
       method: 'PATCH',
       body: JSON.stringify({
@@ -317,9 +317,42 @@ async function createPayment(request, env) {
       })
     });
   }
-  const orderCode = `NUG-${new Date().toISOString().slice(0, 10).replaceAll('-', '')}-${crypto.randomUUID().replaceAll('-', '').toUpperCase()}`;
-  const order = { order_code: orderCode, request_key: requestKey, user_id: userId, customer: { name: clean(customer.name, 100), nim: clean(customer.nim, 50), email: clean(customer.email, 254).toLowerCase(), whatsapp: clean(customer.whatsapp, 24) }, task: { title: clean(task.title, 250), deadline: clean(task.deadline, 50), notes: clean(task.notes, 3000), googleDriveUrl: clean(task.googleDriveUrl, 2048) }, promo: submittedPromo, items: lines, total_price: total, payment_status: 'PENDING', status: 'pending' };
+  const orderCode = await generateUniqueOrderId(env, 'REGULER');
+  const cleanCustomer = { name: clean(customer.name, 100), nim: clean(customer.nim, 50), email: clean(customer.email, 254).toLowerCase(), whatsapp: clean(customer.whatsapp, 24) };
+  const cleanTask = { title: clean(task.title, 250), deadline: clean(task.deadline, 50), notes: clean(task.notes, 3000), googleDriveUrl: clean(task.googleDriveUrl, 2048) };
+  const order = {
+    order_code: orderCode,
+    tipe: 'REGULER',
+    total,
+    nama: cleanCustomer.name,
+    nim: cleanCustomer.nim || '-',
+    whatsapp: cleanCustomer.whatsapp,
+    gmail: cleanCustomer.email,
+    judul_tugas: cleanTask.title,
+    deadline: cleanTask.deadline,
+    catatan: cleanTask.notes,
+    request_key: requestKey,
+    user_id: userId,
+    customer: cleanCustomer,
+    task: cleanTask,
+    promo: submittedPromo,
+    items: lines,
+    total_price: total,
+    payment_status: 'PENDING',
+    status: 'pending'
+  };
   const inserted = await supabase(env, 'payment_orders', { method: 'POST', headers: { Prefer: 'return=representation' }, body: JSON.stringify(order) });
+  await supabase(env, 'order_items', {
+    method: 'POST',
+    body: JSON.stringify(lines.map(l => ({
+      order_id: orderCode,
+      produk: l.name,
+      product_slug: l.product_id,
+      qty: l.quantity,
+      harga_satuan: l.unit_price,
+      subtotal: l.unit_price * l.quantity
+    })))
+  }).catch(() => {});
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
   const payment = await mayar(env, 'POST', 'payments/create', { name: `Pembayaran JOKI.IN - ${lines[0].name}`, amount: total, email: order.customer.email, mobile: order.customer.whatsapp, description: `Pesanan JOKI.IN ${orderCode}. Silakan selesaikan pembayaran untuk memulai pengerjaan.`, expiredAt: expiresAt });
   const data = payment.data?.data || {};
@@ -330,7 +363,38 @@ async function createPayment(request, env) {
     return json({ error: 'Layanan pembayaran sedang sibuk. Coba lagi.' }, 502);
   }
   await supabase(env, `payment_orders?order_code=eq.${encodeURIComponent(orderCode)}`, { method: 'PATCH', body: JSON.stringify({ payment_url: paymentUrl, mayar_transaction_id: transactionId, expires_at: expiresAt }) });
-  return json({ order_id: inserted?.[0]?.id || orderCode, order_code: orderCode, paymentUrl, payment_status: 'PENDING', transaction_id: transactionId, expires_at: expiresAt, total }, 201);
+  return json({ order_id: inserted?.[0]?.id || orderCode, order_code: orderCode, tipe: 'REGULER', paymentUrl, payment_status: 'PENDING', transaction_id: transactionId, expires_at: expiresAt, total }, 201);
+}
+
+const ORDER_ID_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+
+export function generateCryptoOrderId(tipe = 'REGULER') {
+  const isSpecial = String(tipe || '').toUpperCase() === 'SPESIAL';
+  const prefix = isSpecial ? 'SPCL' : 'NUG';
+  const targetLen = isSpecial ? 23 : 26;
+  let suffix = '';
+  while (suffix.length < targetLen) {
+    const bytes = crypto.getRandomValues(new Uint8Array(64));
+    for (let i = 0; i < bytes.length && suffix.length < targetLen; i++) {
+      if (bytes[i] < 248) {
+        suffix += ORDER_ID_ALPHABET[bytes[i] % 31];
+      }
+    }
+  }
+  return prefix + suffix;
+}
+
+async function generateUniqueOrderId(env, tipe = 'REGULER') {
+  try {
+    const generated = await supabase(env, 'rpc/generate_jokiin_order_id', {
+      method: 'POST',
+      body: JSON.stringify({ p_tipe: tipe })
+    });
+    if (typeof generated === 'string' && /^(NUG[A-HJ-NP-Z2-9]{26}|SPCL[A-HJ-NP-Z2-9]{23})$/.test(generated)) {
+      return generated;
+    }
+  } catch (_) {}
+  return generateCryptoOrderId(tipe);
 }
 
 async function webhook(request, env) {
@@ -358,13 +422,14 @@ async function paymentStatus(request, env) {
   const filter = isUuid
     ? `id=eq.${encodeURIComponent(reference)}`
     : `order_code=eq.${encodeURIComponent(reference.toUpperCase())}`;
-  const rows = await supabase(env, `payment_orders?${filter}&select=id,user_id,request_key,order_code,total_price,payment_status,payment_method,payment_url,expires_at,mayar_transaction_id,last_verified_at&limit=1`);
+  const rows = await supabase(env, `payment_orders?${filter}&select=id,user_id,request_key,order_code,tipe,total_price,payment_status,payment_method,payment_url,expires_at,mayar_transaction_id,last_verified_at&limit=1`);
   if (!rows.length) return json({ error: 'Pesanan tidak ditemukan.' }, 404);
   const order = await reconcilePayment(env, rows[0]);
   const userId = await authenticatedUserId(request, env);
   const key = request.headers.get('x-order-key');
   const owner = (userId && userId === order.user_id) || (key && key === order.request_key);
-  const summary = { order_id: order.id, order_code: order.order_code, payment_status: order.payment_status, expires_at: order.expires_at };
+  const orderTipe = String(order.order_code || '').startsWith('SPCL') ? 'SPESIAL' : 'REGULER';
+  const summary = { order_id: order.id, order_code: order.order_code, tipe: orderTipe, payment_status: order.payment_status, expires_at: order.expires_at };
   if (!owner) return json(summary);
   return json({ ...summary, amount: order.total_price, payment_method: order.payment_status === 'PAID' ? order.payment_method || null : null, payment_url: order.payment_status === 'PENDING' ? order.payment_url : null });
 }
@@ -413,11 +478,37 @@ async function promo(request, env) {
   }
 }
 
+async function proxyCatalogEdge(request, env, url) {
+  const baseUrl = (env.SUPABASE_URL || 'https://xdbnwjvxqtpkoaigedsk.supabase.co').replace(/\/+$/, '');
+  const target = `${baseUrl}/functions/v1/jokiin-catalog${url.pathname}${url.search}`;
+  const headers = new Headers(request.headers);
+  if (env.SUPABASE_ANON_KEY && !headers.has('apikey')) {
+    headers.set('apikey', env.SUPABASE_ANON_KEY);
+  }
+  const init = {
+    method: request.method,
+    headers,
+    body: ['GET', 'HEAD'].includes(request.method) ? undefined : await request.text()
+  };
+  return fetch(target, init);
+}
+
 export default { async fetch(request, env) {
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: JSON_HEADERS });
   const url = new URL(request.url);
   try {
     if (url.pathname === '/api/health') return json({ ok: true, worker: 'jokiin-payment-api' });
+    if (
+      url.pathname === '/api/cart' ||
+      url.pathname === '/api/cart/items' ||
+      url.pathname === '/api/checkout/spesial' ||
+      url.pathname === '/api/checkout/reguler' ||
+      url.pathname.startsWith('/api/orders/') ||
+      url.pathname.startsWith('/api/products') ||
+      url.pathname === '/api/promo/banner'
+    ) {
+      return await proxyCatalogEdge(request, env, url);
+    }
     if (url.pathname === '/api/create-mayar-payment' && request.method === 'POST') return await createPayment(request, env);
     if (url.pathname === '/api/upload-task-file' && request.method === 'POST') return await uploadTaskFile(request, env);
     if (url.pathname === '/api/task-folder' && ['GET', 'PUT'].includes(request.method)) return await taskFolderSetting(request, env);
@@ -426,7 +517,6 @@ export default { async fetch(request, env) {
     if (url.pathname === '/api/promo' && request.method === 'GET') return await promo(request, env);
     if (/^\/(?:\.|src\/|supabase\/|tests\/|worker\.js|wrangler\.|package(?:-lock)?\.json|README)/i.test(url.pathname)) return json({ error: 'Not found' }, 404);
     if (/\.(?:php|sql|sqlite|env)$/i.test(url.pathname) || /^\/(?:database|storage|api)\//i.test(url.pathname)) return json({ error: 'Not found' }, 404);
-    // SPA fallback: direct visits such as /payment or /prices still serve index.html.
     if (env.ASSETS) {
       const asset = await env.ASSETS.fetch(request);
       if (asset.status !== 404) return asset;
