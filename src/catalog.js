@@ -6,7 +6,7 @@
   const CATALOG_API = 'https://xdbnwjvxqtpkoaigedsk.supabase.co/functions/v1/jokiin-catalog';
 
   const state = {
-    penawaranSpesialAktif: false,
+    penawaranSpesialAktif: true,
     promoJudul: 'Penawaran Spesial Minggu Ini',
     promoDeadline: null,
     serverTimeOffsetMs: 0,
