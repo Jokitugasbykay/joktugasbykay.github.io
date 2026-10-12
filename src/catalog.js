@@ -122,6 +122,14 @@
         popularity: 99,
         _isBannerOnly: true
       });
+    } else {
+      existing.title = fp.nama || existing.title;
+      existing.priceNum = finalPrice;
+      existing.originalPrice = fp.harga_dasar;
+      existing.hasSale = (fp.diskon_persen || 0) > 0;
+      existing.price = formatRupiah(finalPrice);
+      existing.stok = fp.stok;
+      existing._isBannerOnly = true;
     }
   }
 
@@ -392,6 +400,12 @@
         const parsed = JSON.parse(rawCache);
         if (typeof parsed.penawaran_spesial_aktif === 'boolean') {
           state.penawaranSpesialAktif = parsed.penawaran_spesial_aktif;
+        }
+        if (parsed.promo_deadline) {
+          state.promoDeadline = parsed.promo_deadline;
+        }
+        if (parsed.promo_judul) {
+          state.promoJudul = parsed.promo_judul;
         }
         if (parsed.bannerUrl) {
           state.banners = [{ gambar_url: parsed.bannerUrl, judul: parsed.bannerTitle || 'Promo' }];

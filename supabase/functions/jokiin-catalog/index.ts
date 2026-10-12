@@ -352,10 +352,25 @@ Deno.serve(async (req: Request) => {
     if (method === 'PATCH' && path === '/api/admin/promo/penawaran-spesial') {
       await requireAdmin(req);
       const body = await req.json().catch(() => { throw new ApiError(400, 'Body tidak valid.'); });
-      if (typeof body?.aktif !== 'boolean') throw new ApiError(400, 'Field "aktif" harus boolean.');
-      await dbFetch(`promo_settings?key=eq.penawaran_spesial_aktif`, 'PATCH', { value: String(body.aktif), updated_at: new Date().toISOString() });
-      await dbFetch('sync_logs', 'POST', { status: 'success', pesan: `Penawaran Spesial ${body.aktif ? 'diaktifkan' : 'dinonaktifkan'}` }).catch(() => {});
-      return ok({ penawaran_spesial_aktif: body.aktif });
+      if (body?.aktif !== undefined && typeof body?.aktif !== 'boolean') {
+        throw new ApiError(400, 'Field "aktif" harus boolean.');
+      }
+      const nowIso = new Date().toISOString();
+      if (typeof body?.aktif === 'boolean') {
+        await dbFetch(`promo_settings?key=eq.penawaran_spesial_aktif`, 'PATCH', { value: String(body.aktif), updated_at: nowIso });
+      }
+      if (typeof body?.promo_deadline === 'string') {
+        await dbFetch(`promo_settings?key=eq.promo_deadline`, 'PATCH', { value: body.promo_deadline.trim(), updated_at: nowIso });
+      }
+      if (typeof body?.promo_judul === 'string' && body.promo_judul.trim()) {
+        await dbFetch(`promo_settings?key=eq.promo_judul`, 'PATCH', { value: body.promo_judul.trim().slice(0, 200), updated_at: nowIso });
+      }
+      await dbFetch('sync_logs', 'POST', { status: 'success', pesan: `Pengaturan Penawaran Spesial diperbarui` }).catch(() => {});
+      return ok({
+        penawaran_spesial_aktif: body?.aktif,
+        promo_deadline: body?.promo_deadline,
+        promo_judul: body?.promo_judul
+      });
     }
 
     // POST /api/admin/promo/banner/upload

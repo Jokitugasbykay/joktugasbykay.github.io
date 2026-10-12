@@ -7017,6 +7017,18 @@
                     notIncluded: ["Penulisan jurnal dari nol", "Jaminan *Accepted*"],
                     estimatedTime: "1-2 Hari Kerja", revisionTerms: "Maksimal 2x Revisi",
                     price: "Mulai dari Rp80.000", priceNum: 80000, features: ["Format Standar", "Riset Mendalam", "Kualitas Akademik"]
+                },
+                {
+                    id: "gemini-pro-18-bulan", title: "Gemini Pro 18 Bulan", category: "Digital", popularity: 10, icon: "✨",
+                    image: "assets/catalog/portfolio-02.jpg",
+                    desc: "Akses penuh Gemini Advanced 18 bulan, Garansi penuh selama masa aktif, Akun pribadi siap pakai",
+                    benefits: ["Akses penuh Gemini Advanced 18 bulan", "Garansi penuh selama masa aktif", "Akun pribadi siap pakai"],
+                    target: "Mahasiswa dan pengguna yang membutuhkan AI asisten akademik premium.",
+                    notIncluded: [],
+                    estimatedTime: "Instan (10-30 Menit)", revisionTerms: "Garansi penuh 18 bulan",
+                    price: "Rp 20.000", priceNum: 20000, originalPrice: 50000, hasSale: true, salePercent: 60,
+                    features: ["Gemini Advanced", "Garansi 18 Bulan", "Akun Pribadi"],
+                    _isBannerOnly: true
                 }
             ],
             socialMedia: [{ name: "Instagram", user: "@allaboutjoki.in", url: "https://www.instagram.com/allaboutjoki.in?stkn=MWhoNXozOTh3enpubg==", icon: "📸" }, { name: "TikTok", user: "@jokiintugasmahasiswa", url: "https://www.tiktok.com/@jokiintugasmahasiswa?_r=1&_t=ZS-99m1BX7I0w9", icon: "🎵" }],
@@ -7033,6 +7045,7 @@
                 { q: "Apakah bisa melakukan revisi?", a: "Revisi mengikuti ketentuan masing-masing layanan. Detail ketentuan ditampilkan pada informasi layanan." }
             ]
         };
+        window.CONFIG = CONFIG;
 
 
         // UTILS
@@ -7041,6 +7054,7 @@
         let servicesBySlug = new Map();
         const PRODUCT_METADATA = CONFIG.PRODUCTS.map(p => ({ ...p }));
         const SAFE_CATALOGUE_METADATA = {
+            'gemini-pro-18-bulan': { icon: '✨', category: 'Digital', popularity: 10, features: ['Gemini Advanced', 'Garansi 18 Bulan', 'Akun Pribadi'], _isBannerOnly: true },
             'bimbingan-parafrase': { icon: '✍️', category: 'Editing', popularity: 7, features: ['Review kalimat', 'Gaya bahasa', 'Sitasi'] },
             'konsultasi-olah-data-kualitatif': { icon: '📊', category: 'Konsultasi', popularity: 8, features: ['NVivo', 'Interpretasi data', 'Pendampingan'] },
             'konsultasi-olah-data-kuantitatif': { icon: '📈', category: 'Konsultasi', popularity: 8, features: ['SPSS', 'Regresi', 'PLS'] },
@@ -9037,7 +9051,8 @@ Teman tugas mahasiswa.`;
         window.sortHarga = (val) => { currentSort = val; renderHargaGrid(); };
 
         function renderHargaGrid() {
-            let filtered = currentFilter === 'Semua' ? [...CONFIG.PRODUCTS] : CONFIG.PRODUCTS.filter(p => p.category === currentFilter);
+            const baseList = CONFIG.PRODUCTS.filter(p => !p._isBannerOnly);
+            let filtered = currentFilter === 'Semua' ? [...baseList] : baseList.filter(p => p.category === currentFilter);
             if (currentSort === 'asc') filtered.sort((a, b) => a.priceNum - b.priceNum);
             else if (currentSort === 'desc') filtered.sort((a, b) => b.priceNum - a.priceNum);
             else if (currentSort === 'populer') filtered.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
@@ -9722,7 +9737,7 @@ Teman tugas mahasiswa.`;
     <script src="assets/ui-refinements.js?v=1.04"></script>
     <link rel="stylesheet" href="assets/mobile-fixes.css?v=1.06">
     <link rel="stylesheet" href="assets/desktop-storefront.css?v=20261009.5">
-    <script src="assets/catalog.js?v=2"></script>
+    <script src="assets/catalog.js?v=3"></script>
 
 </body>
 
