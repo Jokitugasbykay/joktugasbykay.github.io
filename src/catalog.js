@@ -11,6 +11,7 @@
     promoDeadline: null,
     serverTimeOffsetMs: 0,
     banners: [],
+    lastApiProducts: [],
     featuredProduct: {
       id: 'gemini-pro-18-bulan',
       nama: 'Gemini Pro 18 Bulan',
@@ -26,7 +27,8 @@
       is_limited_edition: true,
       gambar_url: null
     },
-    countdownTimer: null
+    countdownTimer: null,
+    isDecorating: false
   };
 
   function formatRupiah(num) {
@@ -51,10 +53,10 @@
     const style = document.createElement('style');
     style.id = 'jokiin-dynamic-catalog-styles';
     style.textContent = `
-      #promo-banner-section { margin: 20px 0 10px; font-family: "Plus Jakarta Sans", system-ui, sans-serif; }
+      #promo-banner-section { margin: 24px 0 10px; font-family: "Plus Jakarta Sans", system-ui, sans-serif; }
       .jokiin-promo-head { display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin:16px 0 18px; }
       .jokiin-promo-tag { display:inline-block; background:#f59e0b; color:#2b2100; font-weight:800; font-size:12px; letter-spacing:.08em; padding:6px 12px; border-radius:999px; }
-      .jokiin-promo-title { margin:10px 0 0; font-size:clamp(24px, 3vw, 34px); font-weight:800; color:var(--text-main, #eef3f1); }
+      .jokiin-promo-title { margin:10px 0 0; font-size:clamp(24px, 3vw, 34px); font-weight:800; color:var(--text-main, #eef3f1); line-height:1.2; }
       .jokiin-cd { display:flex; gap:8px; }
       .jokiin-cd > div { background:#141c20; color:#eef3f1; border:1px solid #243038; border-radius:10px; padding:6px 10px; text-align:center; font-weight:800; min-width:54px; }
       .jokiin-cd small { display:block; font-size:10px; color:#8a9a95; font-weight:600; }
@@ -63,7 +65,7 @@
       .jokiin-lim-in { position:relative; background:#0f161a; color:#eef3f1; border-radius:19px; display:flex; gap:28px; padding:28px; }
       .jokiin-lim-vis { flex:0 0 340px; min-height:240px; border-radius:16px; background:linear-gradient(135deg,#1b3b8f,#6a4bd8 55%,#1fd18b); background-size:cover; background-position:center; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:34px; text-align:center; line-height:1.1; color:#fff; padding:16px; }
       .jokiin-lim-inf { flex:1; display:flex; flex-direction:column; gap:14px; }
-      .jokiin-lim-inf h2 { margin:0; font-size:clamp(22px, 2.6vw, 30px); color:#eef3f1; }
+      .jokiin-lim-inf h2 { margin:0; font-size:clamp(22px, 2.6vw, 30px); color:#eef3f1; font-weight:800; }
       .jokiin-lim-inf ul { margin:0; padding-left:18px; color:#c4cfca; line-height:1.7; font-size:15px; }
       .jokiin-le-badge { align-self:flex-start; border:1px solid #1fd18b; color:#1fd18b; font-weight:800; font-size:11px; letter-spacing:.1em; padding:5px 10px; border-radius:999px; display:inline-block; }
       .jokiin-lim-pr { font-size:32px; font-weight:800; color:#1fd18b; }
@@ -71,12 +73,13 @@
       .jokiin-lim-bar { height:8px; border-radius:8px; background:#1d2a2f; overflow:hidden; margin-top:4px; }
       .jokiin-lim-bar i { display:block; height:100%; background:linear-gradient(90deg,#ffd54a,#1fd18b); }
       .jokiin-lim-row { display:flex; gap:10px; flex-wrap:wrap; }
-      .jokiin-lim-btn { border:1px solid #2a3a37; background:transparent; color:#1fd18b; font:600 14px "Plus Jakarta Sans",sans-serif; min-height:44px; padding:0 18px; border-radius:12px; cursor:pointer; }
-      .jokiin-lim-btn.f { background:#1fd18b; color:#04251a; border-color:#1fd18b; }
+      .jokiin-lim-btn { border:1px solid #2a3a37; background:transparent; color:#1fd18b; font:600 14px "Plus Jakarta Sans",sans-serif; min-height:44px; padding:0 18px; border-radius:12px; cursor:pointer; transition:all .2s ease; }
+      .jokiin-lim-btn.f { background:#1fd18b; color:#04251a; border-color:#1fd18b; font-weight:700; }
+      .jokiin-lim-btn:hover:not(:disabled) { transform:translateY(-1px); filter:brightness(1.06); }
       .jokiin-lim-btn:disabled { opacity:.45; cursor:not-allowed; }
       .jokiin-catalog-div { display:flex; align-items:center; gap:16px; margin:40px 0 20px; color:#8a9a95; font-size:13px; font-weight:600; letter-spacing:.08em; }
       .jokiin-catalog-div::before, .jokiin-catalog-div::after { content:""; flex:1; height:1px; background:#1d262b; }
-      .jokiin-stock-pill { display:inline-block; font-size:11px; font-weight:700; color:#8a9a95; margin-top:2px; }
+      .jokiin-stock-pill { display:inline-block; font-size:11px; font-weight:700; color:#8a9a95; margin-top:4px; }
       .jokiin-stock-pill.habis { color:#ef4444; font-weight:800; }
       @keyframes jokiin-promo-spin { to { transform:rotate(360deg); } }
       @keyframes jokiin-promo-glow { 50% { box-shadow:0 0 56px rgba(255,213,74,.28); } }
@@ -96,6 +99,43 @@
     return Date.now() + state.serverTimeOffsetMs;
   }
 
+  function ensureFeaturedProductInStorefront() {
+    if (!window.CONFIG || !Array.isArray(window.CONFIG.PRODUCTS)) return;
+    const fp = state.featuredProduct;
+    const slug = fp.slug || fp.id;
+    const finalPrice = Math.round((fp.harga_dasar || 0) * (1 - (fp.diskon_persen || 0) / 100));
+    const existing = window.CONFIG.PRODUCTS.find(p => p.id === slug);
+    if (!existing) {
+      window.CONFIG.PRODUCTS.push({
+        id: slug,
+        title: fp.nama,
+        category: fp.kategori || 'Digital',
+        price: formatRupiah(finalPrice),
+        priceNum: finalPrice,
+        originalPrice: fp.harga_dasar,
+        hasSale: (fp.diskon_persen || 0) > 0,
+        stok: fp.stok,
+        isLimitedEdition: true,
+        batasBeli: fp.batas_beli_per_orang || 1,
+        desc: fp.deskripsi || '',
+        image: fp.gambar_url || 'assets/catalog/portfolio-02.jpg',
+        popularity: 99,
+        _isBannerOnly: true
+      });
+    }
+  }
+
+  function toggleDefaultHargaHeader(hide) {
+    const tabHarga = document.getElementById('tab-harga');
+    if (!tabHarga) return;
+    const sub = tabHarga.querySelector(':scope > .section-subtitle');
+    const title = tabHarga.querySelector(':scope > .section-title');
+    const desc = tabHarga.querySelector(':scope > .section-desc');
+    [sub, title, desc].forEach(el => {
+      if (el) el.style.display = hide ? 'none' : '';
+    });
+  }
+
   function renderPromoBanner() {
     injectCatalogStyles();
     const container = document.getElementById('promo-banner-section');
@@ -106,11 +146,13 @@
       state.countdownTimer = null;
     }
 
-    // Jika Penawaran Spesial dimatikan, banner di paling atas katalog langsung hilang tanpa menghapus gambarnya
     if (!state.penawaranSpesialAktif) {
       container.innerHTML = '';
+      toggleDefaultHargaHeader(false);
       return;
     }
+
+    toggleDefaultHargaHeader(true);
 
     const fp = state.featuredProduct;
     const hargaAkhir = Math.round((fp.harga_dasar || 0) * (1 - (fp.diskon_persen || 0) / 100));
@@ -175,11 +217,13 @@
     const cartBtn = document.getElementById('jokiin-promo-cart-btn');
     if (buyBtn && !isSoldOut) {
       buyBtn.addEventListener('click', () => {
+        ensureFeaturedProductInStorefront();
         if (typeof window.directCheckout === 'function') window.directCheckout(fp.slug || fp.id);
       });
     }
     if (cartBtn && !isSoldOut) {
       cartBtn.addEventListener('click', () => {
+        ensureFeaturedProductInStorefront();
         if (typeof window.addToCart === 'function') window.addToCart(fp.slug || fp.id);
       });
     }
@@ -218,8 +262,8 @@
 
   function applyCatalogProductsToStorefront(apiProducts) {
     if (!Array.isArray(apiProducts) || !apiProducts.length) return;
+    state.lastApiProducts = apiProducts;
 
-    // Pick limited edition product for banner if present
     const limited = apiProducts.find(p => p.is_limited_edition && p.is_active !== false);
     if (limited) {
       state.featuredProduct = {
@@ -229,13 +273,22 @@
       };
     }
 
-    // Merge into CONFIG.PRODUCTS if present
     if (window.CONFIG && Array.isArray(window.CONFIG.PRODUCTS)) {
+      const aliasMap = {
+        'cek-turnitin': 'turnitin',
+        'joki-skripsi': 'skripsi',
+        'joki-ppt': 'ppt',
+        'joki-proposal-skripsi': 'bimbingan-proposal-skripsi'
+      };
+
       apiProducts.forEach(ap => {
         if (ap.is_active === false) return;
+        if (limited && ap.slug === limited.slug) return;
+
         const finalPrice = Math.round((ap.harga_dasar || 0) * (1 - (ap.diskon_persen || 0) / 100));
+        const mappedSlug = aliasMap[ap.slug] || ap.slug;
         const existing = window.CONFIG.PRODUCTS.find(
-          cp => cp.id === ap.slug || cp.title.toLowerCase() === String(ap.nama || '').toLowerCase()
+          cp => cp.id === ap.slug || cp.id === mappedSlug || cp.title.toLowerCase() === String(ap.nama || '').toLowerCase()
         );
         if (existing) {
           existing.priceNum = finalPrice;
@@ -246,10 +299,10 @@
           existing.isLimitedEdition = Boolean(ap.is_limited_edition);
           existing.batasBeli = ap.batas_beli_per_orang || 1;
         } else {
-          window.CONFIG.PRODUCTS.unshift({
+          window.CONFIG.PRODUCTS.push({
             id: ap.slug || ap.id,
             title: ap.nama,
-            category: ap.kategori || 'Digital',
+            category: ap.kategori || 'Akademik',
             price: formatRupiah(finalPrice),
             priceNum: finalPrice,
             originalPrice: ap.harga_dasar,
@@ -258,64 +311,81 @@
             isLimitedEdition: Boolean(ap.is_limited_edition),
             batasBeli: ap.batas_beli_per_orang || 1,
             desc: ap.deskripsi || '',
-            popularity: 95
+            image: ap.gambar_url || 'assets/catalog/portfolio-06.jpg',
+            popularity: 85
           });
         }
       });
 
-      if (typeof window.filterHarga === 'function') {
-        const activeBtn = document.querySelector('#hargaFilterContainer .filter-pill.active');
-        window.filterHarga(activeBtn ? activeBtn.innerText.trim() : 'Semua');
-      }
       decorateStockAndLimitedBadges();
     }
   }
 
   function decorateStockAndLimitedBadges() {
+    if (state.isDecorating) return;
     const grid = document.getElementById('full-harga');
     if (!grid || !window.CONFIG || !Array.isArray(window.CONFIG.PRODUCTS)) return;
 
-    grid.querySelectorAll('.service-card').forEach(card => {
-      const titleEl = card.querySelector('h3');
-      if (!titleEl) return;
-      const product = window.CONFIG.PRODUCTS.find(p => p.title === titleEl.textContent.trim());
-      if (!product) return;
+    state.isDecorating = true;
+    try {
+      grid.querySelectorAll('.service-card').forEach(card => {
+        const titleEl = card.querySelector('h3');
+        if (!titleEl) return;
+        const product = window.CONFIG.PRODUCTS.find(p => p.title === titleEl.textContent.trim());
+        if (!product) return;
 
-      // Separate LIMITED EDITION badge above title
-      if (product.isLimitedEdition && !card.querySelector('.jokiin-card-le-badge')) {
-        const badge = document.createElement('span');
-        badge.className = 'jokiin-le-badge jokiin-card-le-badge';
-        badge.style.marginBottom = '4px';
-        badge.textContent = 'LIMITED EDITION';
-        titleEl.parentNode.insertBefore(badge, titleEl);
-      }
+        if (product.isLimitedEdition && !card.querySelector('.jokiin-card-le-badge')) {
+          const badge = document.createElement('span');
+          badge.className = 'jokiin-le-badge jokiin-card-le-badge';
+          badge.style.marginBottom = '4px';
+          badge.textContent = 'LIMITED EDITION';
+          titleEl.parentNode.insertBefore(badge, titleEl);
+        }
 
-      // Stock & sold-out handling
-      if (typeof product.stok === 'number') {
-        let stockEl = card.querySelector('.jokiin-stock-pill');
-        if (!stockEl) {
-          stockEl = document.createElement('span');
-          stockEl.className = 'jokiin-stock-pill';
-          const priceBox = card.querySelector('.pricing-price-box');
-          if (priceBox) priceBox.appendChild(stockEl);
+        if (typeof product.stok === 'number') {
+          let stockEl = card.querySelector('.jokiin-stock-pill');
+          if (!stockEl) {
+            stockEl = document.createElement('span');
+            stockEl.className = 'jokiin-stock-pill';
+            const priceBox = card.querySelector('.pricing-price-box');
+            if (priceBox) priceBox.appendChild(stockEl);
+          }
+          if (product.stok <= 0) {
+            stockEl.className = 'jokiin-stock-pill habis';
+            stockEl.textContent = 'Habis';
+            card.querySelectorAll('.cf-card-actions button').forEach((btn, idx) => {
+              btn.disabled = true;
+              if (idx === 0) btn.textContent = 'Habis';
+            });
+          } else {
+            stockEl.className = 'jokiin-stock-pill';
+            stockEl.textContent = `Stok: ${product.stok}`;
+          }
         }
-        if (product.stok <= 0) {
-          stockEl.className = 'jokiin-stock-pill habis';
-          stockEl.textContent = 'Habis';
-          card.querySelectorAll('.cf-card-actions button').forEach((btn, idx) => {
-            btn.disabled = true;
-            if (idx === 0) btn.textContent = 'Habis';
-          });
-        } else {
-          stockEl.className = 'jokiin-stock-pill';
-          stockEl.textContent = `Stok: ${product.stok}`;
-        }
+      });
+    } finally {
+      state.isDecorating = false;
+    }
+  }
+
+  function setupGridObserver() {
+    const grid = document.getElementById('full-harga');
+    if (!grid || grid.dataset.jokiinObserved === '1') return;
+    grid.dataset.jokiinObserved = '1';
+    const obs = new MutationObserver(() => {
+      if (state.isDecorating) return;
+      if (state.lastApiProducts.length) {
+        applyCatalogProductsToStorefront(state.lastApiProducts);
+      } else {
+        decorateStockAndLimitedBadges();
       }
     });
+    obs.observe(grid, { childList: true });
   }
 
   async function syncFromCatalogApi() {
-    // 1. Check local cache broadcast from Workplace admin (instant sync on same browser)
+    setupGridObserver();
+
     try {
       const rawCache = localStorage.getItem('jokiin_catalog_cache');
       if (rawCache) {
@@ -332,7 +402,8 @@
       }
     } catch (_) {}
 
-    // 2. Fetch live from Supabase jokiin-catalog Edge Function
+    renderPromoBanner();
+
     try {
       const [bannerRes, prodRes] = await Promise.all([
         fetch(`${CATALOG_API}/api/promo/banner`).catch(() => null),
