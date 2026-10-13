@@ -6,6 +6,7 @@
 #nav-container :focus-visible { outline:2px solid var(--primary); outline-offset:-2px; }
 .ui-art-icon { display:inline-block; width:64px; height:64px; object-fit:contain; vertical-align:middle; flex:none; }
 .home-category > span:first-child,.help-cat-icon,.testimonial-product-card__icon { width:64px!important; height:64px!important; background:transparent!important; border:0!important; box-shadow:none!important; border-radius:0!important; padding:0!important; display:grid; place-items:center; }
+.testimonial-product-card__icon img,.testimonial-product-card__icon .ui-art-icon { width:64px!important; height:64px!important; max-width:64px!important; max-height:64px!important; object-fit:contain!important; }
 .home-category { gap:4px; }
 .testimonial-product-card__head { align-items:center; }
 .testimonial-product-card__glow,.recommendation-card::after { display:none!important; }

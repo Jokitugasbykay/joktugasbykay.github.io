@@ -5,7 +5,7 @@
   const fallback = ['file-text','file-pen-line','chart-no-axes-column','book-open','keyboard','palette','chart-line','message-circle','folder','user','refresh-cw','receipt','sparkles'];
   const art = (index) => {
     const element = document.createElement('img'); element.className = 'ui-art-icon';
-    element.src = new URL(`ui-art/${images[index]}.png?v=20261013-hd2`,assetBase).href;
+    element.src = new URL(`ui-art/${images[index]}.png?v=20261013-hd3`,assetBase).href;
     element.width=128; element.height=128; element.alt=''; element.setAttribute('aria-hidden','true');
     element.onerror = () => {element.onerror=null; element.src=new URL(`ui-icons/${fallback[index]}.svg`,assetBase).href;};
     return element;
@@ -30,9 +30,16 @@
   function decorate(root) {
     root.querySelectorAll?.('.home-category,.help-cat-card,.testimonial-product-card').forEach(card => {
       const holder = card.querySelector('.home-category > span:first-child,.help-cat-icon,.testimonial-product-card__icon');
-      if (!holder || holder.querySelector('.ui-art-icon')) return;
+      if (!holder) return;
       const title = card.querySelector('h3,h4')?.textContent || card.textContent;
-      holder.replaceChildren(art(indexFor(title)));
+      const targetIdx = indexFor(title);
+      const existing = holder.querySelector('.ui-art-icon');
+      if (existing && existing.src.includes(`ui-art/${images[targetIdx]}.png`)) {
+        existing.style.removeProperty('width');
+        existing.style.removeProperty('height');
+        return;
+      }
+      holder.replaceChildren(art(targetIdx));
     });
     root.querySelectorAll?.('img[src*="sparkles.svg"]').forEach(image => image.remove());
   }
