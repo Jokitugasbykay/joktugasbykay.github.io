@@ -5,7 +5,7 @@
   const fallback = ['file-text','file-pen-line','chart-no-axes-column','book-open','keyboard','palette','chart-line','message-circle','folder','user','refresh-cw','receipt','sparkles'];
   const art = (index) => {
     const element = document.createElement('img'); element.className = 'ui-art-icon';
-    element.src = new URL(`ui-art/${images[index]}.png`,assetBase).href;
+    element.src = new URL(`ui-art/${images[index]}.png?v=20261013-hd2`,assetBase).href;
     element.width=128; element.height=128; element.alt=''; element.setAttribute('aria-hidden','true');
     element.onerror = () => {element.onerror=null; element.src=new URL(`ui-icons/${fallback[index]}.svg`,assetBase).href;};
     return element;
