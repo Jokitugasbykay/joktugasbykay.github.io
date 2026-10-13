@@ -144,7 +144,7 @@ $$;
 
 -- Seed initial products matching design reference
 INSERT INTO products (nama, slug, kategori, deskripsi, harga_dasar, diskon_persen, stok, batas_beli_per_orang, is_active, is_limited_edition) VALUES
-  ('Gemini Pro 18 Bulan', 'gemini-pro-18-bulan', 'Digital', 'Akses penuh Gemini Advanced 18 bulan, garansi penuh, akun pribadi.', 50000, 60, 20, 1, true, true),
+  ('Gemini Pro 18 Bulan', 'gemini-pro-18-bulan', 'Digital', 'Akses penuh Gemini Advanced 18 bulan, Garansi selama 1 minggu, Akun pribadi siap pakai', 50000, 60, 20, 1, true, true),
   ('Cek Turnitin', 'cek-turnitin', 'Pengecekan', 'Pengecekan plagiarisme Turnitin no-repository aman dan cepat.', 4000, 0, 999, 10, true, false),
   ('Joki Skripsi', 'joki-skripsi', 'Penelitian', 'Pendampingan dan pengerjaan skripsi lengkap hingga sidang.', 16000000, 19, 10, 1, true, false),
   ('Joki PPT', 'joki-ppt', 'Desain', 'Pembuatan slide presentasi profesional, menarik, dan rapi.', 13000, 0, 100, 5, true, false),

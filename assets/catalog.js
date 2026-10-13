@@ -18,7 +18,7 @@
       nama: 'Gemini Pro 18 Bulan',
       slug: 'gemini-pro-18-bulan',
       kategori: 'Digital',
-      deskripsi: 'Akses penuh Gemini Advanced 18 bulan, Garansi penuh selama masa aktif, Akun pribadi siap pakai',
+      deskripsi: 'Akses penuh Gemini Advanced 18 bulan, Garansi selama 1 minggu, Akun pribadi siap pakai',
       harga_dasar: 50000,
       diskon_persen: 60,
       stok: 14,
@@ -435,7 +435,7 @@
     const mobileBtnTotalEl = document.getElementById('spclMobileBtnTotal');
 
     if (prodTitleEl) prodTitleEl.textContent = fp.nama || 'Gemini Pro 18 Bulan';
-    if (prodQtyPriceEl) prodQtyPriceEl.textContent = `${qty} × ${formatRupiah(unitPrice)} · Batas 1x per hari · Akun Pribadi · Garansi penuh`;
+    if (prodQtyPriceEl) prodQtyPriceEl.textContent = `${qty} × ${formatRupiah(unitPrice)} · Batas 1x per hari · Akun Pribadi · Garansi 1 minggu`;
     if (prodSubtotalEl) prodSubtotalEl.textContent = formatRupiah(total);
     if (sumProdNameEl) sumProdNameEl.textContent = fp.nama || 'Gemini Pro 18 Bulan';
     if (sumUnitPriceEl) sumUnitPriceEl.textContent = formatRupiah(unitPrice);
@@ -826,7 +826,7 @@
       ? `background-image:linear-gradient(rgba(15,22,26,.25),rgba(15,22,26,.25)),url('${escapeHtml(bannerImg)}');`
       : '';
 
-    const benefits = String(fp.deskripsi || 'Akses penuh 18 bulan, Garansi penuh, Langsung aktif')
+    const benefits = String(fp.deskripsi || 'Akses penuh 18 bulan, Garansi selama 1 minggu, Langsung aktif')
       .split(',')
       .map(s => s.trim())
       .filter(Boolean);
