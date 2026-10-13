@@ -95,6 +95,8 @@
       .jokiin-lim-btn.f { font-weight:700; }
       .jokiin-lim-btn:hover:not(:disabled) { transform:translateY(-1px); filter:brightness(1.06); }
       .jokiin-lim-btn:disabled { opacity:.45; cursor:not-allowed; }
+      .jokiin-desk-only { display: block; }
+      .jokiin-mob-only { display: none; }
       .jokiin-catalog-div { display:flex; align-items:center; gap:16px; margin:40px 0 20px; font-size:13px; font-weight:600; letter-spacing:.08em; }
       .jokiin-catalog-div::before, .jokiin-catalog-div::after { content:""; flex:1; height:1px; }
       .jokiin-stock-pill { display:inline-block; font-size:11px; font-weight:700; margin-top:4px; }
@@ -177,6 +179,8 @@
         .jokiin-lim, .jokiin-lim::before, .jokiin-lim-btn { animation:none !important; transition:none !important; }
       }
       @media (max-width: 760px) {
+        .jokiin-desk-only { display: none !important; }
+        .jokiin-mob-only { display: block !important; }
         .jokiin-lim-in { flex-direction:column; padding:16px; gap:16px; }
         .jokiin-lim-vis {
           width: 100% !important;
@@ -451,7 +455,7 @@
     if (sumTotalEl) sumTotalEl.textContent = formatRupiah(total);
     if (mobileBtnTotalEl) mobileBtnTotalEl.textContent = formatRupiah(total);
 
-    const bannerImg = state.banners[0]?.gambar_url || fp.gambar_url || '';
+    const bannerImg = state.banners?.find(b => !/mobile/i.test(b.judul || '') && b.urutan !== 1)?.gambar_url || state.banners?.find(b => b.gambar_url)?.gambar_url || fp.gambar_url || '';
     if (bannerImg) {
       if (prodThumbEl) {
         prodThumbEl.style.backgroundImage = `url('${bannerImg}')`;
@@ -829,15 +833,25 @@
     const maxSlot = Math.max(fp.stok_awal || 20, fp.stok || 1);
     const pct = Math.max(0, Math.min(100, Math.round(((fp.stok || 0) / maxSlot) * 100)));
     const isSoldOut = (fp.stok || 0) <= 0;
-    const desktopBanner = state.banners?.find(b => b.urutan === 0 || !/mobile/i.test(b.judul || ''))?.gambar_url || state.banners[0]?.gambar_url || fp.gambar_url || '';
-    const mobileBanner = state.banners?.find(b => b.urutan === 1 || /mobile/i.test(b.judul || ''))?.gambar_url || '';
-    const hasPhoto = Boolean((desktopBanner && String(desktopBanner).trim()) || (mobileBanner && String(mobileBanner).trim()));
-    const deskUrl = desktopBanner || mobileBanner || '';
-    const mobUrl = mobileBanner || desktopBanner || '';
-    const visStyle = hasPhoto
-      ? `--desk-banner:url('${escapeHtml(deskUrl)}'); --mob-banner:url('${escapeHtml(mobUrl)}'); background-size:cover; background-position:center;`
-      : '';
-    const visText = hasPhoto ? '' : escapeHtml(fp.nama.replace(/\s+\d+\s+Bulan$/i, '') || fp.nama);
+    const desktopBannerObj = state.banners?.find(b => !/mobile/i.test(b.judul || '') && b.urutan !== 1);
+    const mobileBannerObj = state.banners?.find(b => /mobile/i.test(b.judul || '') || b.urutan === 1);
+
+    const desktopBanner = desktopBannerObj?.gambar_url || (!/mobile/i.test(fp.nama || '') ? fp.gambar_url || '' : '');
+    const mobileBanner = mobileBannerObj?.gambar_url || '';
+
+    const hasDesktopPhoto = Boolean(desktopBanner && String(desktopBanner).trim());
+    const hasMobilePhoto = Boolean(mobileBanner && String(mobileBanner).trim());
+
+    const visStyle = [
+      hasDesktopPhoto ? `--desk-banner:url('${escapeHtml(desktopBanner)}');` : '',
+      hasMobilePhoto ? `--mob-banner:url('${escapeHtml(mobileBanner)}');` : '',
+      'background-size:cover; background-position:center;'
+    ].filter(Boolean).join(' ');
+
+    const rawOfferTitle = fp.nama.replace(/\s+\d+\s+Bulan$/i, '') || fp.nama;
+    const deskText = hasDesktopPhoto ? '' : `<span class="jokiin-desk-only">${escapeHtml(rawOfferTitle)}</span>`;
+    const mobText = hasMobilePhoto ? '' : `<span class="jokiin-mob-only">${escapeHtml(rawOfferTitle)}</span>`;
+    const visText = `${deskText}${mobText}`;
 
     const benefits = String(fp.deskripsi || 'Akses penuh 18 bulan, Garansi selama 1 minggu, Langsung aktif')
       .split(',')

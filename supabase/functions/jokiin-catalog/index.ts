@@ -1039,7 +1039,16 @@ Deno.serve(async (req: Request) => {
       if (mime === 'image/webp' && !isWebp) throw new ApiError(400, 'File bukan WebP yang valid.');
       const publicUrl = await storageUpload('banners', filename, bytes, mime);
       const judul = String(form.get('judul') || 'Banner Promo').slice(0, 200);
-      const [banner] = await dbFetch('promo_banners', 'POST', { judul, gambar_url: publicUrl, is_active: true, tampil_di_atas: true, urutan: 0 }, 'return=representation');
+      const isMobile = /mobile/i.test(judul);
+      const urutan = isMobile ? 1 : 0;
+      try {
+        if (isMobile) {
+          await dbFetch('promo_banners?urutan=eq.1', 'PATCH', { is_active: false });
+        } else {
+          await dbFetch('promo_banners?urutan=eq.0', 'PATCH', { is_active: false });
+        }
+      } catch (_) {}
+      const [banner] = await dbFetch('promo_banners', 'POST', { judul, gambar_url: publicUrl, is_active: true, tampil_di_atas: true, urutan }, 'return=representation');
       return ok({ banner, url: publicUrl }, 201);
     }
 
