@@ -1,8 +1,8 @@
 (() => {
   'use strict';
   const assetBase = new URL('.',document.currentScript.src);
-  const images = ['document','writing','presentation','book','keyboard','palette','chart','chat','folder','user','revision','receipt'];
-  const fallback = ['file-text','file-pen-line','chart-no-axes-column','book-open','keyboard','palette','chart-line','message-circle','folder','user','refresh-cw','receipt'];
+  const images = ['document','writing','presentation','book','keyboard','palette','chart','chat','folder','user','revision','receipt','gemini'];
+  const fallback = ['file-text','file-pen-line','chart-no-axes-column','book-open','keyboard','palette','chart-line','message-circle','folder','user','refresh-cw','receipt','sparkles'];
   const art = (index) => {
     const element = document.createElement('img'); element.className = 'ui-art-icon';
     element.src = new URL(`ui-art/${images[index]}.png`,assetBase).href;
@@ -12,6 +12,7 @@
   };
   const indexFor = value => {
     const text = String(value || '').toLowerCase();
+    if(/gemini/.test(text)) return 12;
     if(/ppt|presentasi/.test(text)) return 2;
     if(/edit|revisi karya ilmiah/.test(text)) return 1;
     if(/desain|poster|palette/.test(text)) return 5;
