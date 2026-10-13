@@ -81,7 +81,7 @@
       .jokiin-lim { position:relative; border-radius:22px; padding:3px; overflow:hidden; transition:background .2s, box-shadow .2s; }
       .jokiin-lim::before { content:""; position:absolute; left:-50%; top:-50%; width:200%; height:200%; background:conic-gradient(from 0deg,transparent 0 55%,#ffd54a 70%,#1fd18b 85%,#4ea1ff 95%,transparent); animation:jokiin-promo-spin 3s linear infinite; }
       .jokiin-lim-in { position:relative; border-radius:19px; display:flex; gap:28px; padding:28px; transition:background .2s, border-color .2s, color .2s; }
-      .jokiin-lim-vis { flex:0 0 340px; min-height:240px; border-radius:16px; background:linear-gradient(135deg,#1b3b8f,#6a4bd8 55%,#1fd18b); background-size:cover; background-position:center; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:34px; text-align:center; line-height:1.1; color:#fff; padding:16px; box-shadow:0 8px 24px rgba(0,0,0,0.12); }
+      .jokiin-lim-vis { flex:0 0 340px; min-height:240px; border-radius:16px; background-image: var(--desk-banner, linear-gradient(135deg,#1b3b8f,#6a4bd8 55%,#1fd18b)); background-size:cover; background-position:center; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:34px; text-align:center; line-height:1.1; color:#fff; padding:16px; box-shadow:0 8px 24px rgba(0,0,0,0.12); }
       .jokiin-lim-inf { flex:1; display:flex; flex-direction:column; gap:14px; }
       .jokiin-lim-inf h2 { margin:0; font-size:clamp(22px, 2.6vw, 30px); font-weight:800; line-height:1.2; }
       .jokiin-lim-inf ul { margin:0; padding-left:18px; line-height:1.7; font-size:15px; }
@@ -185,6 +185,7 @@
           height: auto !important;
           flex: none !important;
           border-radius: 14px !important;
+          background-image: var(--mob-banner, var(--desk-banner, linear-gradient(135deg,#1b3b8f,#6a4bd8 55%,#1fd18b))) !important;
           background-size: cover !important;
           background-position: center !important;
         }
@@ -828,10 +829,13 @@
     const maxSlot = Math.max(fp.stok_awal || 20, fp.stok || 1);
     const pct = Math.max(0, Math.min(100, Math.round(((fp.stok || 0) / maxSlot) * 100)));
     const isSoldOut = (fp.stok || 0) <= 0;
-    const bannerImg = state.banners[0]?.gambar_url || fp.gambar_url || '';
-    const hasPhoto = Boolean(bannerImg && String(bannerImg).trim());
+    const desktopBanner = state.banners?.find(b => b.urutan === 0 || !/mobile/i.test(b.judul || ''))?.gambar_url || state.banners[0]?.gambar_url || fp.gambar_url || '';
+    const mobileBanner = state.banners?.find(b => b.urutan === 1 || /mobile/i.test(b.judul || ''))?.gambar_url || '';
+    const hasPhoto = Boolean((desktopBanner && String(desktopBanner).trim()) || (mobileBanner && String(mobileBanner).trim()));
+    const deskUrl = desktopBanner || mobileBanner || '';
+    const mobUrl = mobileBanner || desktopBanner || '';
     const visStyle = hasPhoto
-      ? `background-image:url('${escapeHtml(bannerImg)}'); background-size:cover; background-position:center;`
+      ? `--desk-banner:url('${escapeHtml(deskUrl)}'); --mob-banner:url('${escapeHtml(mobUrl)}'); background-size:cover; background-position:center;`
       : '';
     const visText = hasPhoto ? '' : escapeHtml(fp.nama.replace(/\s+\d+\s+Bulan$/i, '') || fp.nama);
 
@@ -1083,8 +1087,11 @@
         if (parsed.promo_judul) {
           state.promoJudul = parsed.promo_judul;
         }
-        if (parsed.bannerUrl) {
-          state.banners = [{ gambar_url: parsed.bannerUrl, judul: parsed.bannerTitle || 'Promo' }];
+        if (parsed.bannerUrl || parsed.bannerMobileUrl) {
+          const banners = [];
+          if (parsed.bannerUrl) banners.push({ gambar_url: parsed.bannerUrl, judul: parsed.bannerTitle || 'Promo (Desktop)', urutan: 0 });
+          if (parsed.bannerMobileUrl) banners.push({ gambar_url: parsed.bannerMobileUrl, judul: (parsed.bannerTitle || 'Promo') + ' (Mobile)', urutan: 1 });
+          state.banners = banners;
         }
         if (Array.isArray(parsed.products)) {
           applyCatalogProductsToStorefront(parsed.products);
