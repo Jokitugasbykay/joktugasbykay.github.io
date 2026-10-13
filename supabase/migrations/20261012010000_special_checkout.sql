@@ -160,13 +160,17 @@ BEGIN
     RAISE EXCEPTION 'OUT_OF_STOCK: Maaf, stok % sudah habis atau tidak mencukupi (sisa stok: %).', v_product.nama, v_product.stok;
   END IF;
 
-  SELECT COALESCE(SUM(qty), 0) INTO v_bought
-  FROM public.special_buy_limits
-  WHERE product_id = v_product.id
-    AND (lower(gmail) = lower(trim(p_gmail)) OR whatsapp = trim(p_whatsapp));
+  -- Batas pembelian 1 hari 1x per orang (dalam kurun waktu 24 jam terakhir berdasarkan Gmail atau WhatsApp)
+  SELECT COALESCE(SUM(s.qty), 0) INTO v_bought
+  FROM public.special_buy_limits s
+  LEFT JOIN public.payment_orders p ON p.order_code = s.order_code
+  WHERE s.product_id = v_product.id
+    AND (lower(s.gmail) = lower(trim(p_gmail)) OR s.whatsapp = trim(p_whatsapp))
+    AND s.created_at >= (now() - interval '24 hours')
+    AND (p.payment_status IS NULL OR p.payment_status NOT IN ('CANCELED', 'EXPIRED', 'FAILED'));
 
   IF (v_bought + p_qty) > COALESCE(v_product.batas_beli_per_orang, 1) THEN
-    RAISE EXCEPTION 'BUY_LIMIT_EXCEEDED: Batas pembelian Penawaran Spesial maksimal % per orang (berdasarkan Gmail atau nomor WhatsApp).', COALESCE(v_product.batas_beli_per_orang, 1);
+    RAISE EXCEPTION 'BUY_LIMIT_EXCEEDED: Batas pembelian Penawaran Spesial maksimal %x per hari per orang (berdasarkan Gmail atau WhatsApp). Anda sudah membeli hari ini, silakan coba lagi besok.', COALESCE(v_product.batas_beli_per_orang, 1);
   END IF;
 
   v_unit_price := GREATEST(0, ROUND(v_product.harga_dasar * (100 - COALESCE(v_product.diskon_persen, 0)) / 100.0))::bigint;

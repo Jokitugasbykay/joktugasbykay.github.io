@@ -435,7 +435,7 @@
     const mobileBtnTotalEl = document.getElementById('spclMobileBtnTotal');
 
     if (prodTitleEl) prodTitleEl.textContent = fp.nama || 'Gemini Pro 18 Bulan';
-    if (prodQtyPriceEl) prodQtyPriceEl.textContent = `${qty} × ${formatRupiah(unitPrice)} · Akun Pribadi · Garansi penuh`;
+    if (prodQtyPriceEl) prodQtyPriceEl.textContent = `${qty} × ${formatRupiah(unitPrice)} · Batas 1x per hari · Akun Pribadi · Garansi penuh`;
     if (prodSubtotalEl) prodSubtotalEl.textContent = formatRupiah(total);
     if (sumProdNameEl) sumProdNameEl.textContent = fp.nama || 'Gemini Pro 18 Bulan';
     if (sumUnitPriceEl) sumUnitPriceEl.textContent = formatRupiah(unitPrice);
@@ -579,6 +579,12 @@
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         const msg = data.error || 'Pesanan belum dapat diproses. Silakan coba lagi.';
+        if (data.field_errors && typeof data.field_errors === 'object') {
+          if (data.field_errors.nama) setSpecialFieldError('Nama', data.field_errors.nama);
+          if (data.field_errors.whatsapp) setSpecialFieldError('Wa', data.field_errors.whatsapp);
+          if (data.field_errors.gmail) setSpecialFieldError('Gmail', data.field_errors.gmail);
+          return;
+        }
         if (data.field === 'nama') {
           setSpecialFieldError('Nama', msg);
         } else if (data.field === 'whatsapp') {
@@ -724,7 +730,7 @@
         const maxLimit = fp.batas_beli_per_orang || 1;
         if (existing && existing.quantity >= maxLimit) {
           if (typeof window.showToast === 'function') {
-            window.showToast(`Batas pembelian Penawaran Spesial maksimal ${maxLimit} per orang.`, 'Batas Pembelian', 'warn');
+            window.showToast(`Batas pembelian Penawaran Spesial maksimal ${maxLimit}x per hari per orang.`, 'Batas Pembelian', 'warn');
           }
           return;
         }
