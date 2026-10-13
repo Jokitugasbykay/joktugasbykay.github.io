@@ -377,7 +377,7 @@ async function createPayment(request, env) {
 
 const ORDER_ID_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 
-export function generateCryptoOrderId(tipe = 'REGULER') {
+function generateCryptoOrderId(tipe = 'REGULER') {
   const isSpecial = String(tipe || '').toUpperCase() === 'SPESIAL';
   const prefix = isSpecial ? 'SPCL' : 'NUG';
   const targetLen = isSpecial ? 23 : 26;
