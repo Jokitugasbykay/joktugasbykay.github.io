@@ -1025,8 +1025,8 @@
           titleEl.parentNode.insertBefore(badge, titleEl);
         }
 
+        let stockEl = card.querySelector('.jokiin-stock-pill');
         if (typeof product.stok === 'number') {
-          let stockEl = card.querySelector('.jokiin-stock-pill');
           if (!stockEl) {
             stockEl = document.createElement('span');
             stockEl.className = 'jokiin-stock-pill';
@@ -1044,6 +1044,8 @@
             stockEl.className = 'jokiin-stock-pill';
             stockEl.textContent = `Stok: ${product.stok}`;
           }
+        } else if (stockEl) {
+          stockEl.remove();
         }
       });
     } finally {
@@ -1127,6 +1129,37 @@
           applyCatalogProductsToStorefront(pData.products);
         }
       }
+
+      // Pastikan seluruh data dari Supabase public.services ter-update
+      try {
+        const sRes = await fetch('https://xdbnwjvxqtpkoaigedsk.supabase.co/rest/v1/services?is_active=eq.true&order=id.asc', {
+          headers: {
+            apikey: 'sb_publishable_WuihnHZo0ZJbVGCMe1sWJg_QVdRKw4z',
+            Authorization: 'Bearer sb_publishable_WuihnHZo0ZJbVGCMe1sWJg_QVdRKw4z'
+          }
+        }).catch(() => null);
+        if (sRes && sRes.ok) {
+          const sRows = await sRes.json();
+          if (Array.isArray(sRows) && sRows.length) {
+            const mapped = sRows.map(s => {
+              const isLimited = Boolean(s.slug === 'gemini-pro-18-bulan' || s.is_limited_edition || s.sale_label === 'LIMITED EDITION');
+              return {
+                id: s.id,
+                nama: s.name,
+                slug: s.slug,
+                kategori: s.category || 'Akademik',
+                deskripsi: s.description || '',
+                harga_dasar: Number(s.price || 0),
+                diskon_persen: Number(s.sale_percent || 0),
+                stok: isLimited ? 13 : null,
+                is_active: s.is_active !== false,
+                is_limited_edition: isLimited
+              };
+            });
+            applyCatalogProductsToStorefront(mapped);
+          }
+        }
+      } catch (_) {}
     } catch (_) {}
 
     renderPromoBanner();
