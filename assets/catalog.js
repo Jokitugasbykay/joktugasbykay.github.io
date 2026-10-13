@@ -433,7 +433,8 @@
     bindSpecialCheckoutInputs();
 
     const fp = state.featuredProduct;
-    const qty = Math.max(1, Number(qtyOverride) || state.specialCheckoutQty || 1);
+    const maxLimit = fp.batas_beli_per_orang || 1;
+    const qty = Math.min(maxLimit, Math.max(1, Number(qtyOverride) || state.specialCheckoutQty || 1));
     state.specialCheckoutQty = qty;
     const unitPrice = Math.round((fp.harga_dasar || 0) * (1 - (fp.diskon_persen || 0) / 100));
     const total = unitPrice * qty;
@@ -784,11 +785,48 @@
       const items = getActiveCartItems();
       if (items.length > 0 && items.some(i => isProductSpesial(i.productId))) {
         const spItem = items.find(i => isProductSpesial(i.productId));
-        window.openSpecialCheckout(spItem?.quantity || 1);
+        const maxLimit = state.featuredProduct?.batas_beli_per_orang || 1;
+        window.openSpecialCheckout(Math.min(maxLimit, spItem?.quantity || 1));
         return;
       }
       origGoToCheckout();
     };
+
+    const origChangeCartQty = window.changeCartQty;
+    if (typeof origChangeCartQty === 'function') {
+      window.changeCartQty = function (id, delta) {
+        if (delta > 0 && isProductSpesial(id)) {
+          const maxLimit = state.featuredProduct?.batas_beli_per_orang || 1;
+          const items = getActiveCartItems();
+          const existing = items.find(i => i.productId === id);
+          if (existing && existing.quantity >= maxLimit) {
+            if (typeof window.showToast === 'function') {
+              window.showToast(`Batas pembelian Penawaran Spesial maksimal ${maxLimit}x per hari per orang.`, 'Batas Pembelian', 'warn');
+            }
+            return;
+          }
+        }
+        origChangeCartQty(id, delta);
+      };
+    }
+
+    const origChangeCheckoutQty = window.changeCheckoutQty;
+    if (typeof origChangeCheckoutQty === 'function') {
+      window.changeCheckoutQty = function (id, delta) {
+        if (delta > 0 && isProductSpesial(id)) {
+          const maxLimit = state.featuredProduct?.batas_beli_per_orang || 1;
+          const items = getActiveCartItems();
+          const existing = items.find(i => i.productId === id);
+          if (existing && existing.quantity >= maxLimit) {
+            if (typeof window.showToast === 'function') {
+              window.showToast(`Batas pembelian Penawaran Spesial maksimal ${maxLimit}x per hari per orang.`, 'Batas Pembelian', 'warn');
+            }
+            return;
+          }
+        }
+        origChangeCheckoutQty(id, delta);
+      };
+    }
 
     if (typeof origClearCart === 'function') {
       window.clearCart = function () {

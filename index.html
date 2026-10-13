@@ -7171,6 +7171,7 @@
                     estimatedTime: "Instan (10-30 Menit)", revisionTerms: "Garansi selama 1 minggu",
                     price: "Rp 20.000", priceNum: 20000, originalPrice: 50000, hasSale: true, salePercent: 60,
                     features: ["Gemini Advanced", "Garansi 1 Minggu", "Akun Pribadi"],
+                    batasBeli: 1, batas_beli_per_orang: 1, isLimitedEdition: true,
                     _isBannerOnly: true
                 }
             ],
@@ -7197,7 +7198,7 @@
         let servicesBySlug = new Map();
         const PRODUCT_METADATA = CONFIG.PRODUCTS.map(p => ({ ...p }));
         const SAFE_CATALOGUE_METADATA = {
-            'gemini-pro-18-bulan': { icon: '✨', category: 'Digital', popularity: 10, features: ['Gemini Advanced', 'Garansi 18 Bulan', 'Akun Pribadi'], image: 'assets/catalog/gemini-pro.png', reviewImage: 'assets/ui-art/gemini.png', _isBannerOnly: true },
+            'gemini-pro-18-bulan': { icon: '✨', category: 'Digital', popularity: 10, features: ['Gemini Advanced', 'Garansi 18 Bulan', 'Akun Pribadi'], image: 'assets/catalog/gemini-pro.png', reviewImage: 'assets/ui-art/gemini.png', batasBeli: 1, batas_beli_per_orang: 1, isLimitedEdition: true, _isBannerOnly: true },
             'bimbingan-parafrase': { icon: '✍️', category: 'Editing', popularity: 7, features: ['Review kalimat', 'Gaya bahasa', 'Sitasi'] },
             'konsultasi-olah-data-kualitatif': { icon: '📊', category: 'Konsultasi', popularity: 8, features: ['NVivo', 'Interpretasi data', 'Pendampingan'] },
             'konsultasi-olah-data-kuantitatif': { icon: '📈', category: 'Konsultasi', popularity: 8, features: ['SPSS', 'Regresi', 'PLS'] },
@@ -7513,6 +7514,14 @@
         function minimumOrderQuantity(productId) {
             return CONFIG.PRODUCTS.find(p => p.id === productId)?.minimumQuantity || 1;
         }
+        function maximumOrderQuantity(productId) {
+            const product = CONFIG.PRODUCTS.find(p => p.id === productId);
+            if (!product) return 100;
+            if (product.batasBeli !== undefined) return Math.max(1, Number(product.batasBeli) || 1);
+            if (product.batas_beli_per_orang !== undefined) return Math.max(1, Number(product.batas_beli_per_orang) || 1);
+            if (product.id === 'gemini-pro-18-bulan' || product.isLimitedEdition || product.is_limited_edition) return 1;
+            return 100;
+        }
         function productPriceLabel(product) {
             const formatted = formatRupiah(product?.priceNum || 0);
             if (product?.id === 'makalah') return `${formatted} / lembar · min. 10 lembar`;
@@ -7556,10 +7565,16 @@
         function sanitizeCart(value) {
             if (!Array.isArray(value)) return [];
             return value.filter(i => i && typeof i.productId === 'string' && /^[a-z0-9-]+$/.test(i.productId) && Number.isInteger(i.quantity) && i.quantity > 0 && i.quantity <= 100)
-                .map(i => { const p = CONFIG.PRODUCTS.find(p => p.id === i.productId); return { productId: i.productId, name: p?.title || String(i.name || 'Layanan'), price: p?.priceNum || Number(i.price) || 0, quantity: Math.max(minimumOrderQuantity(i.productId), i.quantity) }; });
+                .map(i => {
+                    const p = CONFIG.PRODUCTS.find(p => p.id === i.productId);
+                    const minQ = minimumOrderQuantity(i.productId);
+                    const maxQ = maximumOrderQuantity(i.productId);
+                    const clampedQ = Math.min(maxQ, Math.max(minQ, i.quantity));
+                    return { productId: i.productId, name: p?.title || String(i.name || 'Layanan'), price: p?.priceNum || Number(i.price) || 0, quantity: clampedQ };
+                });
         }
         async function loadCart() {
-            CART = sanitizeCart(readStored(localStorage, cartStorageKey(), [])); updateCartBadge();
+            CART = sanitizeCart(readStored(localStorage, cartStorageKey(), [])); saveCart(); updateCartBadge();
         }
         async function saveCart() {
             writeStored(localStorage, cartStorageKey(), CART); updateCartBadge();
@@ -7568,7 +7583,12 @@
             if (!currentUser) return loadCart();
             const userCart = sanitizeCart(readStored(localStorage, cartStorageKey(), []));
             const guestCart = sanitizeCart(readStored(localStorage, 'jokiin_guest_cart', readStored(localStorage, LEGACY_STORAGE_KEYS.guestCart, [])));
-            guestCart.forEach(item => { const existing = userCart.find(i => i.productId === item.productId); if (existing) existing.quantity = Math.min(100, existing.quantity + item.quantity); else userCart.push(item); });
+            guestCart.forEach(item => {
+                const maxQ = maximumOrderQuantity(item.productId);
+                const existing = userCart.find(i => i.productId === item.productId);
+                if (existing) existing.quantity = Math.min(maxQ, existing.quantity + item.quantity);
+                else userCart.push({ ...item, quantity: Math.min(maxQ, item.quantity) });
+            });
             CART = userCart;
             if (writeStored(localStorage, cartStorageKey(), CART)) { removeStored(localStorage, 'jokiin_guest_cart'); removeStored(localStorage, LEGACY_STORAGE_KEYS.guestCart); }
             updateCartBadge();
@@ -7576,8 +7596,17 @@
 
         window.addToCart = (productId) => {
             const product = CONFIG.PRODUCTS.find(p => p.id === productId); if (!product) return;
+            const maxQ = maximumOrderQuantity(productId);
             const exist = CART.find(item => item.productId === productId);
-            if (exist) exist.quantity += 1; else CART.push({ productId: product.id, name: product.title, price: product.priceNum, quantity: minimumOrderQuantity(product.id) });
+            if (exist) {
+                if (exist.quantity >= maxQ) {
+                    window.showToast(`Batas pembelian ${product.title} maksimal ${maxQ}x per orang per hari.`, 'Batas Pembelian', 'warn');
+                    return;
+                }
+                exist.quantity += 1;
+            } else {
+                CART.push({ productId: product.id, name: product.title, price: product.priceNum, quantity: Math.min(maxQ, minimumOrderQuantity(product.id)) });
+            }
             saveCart(); triggerCartBounce(); window.showToast(`${product.title} ditambahkan ke keranjang.`, 'Keranjang Belanja', 'success');
         };
 
@@ -7588,6 +7617,8 @@
         }
 
         window.openCartModal = () => {
+            CART = sanitizeCart(CART);
+            saveCart();
             renderCartItems();
             document.getElementById('cartModal').style.display = 'flex';
             document.body.classList.add('modal-open');
@@ -7600,7 +7631,10 @@
             CART.forEach(item => {
                 const sub = item.price * item.quantity; total += sub;
                 const product = CONFIG.PRODUCTS.find(p => p.id === item.productId);
-                html += `<div class="cart-item"><div class="cart-item-info"><h4>${escapeHTML(item.name)}</h4><p>${escapeHTML(productPriceLabel(product))}</p><div style="font-size:0.85em; color:var(--text-secondary); margin-top:5px;">Subtotal: ${formatRupiah(sub)}</div></div><div class="cart-qty-controls"><button class="btn-qty" onclick="window.changeCartQty('${item.productId}', -1)">-</button><span style="font-weight:600; width:20px; text-align:center; color:var(--text-main);">${item.quantity}</span><button class="btn-qty" onclick="window.changeCartQty('${item.productId}', 1)">+</button></div></div>`;
+                const maxQ = maximumOrderQuantity(item.productId);
+                const isAtMax = item.quantity >= maxQ;
+                const limitBadge = maxQ <= 1 ? `<div style="font-size:0.75em; color:#f59e0b; margin-top:3px; font-weight:700;">Batas 1x per hari</div>` : '';
+                html += `<div class="cart-item"><div class="cart-item-info"><h4>${escapeHTML(item.name)}</h4><p>${escapeHTML(productPriceLabel(product))}</p>${limitBadge}<div style="font-size:0.85em; color:var(--text-secondary); margin-top:5px;">Subtotal: ${formatRupiah(sub)}</div></div><div class="cart-qty-controls"><button class="btn-qty" onclick="window.changeCartQty('${item.productId}', -1)">-</button><span style="font-weight:600; width:20px; text-align:center; color:var(--text-main);">${item.quantity}</span><button class="btn-qty" ${isAtMax ? 'disabled style="opacity:0.35;cursor:not-allowed;" title="Batas maksimal pembelian 1x per hari"' : ''} onclick="window.changeCartQty('${item.productId}', 1)">+</button></div></div>`;
             });
             c.innerHTML = html; document.getElementById('cartTotalPrice').innerText = formatRupiah(total);
         }
@@ -7608,9 +7642,14 @@
         window.changeCartQty = (id, delta) => {
             const item = CART.find(c => c.productId === id);
             if (item) {
+                const maxQ = maximumOrderQuantity(id);
+                if (delta > 0 && item.quantity >= maxQ) {
+                    window.showToast(`Batas pembelian maksimal ${maxQ}x per orang per hari.`, 'Batas Pembelian', 'warn');
+                    return;
+                }
                 const nextQuantity = item.quantity + delta;
                 if (nextQuantity < minimumOrderQuantity(id)) CART = CART.filter(c => c.productId !== id);
-                else item.quantity = nextQuantity;
+                else item.quantity = Math.min(maxQ, nextQuantity);
                 saveCart(); renderCartItems();
                 if (currentTab === 'checkout' && checkoutMode === 'cart') renderCheckoutSummary();
             }
@@ -7727,7 +7766,8 @@
 
         window.directCheckout = (productId) => {
             const product = CONFIG.PRODUCTS.find(p => p.id === productId); if (!product) return;
-            checkoutMode = 'direct'; directCheckoutItem = { productId: product.id, name: product.title, price: product.priceNum, quantity: minimumOrderQuantity(product.id) };
+            const maxQ = maximumOrderQuantity(productId);
+            checkoutMode = 'direct'; directCheckoutItem = { productId: product.id, name: product.title, price: product.priceNum, quantity: Math.min(maxQ, minimumOrderQuantity(product.id)) };
             window.closeModal('cartModal'); fillCheckoutGuestData(); appliedPromoDiscount = 0; document.getElementById('promoCodeInput').value = ''; document.getElementById('promoMessage').innerHTML = '';
             selectedPaymentMethod = null; selectedPaymentFee = 0;
 
@@ -7808,17 +7848,26 @@
         };
 
         window.changeCheckoutQty = (id, delta) => {
+            const maxQ = maximumOrderQuantity(id);
             if (checkoutMode === 'direct') {
                 if (directCheckoutItem && directCheckoutItem.productId === id) {
-                    directCheckoutItem.quantity = Math.max(minimumOrderQuantity(id), directCheckoutItem.quantity + delta);
+                    if (delta > 0 && directCheckoutItem.quantity >= maxQ) {
+                        window.showToast(`Batas pembelian maksimal ${maxQ}x per orang per hari.`, 'Batas Pembelian', 'warn');
+                        return;
+                    }
+                    directCheckoutItem.quantity = Math.min(maxQ, Math.max(minimumOrderQuantity(id), directCheckoutItem.quantity + delta));
                     renderCheckoutSummary();
                 }
             } else {
                 const item = CART.find(c => c.productId === id);
                 if (item) {
+                    if (delta > 0 && item.quantity >= maxQ) {
+                        window.showToast(`Batas pembelian maksimal ${maxQ}x per orang per hari.`, 'Batas Pembelian', 'warn');
+                        return;
+                    }
                     const nextQuantity = item.quantity + delta;
                     if (nextQuantity < minimumOrderQuantity(id)) CART = CART.filter(c => c.productId !== id);
-                    else item.quantity = nextQuantity;
+                    else item.quantity = Math.min(maxQ, nextQuantity);
                     saveCart();
                     if (CART.length === 0) window.cancelCheckout(); else renderCheckoutSummary();
                 }
@@ -7875,17 +7924,21 @@
 
             itemsToRender.forEach(item => {
                 const sub = item.price * item.quantity; subtotal += sub;
+                const maxQ = maximumOrderQuantity(item.productId);
+                const isAtMax = item.quantity >= maxQ;
+                const limitBadge = maxQ <= 1 ? `<div style="font-size:0.75em; color:#f59e0b; margin-top:3px; font-weight:700;">Batas 1x per hari</div>` : '';
                 html += `
             <div class="cart-item">
                 <div class="cart-item-info">
                     <h4>${escapeHTML(item.name)}</h4>
                     <p>${escapeHTML(productPriceLabel(CONFIG.PRODUCTS.find(p => p.id === item.productId)))}</p>
+                    ${limitBadge}
                     <div style="font-size:0.85em; color:var(--text-secondary); margin-top:5px;">Subtotal: ${formatRupiah(sub)}</div>
                 </div>
                 <div class="cart-qty-controls">
                     <button class="btn-qty" onclick="window.changeCheckoutQty('${item.productId}', -1)">-</button>
                     <span style="font-weight:600; width:20px; text-align:center; color:var(--text-main);">${item.quantity}</span>
-                    <button class="btn-qty" onclick="window.changeCheckoutQty('${item.productId}', 1)">+</button>
+                    <button class="btn-qty" ${isAtMax ? 'disabled style="opacity:0.35;cursor:not-allowed;" title="Batas maksimal pembelian 1x per hari"' : ''} onclick="window.changeCheckoutQty('${item.productId}', 1)">+</button>
                 </div>
             </div>`;
             });
@@ -9682,6 +9735,7 @@ Teman tugas mahasiswa.`;
             updateCartBadge: () => updateCartBadge(),
             triggerCartBounce: () => triggerCartBounce(),
             minimumOrderQuantity: (id) => minimumOrderQuantity(id),
+            maximumOrderQuantity: (id) => maximumOrderQuantity(id),
             getCurrentUser: () => currentUser,
             getCurrentTab: () => currentTab,
             getLastActiveTab: () => lastActiveTab || 'beranda',
