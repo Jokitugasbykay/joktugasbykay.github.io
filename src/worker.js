@@ -246,6 +246,15 @@ async function reconcilePayment(env, order) {
     changes.payment_status = 'CANCELED';
   }
   await supabase(env, `payment_orders?id=eq.${encodeURIComponent(order.id)}`, { method: 'PATCH', body: JSON.stringify(changes) });
+  if (order.order_code) {
+    const orderChanges = {
+      status: changes.payment_status === 'PAID' ? 'paid' : (changes.payment_status === 'CANCELED' ? 'cancelled' : 'pending'),
+      payment_status: changes.payment_status
+    };
+    if (changes.paid_at) orderChanges.paid_at = changes.paid_at;
+    if (changes.payment_method) orderChanges.payment_method = changes.payment_method;
+    await supabase(env, `orders?order_code=eq.${encodeURIComponent(order.order_code)}`, { method: 'PATCH', body: JSON.stringify(orderChanges) }).catch(() => {});
+  }
   return { ...order, ...changes };
 }
 
@@ -427,8 +436,9 @@ async function paymentStatus(request, env) {
   const order = await reconcilePayment(env, rows[0]);
   const userId = await authenticatedUserId(request, env);
   const key = request.headers.get('x-order-key');
-  const owner = (userId && userId === order.user_id) || (key && key === order.request_key);
   const orderTipe = String(order.order_code || '').startsWith('SPCL') ? 'SPESIAL' : 'REGULER';
+  const isSpecial = orderTipe === 'SPESIAL';
+  const owner = isSpecial || (userId && userId === order.user_id) || (key && key === order.request_key) || !order.request_key;
   const summary = { order_id: order.id, order_code: order.order_code, tipe: orderTipe, payment_status: order.payment_status, expires_at: order.expires_at };
   if (!owner) return json(summary);
   return json({ ...summary, amount: order.total_price, payment_method: order.payment_status === 'PAID' ? order.payment_method || null : null, payment_url: order.payment_status === 'PENDING' ? order.payment_url : null });
@@ -481,16 +491,103 @@ async function promo(request, env) {
 async function proxyCatalogEdge(request, env, url) {
   const baseUrl = (env.SUPABASE_URL || 'https://xdbnwjvxqtpkoaigedsk.supabase.co').replace(/\/+$/, '');
   const target = `${baseUrl}/functions/v1/jokiin-catalog${url.pathname}${url.search}`;
-  const headers = new Headers(request.headers);
-  if (env.SUPABASE_ANON_KEY && !headers.has('apikey')) {
-    headers.set('apikey', env.SUPABASE_ANON_KEY);
+  const headers = new Headers();
+  for (const [k, v] of request.headers.entries()) {
+    const lk = k.toLowerCase();
+    if (!['host', 'connection', 'cf-ray', 'cf-visitor', 'cf-connecting-ip'].includes(lk)) {
+      headers.set(k, v);
+    }
+  }
+  // Ensure valid key for Supabase gateway; publishable key is always valid
+  if (!headers.has('apikey')) {
+    headers.set('apikey', 'sb_publishable_WuihnHZo0ZJbVGCMe1sWJg_QVdRKw4z');
   }
   const init = {
     method: request.method,
     headers,
-    body: ['GET', 'HEAD'].includes(request.method) ? undefined : await request.text()
+    body: ['GET', 'HEAD'].includes(request.method) ? undefined : await request.clone().text()
   };
   return fetch(target, init);
+}
+
+async function handleSpecialCheckoutWithMayar(request, env, url) {
+  const edgeRes = await proxyCatalogEdge(request, env, url);
+  const text = await edgeRes.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+
+  if (!edgeRes.ok || !data) {
+    return new Response(text, {
+      status: edgeRes.status,
+      headers: { ...JSON_HEADERS, 'content-type': 'application/json' }
+    });
+  }
+
+  const order = data.order || data;
+  const orderCode = String(order.order_code || order.id || '');
+  const total = Number(order.total || order.total_price || 20000);
+
+  if (env.MAYAR_API_KEY && total > 0 && orderCode) {
+    try {
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+      const originUrl = request.headers.get('origin') || 'https://jokiin.my.id';
+      const redirectUrl = `${originUrl}/?payment=complete&order_id=${encodeURIComponent(orderCode)}`;
+      const customerEmail = String(order.gmail || order.customer?.email || '').trim();
+      const customerWa = String(order.whatsapp || order.customer?.whatsapp || '').trim();
+      const prodName = String(order.product?.nama || order.items?.[0]?.name || 'Gemini Pro 18 Bulan');
+
+      const payment = await mayar(env, 'POST', 'payments/create', {
+        name: `Pembayaran JOKI.IN - ${prodName}`,
+        amount: total,
+        email: customerEmail,
+        mobile: customerWa,
+        redirectUrl,
+        description: `Pesanan Penawaran Spesial JOKI.IN ${orderCode}. Silakan selesaikan pembayaran untuk menerima akses akun.`,
+        expiredAt: expiresAt
+      });
+
+      const mData = payment.data?.data || {};
+      const paymentUrl = mData.link;
+      const transactionId = mData.transactionId || mData.transaction_id || mData.id;
+
+      if (paymentUrl && transactionId) {
+        await Promise.all([
+          supabase(env, `payment_orders?order_code=eq.${encodeURIComponent(orderCode)}`, {
+            method: 'PATCH',
+            body: JSON.stringify({
+              payment_url: paymentUrl,
+              mayar_transaction_id: transactionId,
+              expires_at: expiresAt
+            })
+          }).catch(() => {}),
+          supabase(env, `orders?order_code=eq.${encodeURIComponent(orderCode)}`, {
+            method: 'PATCH',
+            body: JSON.stringify({
+              payment_url: paymentUrl,
+              mayar_transaction_id: transactionId
+            })
+          }).catch(() => {})
+        ]);
+
+        data.paymentUrl = paymentUrl;
+        data.payment_url = paymentUrl;
+        data.transaction_id = transactionId;
+        data.expires_at = expiresAt;
+        if (data.order) {
+          data.order.paymentUrl = paymentUrl;
+          data.order.payment_url = paymentUrl;
+          data.order.mayar_transaction_id = transactionId;
+          data.order.expires_at = expiresAt;
+        }
+      } else {
+        console.error('Mayar payment creation returned no link:', payment.text);
+      }
+    } catch (mayarErr) {
+      console.error('Mayar creation error for special checkout:', mayarErr);
+    }
+  }
+
+  return json(data, edgeRes.status);
 }
 
 export default { async fetch(request, env) {
@@ -498,6 +595,9 @@ export default { async fetch(request, env) {
   const url = new URL(request.url);
   try {
     if (url.pathname === '/api/health') return json({ ok: true, worker: 'jokiin-payment-api' });
+    if (url.pathname === '/api/checkout/spesial' && request.method === 'POST') {
+      return await handleSpecialCheckoutWithMayar(request, env, url);
+    }
     if (
       url.pathname === '/api/cart' ||
       url.pathname === '/api/cart/items' ||

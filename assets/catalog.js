@@ -4,7 +4,7 @@
 (function () {
   'use strict';
 
-  const CATALOG_API = 'https://xdbnwjvxqtpkoaigedsk.supabase.co/functions/v1/jokiin-catalog';
+  const CATALOG_API = 'https://jokiin-payment-api.gamingyoga14.workers.dev';
 
   const state = {
     penawaranSpesialAktif: true,
@@ -590,7 +590,10 @@
       }
 
       const order = data.order || {};
-      const orderCode = order.id || order.orderCode;
+      const orderCode = String(order.order_code || order.id || order.orderCode || data.order_code || data.id || '').trim();
+      const paymentUrl = data.paymentUrl || data.payment_url || order.paymentUrl || order.payment_url || null;
+      const expiresAt = data.expires_at || order.expires_at || data.expiryTime || null;
+      const transactionId = data.transaction_id || order.mayar_transaction_id || null;
 
       if (typeof data.remaining_stock === 'number') {
         state.featuredProduct.stok = data.remaining_stock;
@@ -614,31 +617,61 @@
       const normalizedOrder = {
         id: orderCode,
         orderCode: orderCode,
+        gateway: 'mayar',
         tipe: 'SPESIAL',
         status: order.status || 'pending',
-        orderStatus: 'PENDING_ORDER',
-        paymentStatus: order.paymentStatus || 'PENDING',
-        paymentMethod: 'QRIS / Konfirmasi Admin',
-        subtotal: Number(order.subtotal || order.total || 0),
+        orderStatus: 'WAITING_PAYMENT',
+        paymentStatus: 'PENDING',
+        paymentMethod: 'Mayar / QRIS',
+        subtotal: Number(order.subtotal || order.total || total),
         discount: 0,
         paymentFee: 0,
-        total: Number(order.total || 0),
+        total: Number(order.total || total),
+        paymentUrl: paymentUrl,
+        expiryTime: expiresAt,
+        transactionId: transactionId,
         customer: order.customer || { name: nama, nim, whatsapp: countryCode + waRaw, email: gmail },
         task: order.task || { title: fp.nama || 'Gemini Pro 18 Bulan', deadline: '-', notes: 'Penawaran Spesial Limited Edition' },
-        items: order.items || [{ productId: fp.slug || 'gemini-pro-18-bulan', name: fp.nama || 'Gemini Pro 18 Bulan', price: Number(order.total || 20000), quantity: state.specialCheckoutQty || 1 }],
+        items: order.items || [{ productId: fp.slug || 'gemini-pro-18-bulan', name: fp.nama || 'Gemini Pro 18 Bulan', price: Number(order.total || total), quantity: state.specialCheckoutQty || 1 }],
         emailConfirmation: order.emailConfirmation || { sent: true, to: gmail, orderId: orderCode },
         createdAt: order.createdAt || new Date().toISOString()
       };
 
       if (store) {
+        if (typeof store.savePendingMayarOrder === 'function') {
+          store.savePendingMayarOrder(normalizedOrder);
+        }
         store.setCurrentOrder(normalizedOrder);
         store.renderOrderSuccess(normalizedOrder);
+      }
+      try {
+        history.replaceState(null, '', `/payment/pending?order_id=${encodeURIComponent(orderCode)}`);
+      } catch (_) {}
+
+      if (typeof window.startPaymentPolling === 'function') {
+        window.startPaymentPolling(orderCode);
       }
       if (typeof window.switchTab === 'function') {
         window.switchTab('order-success');
       }
       if (typeof window.showToast === 'function') {
-        window.showToast(`Pesanan ${orderCode} berhasil dibuat!`, 'Penawaran Spesial', 'success');
+        window.showToast(
+          paymentUrl
+            ? `Pesanan ${orderCode} berhasil dibuat! Menghubungkan ke Mayar...`
+            : `Pesanan ${orderCode} berhasil dibuat!`,
+          'Penawaran Spesial',
+          'success'
+        );
+      }
+
+      if (paymentUrl) {
+        setTimeout(() => {
+          try {
+            window.location.assign(paymentUrl);
+          } catch (_) {
+            window.location.href = paymentUrl;
+          }
+        }, 600);
       }
     } catch (err) {
       setSpecialFieldError('Gmail', err?.message || 'Gagal menghubungi server checkout.');

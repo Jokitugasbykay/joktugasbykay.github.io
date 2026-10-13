@@ -3,7 +3,7 @@
 const API = Deno.env.get('SUPABASE_URL')!;
 const SECRET = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const MAYAR_API_KEY = Deno.env.get('MAYAR_API_KEY') || '';
-const MAYAR_BASE_URL = (Deno.env.get('MAYAR_BASE_URL') || 'https://api.mayar.id/hl/v1').replace(/\/+$/, '');
+const MAYAR_BASE_URL = (Deno.env.get('MAYAR_BASE_URL') || 'https://api.mayar.id/hl/v2').replace(/\/+$/, '');
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') || '';
 
 const CORS = {
@@ -402,19 +402,20 @@ async function createMayarPaymentIfConfigured(order: any, originUrl: string): Pr
     const total = Number(order.total || order.total_price || 0);
     if (total <= 0) return null;
     const expiredAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-    const res = await fetch(`${MAYAR_BASE_URL}/payment/create`, {
+    const prodName = String(order.product?.nama || order.items?.[0]?.name || 'Gemini Pro 18 Bulan');
+    const res = await fetch(`${MAYAR_BASE_URL}/payments/create`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${MAYAR_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        name: String(order.nama || order.customer?.name || 'Pelanggan').slice(0, 120),
+        name: `Pembayaran JOKI.IN - ${prodName}`,
         email: String(order.gmail || order.customer?.email || ''),
         amount: total,
         mobile: String(order.whatsapp || order.customer?.whatsapp || '').slice(0, 20),
-        redirectUrl: `${originUrl}/?order=${encodeURIComponent(orderCode)}`,
-        description: `Order ${orderCode} (${order.tipe || 'REGULER'})`,
+        redirectUrl: `${originUrl}/?payment=complete&order_id=${encodeURIComponent(orderCode)}`,
+        description: `Pesanan JOKI.IN ${orderCode} (${order.tipe || 'SPESIAL'})`,
         expiredAt,
         extraData: {
           orderCode,
@@ -424,12 +425,18 @@ async function createMayarPaymentIfConfigured(order: any, originUrl: string): Pr
     });
     const json = await res.json().catch(() => null);
     const link = json?.data?.link ? String(json.data.link) : null;
-    const txId = json?.data?.id ? String(json.data.id) : null;
+    const txId = json?.data?.id ? String(json.data.id) : (json?.data?.transactionId ? String(json.data.transactionId) : null);
     if (link) {
-      await dbFetch(`payment_orders?order_code=eq.${encodeURIComponent(orderCode)}`, 'PATCH', {
-        payment_url: link,
-        mayar_transaction_id: txId,
-      }).catch(() => {});
+      await Promise.all([
+        dbFetch(`payment_orders?order_code=eq.${encodeURIComponent(orderCode)}`, 'PATCH', {
+          payment_url: link,
+          mayar_transaction_id: txId,
+        }).catch(() => {}),
+        dbFetch(`orders?order_code=eq.${encodeURIComponent(orderCode)}`, 'PATCH', {
+          payment_url: link,
+          mayar_transaction_id: txId,
+        }).catch(() => {})
+      ]);
     }
     return link;
   } catch {
