@@ -4777,7 +4777,7 @@
         .container > header:not(.checkout-mode) .header-actions { position:static; left:auto; transform:none; margin-left:auto; }
         .cf-price-card .cf-card-actions { opacity:0; transform:translateY(12px)!important; pointer-events:none; transition:opacity .24s ease,transform .24s ease; }
         .cf-price-card:hover .cf-card-actions, .cf-price-card:focus-within .cf-card-actions { opacity:1; transform:translateY(0)!important; pointer-events:auto; }
-        .cf-price-card .cf-card-actions .btn-header { white-space:nowrap; }
+        .cf-price-card .cf-card-actions :is(.btn-header, .btn-outline) { white-space:nowrap; }
 
         .detail-review-header { display:grid; grid-template-columns:minmax(220px,.7fr) minmax(0,1.3fr); align-items:stretch; gap:26px; }
         .detail-review-media { min-height:240px; overflow:hidden; border-radius:16px; background:var(--surface-secondary); }
@@ -4797,7 +4797,7 @@
             .container > header:not(.checkout-mode) .logo { width:100%!important; justify-content:flex-start!important; }
             .container > header:not(.checkout-mode) .header-actions { width:100%!important; margin-left:0; justify-content:center!important; }
             .cf-price-card .cf-card-actions { opacity:1; transform:none!important; pointer-events:auto; }
-            .cf-price-card .cf-card-actions .btn-header { font-size:.72rem!important; padding-left:7px!important; padding-right:7px!important; }
+            .cf-price-card .cf-card-actions :is(.btn-header, .btn-outline) { font-size:.72rem!important; padding-left:7px!important; padding-right:7px!important; }
             .detail-review-header { grid-template-columns:1fr!important; gap:16px!important; padding:16px!important; }
             .detail-review-media { min-height:200px!important; height:200px!important; }
             .detail-review-header #btn-tulis-ulasan { width:100%!important; }
@@ -9251,8 +9251,8 @@ Teman tugas mahasiswa.`;
                     ${p.hasSale ? `<span class="cf-price-original">${formatRupiah(p.originalPrice)}</span><span class="cf-sale-saving">Hemat ${formatRupiah(p.originalPrice - p.priceNum)}</span>` : ''}
                 </div>
                 <div class="cf-card-actions">
-                    <button class="btn-outline" style="flex:1; padding:12px;" onclick="window.directCheckout('${p.id}')">Beli</button>
-                    <button class="btn-header" style="flex:1; padding:12px; box-shadow:none;" onclick="window.addToCart('${p.id}');">Tambah ke Keranjang</button>
+                    <button class="btn-header" style="flex:1; padding:12px; box-shadow:none;" onclick="window.directCheckout('${p.id}')">Beli</button>
+                    <button class="btn-outline" style="flex:1; padding:12px;" onclick="window.addToCart('${p.id}');">Tambah ke Keranjang</button>
                 </div>
             </div>
         `).join('');
@@ -9549,7 +9549,7 @@ Teman tugas mahasiswa.`;
                 }
                 document.getElementById('searchKeyword').innerText = `"${e.target.value}"`;
                 const filtered = CONFIG.PRODUCTS.filter(p => p.title.toLowerCase().includes(keyword) || p.category.toLowerCase().includes(keyword) || p.desc.toLowerCase().includes(keyword));
-                document.getElementById('searchResultsGrid').innerHTML = filtered.map(p => `<div class="service-card">${serviceVisual(p)}<h3>${escapeHTML(p.title)}</h3><span class="category-badge">${p.category}</span><p>${escapeHTML(p.desc)}</p><div style="display:flex; gap:10px; margin-top:auto;"><button class="btn-outline" style="flex:1; padding:10px; font-size:0.85em;" onclick="window.directCheckout('${p.id}')">Checkout</button><button class="btn-header" style="flex:1; padding:10px; font-size:0.85em; box-shadow:none;" onclick="window.addToCart('${p.id}')">🛒 Tambah</button></div></div>`).join('') || '<p style="color:var(--text-muted);">Layanan tidak ditemukan.</p>';
+                document.getElementById('searchResultsGrid').innerHTML = filtered.map(p => `<div class="service-card">${serviceVisual(p)}<h3>${escapeHTML(p.title)}</h3><span class="category-badge">${p.category}</span><p>${escapeHTML(p.desc)}</p><div style="display:flex; gap:10px; margin-top:auto;"><button class="btn-header" style="flex:1; padding:10px; font-size:0.85em; box-shadow:none;" onclick="window.directCheckout('${p.id}')">Checkout</button><button class="btn-outline" style="flex:1; padding:10px; font-size:0.85em;" onclick="window.addToCart('${p.id}')">🛒 Tambah</button></div></div>`).join('') || '<p style="color:var(--text-muted);">Layanan tidak ditemukan.</p>';
             } else {
                 searchTab.classList.remove('active');
                 const previousTab = document.getElementById('tab-' + lastActiveTab);
