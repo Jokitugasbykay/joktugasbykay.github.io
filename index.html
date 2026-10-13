@@ -4862,7 +4862,7 @@
             }
         }
     </style>
-    <link rel="stylesheet" href="./assets/ui-enhancements.css?v=20261002-avatar-circle">
+    <link rel="stylesheet" href="./assets/ui-enhancements.css?v=20261014-gemini-review">
     <style id="jokiin-promo">
         .promo-strip{box-sizing:border-box;width:100%;display:flex;align-items:center;justify-content:center;gap:16px;min-height:60px;padding:10px 22px!important;border-radius:0!important;background:linear-gradient(90deg,#075c43,#066548)!important;text-align:left!important}.promo-strip__badge{padding:6px 11px;border-radius:999px;background:#fff;color:#07533b;font-size:.72rem;font-weight:900;letter-spacing:.05em;white-space:nowrap}.promo-strip__text{min-width:0;flex:0 1 560px;color:#fff;font-size:.92rem}.promo-strip__countdown{display:flex;gap:5px}.promo-strip__time{display:grid;place-items:center;min-width:38px;padding:4px 6px;border:1px solid rgba(255,255,255,.25);border-radius:7px;background:rgba(0,0,0,.14);color:#fff;font-size:.85rem;font-weight:900}.promo-strip__time small{font-size:.54rem;font-weight:700;opacity:.75}.promo-strip__coupon{padding:6px 10px;border:1px dashed rgba(255,255,255,.55);border-radius:7px;color:#fff;font-size:.75rem;white-space:nowrap}.promo-strip__claim{border:0;border-radius:7px;padding:9px 13px;background:#fff;color:#07533b;font-weight:900;white-space:nowrap;cursor:pointer}.promo-strip__close{border:0;background:transparent;color:#fff;font-size:1.2rem;cursor:pointer}@media(max-width:760px){.promo-strip{display:grid;grid-template-columns:auto 1fr auto;gap:8px;padding:10px 14px!important;min-height:0}.promo-strip__badge{grid-column:1}.promo-strip__text{grid-column:2;min-width:0;font-size:.8rem;line-height:1.3}.promo-strip__close{grid-column:3;grid-row:1}.promo-strip__countdown{grid-column:1/4;grid-row:2;justify-content:center}.promo-strip__coupon{grid-column:1/3;grid-row:3;justify-self:center}.promo-strip__claim{grid-column:3;grid-row:3;font-size:.74rem;padding:9px}.promo-strip__time{min-width:36px}}
 #promoStrip.promo-strip { background:#075c43!important; gap:12px; padding:12px 20px!important; }
@@ -7163,6 +7163,7 @@
                 {
                     id: "gemini-pro-18-bulan", title: "Gemini Pro 18 Bulan", category: "Digital", popularity: 10, icon: "✨",
                     image: "assets/catalog/gemini-pro.png",
+                    reviewImage: "assets/ui-art/gemini.png",
                     desc: "Akses penuh Gemini Advanced 18 bulan, Garansi selama 1 minggu, Akun pribadi siap pakai",
                     benefits: ["Akses penuh Gemini Advanced 18 bulan", "Garansi selama 1 minggu", "Akun pribadi siap pakai"],
                     target: "Mahasiswa dan pengguna yang membutuhkan AI asisten akademik premium.",
@@ -7196,7 +7197,7 @@
         let servicesBySlug = new Map();
         const PRODUCT_METADATA = CONFIG.PRODUCTS.map(p => ({ ...p }));
         const SAFE_CATALOGUE_METADATA = {
-            'gemini-pro-18-bulan': { icon: '✨', category: 'Digital', popularity: 10, features: ['Gemini Advanced', 'Garansi 18 Bulan', 'Akun Pribadi'], image: 'assets/catalog/gemini-pro.png', _isBannerOnly: true },
+            'gemini-pro-18-bulan': { icon: '✨', category: 'Digital', popularity: 10, features: ['Gemini Advanced', 'Garansi 18 Bulan', 'Akun Pribadi'], image: 'assets/catalog/gemini-pro.png', reviewImage: 'assets/ui-art/gemini.png', _isBannerOnly: true },
             'bimbingan-parafrase': { icon: '✍️', category: 'Editing', popularity: 7, features: ['Review kalimat', 'Gaya bahasa', 'Sitasi'] },
             'konsultasi-olah-data-kualitatif': { icon: '📊', category: 'Konsultasi', popularity: 8, features: ['NVivo', 'Interpretasi data', 'Pendampingan'] },
             'konsultasi-olah-data-kuantitatif': { icon: '📈', category: 'Konsultasi', popularity: 8, features: ['SPSS', 'Regresi', 'PLS'] },
@@ -9010,8 +9011,10 @@ Teman tugas mahasiswa.`;
             // Render tr-03 top section
             const tr03Top = document.getElementById('detail-tr03-top');
             if (tr03Top) {
-                const mediaHtml = product.image
-                    ? `<div class="tr-03__media"><img src="${escapeHTML(product.image)}" alt="${escapeHTML(product.title)}" loading="lazy"><span class="tr-03__flag">Best Seller</span></div>`
+                const isGemini = pId === 'gemini-pro-18-bulan' || (product.id && product.id.includes('gemini')) || (product.title && product.title.toLowerCase().includes('gemini'));
+                const displayImage = product.reviewImage || (isGemini ? 'assets/ui-art/gemini.png' : product.image);
+                const mediaHtml = displayImage
+                    ? `<div class="tr-03__media ${isGemini ? 'tr-03__media--gemini' : ''}"><img src="${escapeHTML(displayImage)}" alt="${escapeHTML(product.title)}" loading="lazy"><span class="tr-03__flag">Best Seller</span></div>`
                     : `<div class="tr-03__media"><div class="tr-03__media-fallback"><span class="tr-03__media-svg">${getServiceSVGIcon(product, 42)}</span><span class="tr-03__media-category">${escapeHTML(product.category)}</span></div><span class="tr-03__flag">Layanan Populer</span></div>`;
 
                 const histRows = [5, 4, 3, 2, 1].map(star => {
@@ -10159,12 +10162,12 @@ Teman tugas mahasiswa.`;
     <link rel="stylesheet" href="assets/vendor/flatpickr/flatpickr.min.css">
     <script src="assets/vendor/flatpickr/flatpickr.min.js"></script>
     <script src="assets/vendor/flatpickr/id.js"></script>
-    <link rel="stylesheet" href="assets/ui-refinements.css?v=20261013-gemini64">
+    <link rel="stylesheet" href="assets/ui-refinements.css?v=20261014-geminirev">
     <script src="assets/deadline-calendar.js?v=20261009.2"></script>
-    <script src="assets/ui-refinements.js?v=1.07"></script>
+    <script src="assets/ui-refinements.js?v=1.08"></script>
     <link rel="stylesheet" href="assets/mobile-fixes.css?v=1.06">
     <link rel="stylesheet" href="assets/desktop-storefront.css?v=20261009.5">
-    <script src="assets/catalog.js?v=20261013-spcl14"></script>
+    <script src="assets/catalog.js?v=20261014-geminirev"></script>
 
 </body>
 

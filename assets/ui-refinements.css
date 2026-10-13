@@ -80,3 +80,19 @@
 .flatpickr-calendar .flatpickr-day.today {border-color:var(--primary);}
 .flatpickr-calendar .flatpickr-months :is(.flatpickr-prev-month,.flatpickr-next-month) {color:var(--text-main);fill:var(--text-main);}
 .flatpickr-calendar.arrowTop:before,.flatpickr-calendar.arrowTop:after {border-bottom-color:var(--card-solid);}
+
+.tr-03__media--gemini {
+    background: radial-gradient(circle at center, rgba(66, 133, 244, 0.16) 0%, rgba(15, 23, 42, 0.96) 100%), #0b0f19!important;
+    border: 1px solid rgba(66, 133, 244, 0.28)!important;
+}
+.tr-03__media--gemini img {
+    width: 68%!important;
+    height: 68%!important;
+    max-width: 68%!important;
+    max-height: 68%!important;
+    object-fit: contain!important;
+    filter: drop-shadow(0 10px 26px rgba(66, 133, 244, 0.35));
+}
+.tr-03__card:hover .tr-03__media--gemini img {
+    transform: scale(1.08)!important;
+}
