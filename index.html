@@ -6493,19 +6493,19 @@
 
         <!-- DIALOG KONFIRMASI PISAH KERANJANG (REGULER vs SPESIAL) -->
         <div id="cartTypeConflictModal" class="modal-overlay" style="display:none; z-index:9999;" role="dialog" aria-modal="true" aria-labelledby="cartConflictTitle">
-            <div class="modal-content" style="max-width:440px; background:#0f161a; color:#eef3f1; border:1px solid #1d262b; border-radius:18px; padding:24px;">
+            <div class="modal-content spcl-conflict-modal-content" style="max-width:440px; border-radius:18px; padding:24px;">
                 <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
                     <span style="background:rgba(255,213,74,.16); color:#ffd54a; border:1px solid rgba(255,213,74,.4); font-weight:800; font-size:11px; padding:4px 10px; border-radius:999px;">PISAH KERANJANG</span>
                 </div>
-                <h3 id="cartConflictTitle" style="margin:0 0 10px; font-size:18px; font-weight:800; color:#eef3f1;">Alur Pembayaran Terpisah</h3>
-                <p id="cartConflictMessage" style="margin:0 0 22px; font-size:14px; line-height:1.6; color:#c4cfca;">
+                <h3 id="cartConflictTitle" class="spcl-conflict-title" style="margin:0 0 10px; font-size:18px; font-weight:800;">Alur Pembayaran Terpisah</h3>
+                <p id="cartConflictMessage" class="spcl-conflict-msg" style="margin:0 0 22px; font-size:14px; line-height:1.6;">
                     Penawaran Spesial harus dibayar terpisah. Kosongkan keranjang reguler atau selesaikan pesanan reguler dulu?
                 </p>
                 <div style="display:flex; flex-direction:column; gap:10px;">
-                    <button type="button" id="btnConfirmClearConflictCart" onclick="window.confirmClearCartForConflict()" style="min-height:48px; border-radius:12px; border:0; background:#1fd18b; color:#04251a; font:800 14px 'Plus Jakarta Sans',sans-serif; cursor:pointer;">
+                    <button type="button" id="btnConfirmClearConflictCart" class="spcl-conflict-btn-confirm" onclick="window.confirmClearCartForConflict()" style="min-height:48px; border-radius:12px; border:0; font:800 14px 'Plus Jakarta Sans',sans-serif; cursor:pointer;">
                         Kosongkan Keranjang Reguler
                     </button>
-                    <button type="button" id="btnCancelConflictCart" onclick="window.closeCartConflictModal()" style="min-height:48px; border-radius:12px; border:1px solid #243138; background:transparent; color:#eef3f1; font:700 14px 'Plus Jakarta Sans',sans-serif; cursor:pointer;">
+                    <button type="button" id="btnCancelConflictCart" class="spcl-conflict-btn-cancel" onclick="window.closeCartConflictModal()" style="min-height:48px; border-radius:12px; font:700 14px 'Plus Jakarta Sans',sans-serif; cursor:pointer;">
                         Batal
                     </button>
                 </div>
@@ -9925,58 +9925,213 @@ Teman tugas mahasiswa.`;
         }
         @media (prefers-reduced-motion:reduce) { #full-harga .cf-price-card .cf-sale-ribbon, .spcl-cta-btn { animation:none!important; transition:none!important; } }
 
-        /* Special Checkout Page (Desktop & Mobile — Dark Theme + #1fd18b & #ffd54a) */
-        #tab-checkout-spesial { font-family: "Plus Jakarta Sans", system-ui, sans-serif; color: #eef3f1; }
+        /* Special Checkout Base */
+        #tab-checkout-spesial { font-family: "Plus Jakarta Sans", system-ui, sans-serif; }
         #tab-checkout-spesial .spcl-checkout-wrap { max-width: 1040px; margin: 0 auto; padding: 16px 0 48px; }
-        #tab-checkout-spesial .spcl-back-btn { background: transparent; border: none; color: #1fd18b; font: 700 14px "Plus Jakarta Sans", sans-serif; min-height: 44px; padding: 0 8px 0 0; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+        #tab-checkout-spesial .spcl-back-btn { background: transparent; border: none; font: 700 14px "Plus Jakarta Sans", sans-serif; min-height: 44px; padding: 0 8px 0 0; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 4px; }
         #tab-checkout-spesial .spcl-back-btn:hover { text-decoration: underline; }
-        #tab-checkout-spesial .spcl-page-title { font-size: clamp(22px, 2.8vw, 28px); font-weight: 800; margin: 0 0 6px; color: #eef3f1; line-height: 1.2; }
-        #tab-checkout-spesial .spcl-page-sub { margin: 0 0 22px; color: #8a9a95; font-size: 14px; line-height: 1.5; }
+        #tab-checkout-spesial .spcl-page-title { font-size: clamp(22px, 2.8vw, 28px); font-weight: 800; margin: 0 0 6px; line-height: 1.2; }
+        #tab-checkout-spesial .spcl-page-sub { margin: 0 0 22px; font-size: 14px; line-height: 1.5; }
         #tab-checkout-spesial .spcl-grid { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
         #tab-checkout-spesial .spcl-col-main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
         #tab-checkout-spesial .spcl-col-side { position: sticky; top: 24px; min-width: 0; }
-        #tab-checkout-spesial .spcl-card { background: #0f161a; border: 1px solid #1d262b; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.22); }
+        #tab-checkout-spesial .spcl-card { border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
         #tab-checkout-spesial .spcl-step-row { display: flex; align-items: center; gap: 12px; }
-        #tab-checkout-spesial .spcl-step-num { width: 32px; height: 32px; border-radius: 50%; background: #1fd18b; color: #04251a; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; flex: none; }
-        #tab-checkout-spesial .spcl-step-row h2, #tab-checkout-spesial .spcl-step-row b { margin: 0; font-size: 18px; font-weight: 800; color: #eef3f1; line-height: 1.25; }
+        #tab-checkout-spesial .spcl-step-num { width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; flex: none; }
+        #tab-checkout-spesial .spcl-step-row h2, #tab-checkout-spesial .spcl-step-row b { margin: 0; font-size: 18px; font-weight: 800; line-height: 1.25; }
         #tab-checkout-spesial .spcl-req-tag { font-style: normal; color: #ff8a8a; font-size: 12px; font-weight: 700; margin-left: 2px; }
-        #tab-checkout-spesial .spcl-prod-item { display: flex; gap: 14px; align-items: center; background: #141c20; border: 1px solid #243038; border-radius: 12px; padding: 14px; }
+        #tab-checkout-spesial .spcl-prod-item { display: flex; gap: 14px; align-items: center; border-radius: 12px; padding: 14px; }
         #tab-checkout-spesial .spcl-prod-thumb { width: 64px; height: 64px; border-radius: 12px; background: linear-gradient(135deg, #1b3b8f, #6a4bd8 55%, #1fd18b); background-size: cover; background-position: center; flex: none; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 12px; text-align: center; line-height: 1.15; }
         #tab-checkout-spesial .spcl-prod-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
         #tab-checkout-spesial .spcl-prod-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-        #tab-checkout-spesial .spcl-prod-head b { font-size: 16px; font-weight: 800; color: #eef3f1; }
-        #tab-checkout-spesial .spcl-le-badge { border: 1px solid #ffd54a; background: rgba(255, 213, 74, 0.14); color: #ffd54a; font-weight: 800; font-size: 10px; letter-spacing: 0.08em; padding: 3px 8px; border-radius: 999px; display: inline-flex; align-items: center; white-space: nowrap; align-self: flex-start; }
-        #tab-checkout-spesial .spcl-prod-info small { color: #8a9a95; font-size: 13px; font-weight: 500; }
-        #tab-checkout-spesial .spcl-prod-total { color: #ffd54a; font-weight: 800; font-size: 16px; white-space: nowrap; }
+        #tab-checkout-spesial .spcl-prod-head b { font-size: 16px; font-weight: 800; }
+        #tab-checkout-spesial .spcl-le-badge { font-weight: 800; font-size: 10px; letter-spacing: 0.08em; padding: 3px 8px; border-radius: 999px; display: inline-flex; align-items: center; white-space: nowrap; align-self: flex-start; }
+        #tab-checkout-spesial .spcl-prod-info small { font-size: 13px; font-weight: 500; }
+        #tab-checkout-spesial .spcl-prod-total { font-weight: 800; font-size: 16px; white-space: nowrap; }
         #tab-checkout-spesial .spcl-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
         #tab-checkout-spesial .spcl-field { display: flex; flex-direction: column; gap: 6px; }
         #tab-checkout-spesial .spcl-field-full { grid-column: 1 / -1; }
-        #tab-checkout-spesial .spcl-field label { font-weight: 600; font-size: 13px; color: #c4cfca; display: inline-flex; align-items: center; gap: 4px; margin: 0; }
+        #tab-checkout-spesial .spcl-field label { font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; gap: 4px; margin: 0; }
         #tab-checkout-spesial .spcl-req { color: #ff8a8a; font-weight: 700; }
-        #tab-checkout-spesial .spcl-opt { color: #8a9a95; font-weight: 500; font-size: 12px; }
+        #tab-checkout-spesial .spcl-opt { font-weight: 500; font-size: 12px; }
         #tab-checkout-spesial .spcl-field input,
-        #tab-checkout-spesial .spcl-wa-row select { min-height: 48px; height: 48px; border: 1px solid #243038 !important; border-radius: 12px !important; background: #0a0e11 !important; color: #eef3f1 !important; padding: 0 14px !important; font: 400 15px "Plus Jakarta Sans", sans-serif !important; width: 100%; box-sizing: border-box; transition: border-color .15s ease, box-shadow .15s ease; }
-        #tab-checkout-spesial .spcl-field input::placeholder { color: #6c7c77 !important; }
-        #tab-checkout-spesial .spcl-field input:focus,
-        #tab-checkout-spesial .spcl-wa-row select:focus { outline: none !important; border-color: #1fd18b !important; box-shadow: 0 0 0 3px rgba(31, 209, 139, 0.16) !important; }
+        #tab-checkout-spesial .spcl-wa-row select { min-height: 48px; height: 48px; border-radius: 12px !important; padding: 0 14px !important; font: 400 15px "Plus Jakarta Sans", sans-serif !important; width: 100%; box-sizing: border-box; transition: border-color .15s ease, box-shadow .15s ease; }
         #tab-checkout-spesial .spcl-field input[aria-invalid="true"] { border-color: #ef4444 !important; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.16) !important; }
         #tab-checkout-spesial .spcl-wa-row { display: flex; gap: 8px; align-items: stretch; }
         #tab-checkout-spesial .spcl-wa-row select { width: 112px !important; flex: none !important; font-weight: 700 !important; padding: 0 10px !important; cursor: pointer; }
-        #tab-checkout-spesial .spcl-field-hint { font-size: 12px; color: #8a9a95; line-height: 1.5; margin-top: 2px; }
+        #tab-checkout-spesial .spcl-field-hint { font-size: 12px; line-height: 1.5; margin-top: 2px; }
         #tab-checkout-spesial .spcl-field-error { font-size: 12px; font-weight: 600; color: #ef4444; line-height: 1.4; margin-top: 2px; display: none; }
         #tab-checkout-spesial .spcl-field-error.is-visible { display: block !important; }
-        #tab-checkout-spesial .spcl-summary-prod { display: flex; gap: 12px; align-items: center; background: #141c20; border: 1px solid #243038; border-radius: 12px; padding: 12px; }
+        #tab-checkout-spesial .spcl-summary-prod { display: flex; gap: 12px; align-items: center; border-radius: 12px; padding: 12px; }
         #tab-checkout-spesial .spcl-summary-thumb { width: 48px; height: 48px; border-radius: 10px; background: linear-gradient(135deg, #1b3b8f, #6a4bd8 55%, #1fd18b); background-size: cover; background-position: center; flex: none; }
         #tab-checkout-spesial .spcl-summary-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
-        #tab-checkout-spesial .spcl-summary-meta b { font-size: 14px; font-weight: 800; color: #eef3f1; line-height: 1.25; }
-        #tab-checkout-spesial .spcl-summary-unit { color: #ffd54a; font-weight: 800; font-size: 14px; white-space: nowrap; }
-        #tab-checkout-spesial .spcl-sum-row { display: flex; justify-content: space-between; align-items: center; color: #c4cfca; font-size: 14px; }
-        #tab-checkout-spesial .spcl-sum-row.spcl-sum-total { font-weight: 800; font-size: 18px; color: #1fd18b; border-top: 1px dashed #243038; padding-top: 14px; margin-top: 2px; }
-        #tab-checkout-spesial .spcl-cta-btn { min-height: 52px; border-radius: 14px; border: 0; background: #1fd18b; color: #04251a; font: 800 16px "Plus Jakarta Sans", sans-serif; width: 100%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: filter .15s ease, transform .15s ease; }
-        #tab-checkout-spesial .spcl-cta-btn:hover:not(:disabled) { filter: brightness(1.06); transform: translateY(-1px); }
+        #tab-checkout-spesial .spcl-summary-meta b { font-size: 14px; font-weight: 800; line-height: 1.25; }
+        #tab-checkout-spesial .spcl-summary-unit { font-weight: 800; font-size: 14px; white-space: nowrap; }
+        #tab-checkout-spesial .spcl-sum-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+        #tab-checkout-spesial .spcl-sum-row.spcl-sum-total { font-weight: 800; font-size: 18px; padding-top: 14px; margin-top: 2px; }
+        #tab-checkout-spesial .spcl-cta-btn { min-height: 52px; border-radius: 14px; border: 0; font: 800 16px "Plus Jakarta Sans", sans-serif; width: 100%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: filter .15s ease, transform .15s ease; }
+        #tab-checkout-spesial .spcl-cta-btn:hover:not(:disabled) { transform: translateY(-1px); }
         #tab-checkout-spesial .spcl-cta-btn:disabled { opacity: 0.55; cursor: not-allowed; }
-        #tab-checkout-spesial .spcl-safe-note { margin: 0; text-align: center; font-size: 12px; color: #8a9a95; line-height: 1.45; }
+        #tab-checkout-spesial .spcl-safe-note { margin: 0; text-align: center; font-size: 12px; line-height: 1.45; }
         #tab-checkout-spesial .spcl-mobile-bar { display: none; }
+
+        /* Light Mode */
+        :root:not([data-theme="dark"]) #tab-checkout-spesial,
+        html[data-theme="light"] #tab-checkout-spesial { color: #0f172a; }
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-page-title,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-page-title { color: #0f172a; }
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-page-sub,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-page-sub { color: #64748b; }
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-back-btn,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-back-btn { color: #079669; }
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-card,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+            color: #0f172a;
+        }
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-step-num,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-step-num { background: #079669; color: #ffffff; }
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-step-row h2,
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-step-row b,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-step-row h2,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-step-row b { color: #0f172a; }
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-prod-item,
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-summary-prod,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-prod-item,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-summary-prod {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-prod-head b,
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-summary-meta b,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-prod-head b,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-summary-meta b { color: #0f172a; }
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-le-badge,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-le-badge {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #b45309;
+        }
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-prod-info small,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-prod-info small { color: #64748b; }
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-prod-total,
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-summary-unit,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-prod-total,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-summary-unit { color: #b45309; }
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-field label,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-field label { color: #334155; }
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-opt,
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-field-hint,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-opt,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-field-hint { color: #64748b; }
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-field input,
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-wa-row select,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-field input,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-wa-row select {
+            border: 1px solid #cbd5e1 !important;
+            background: #ffffff !important;
+            color: #0f172a !important;
+        }
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-field input::placeholder,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-field input::placeholder { color: #94a3b8 !important; }
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-field input:focus,
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-wa-row select:focus,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-field input:focus,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-wa-row select:focus {
+            border-color: #079669 !important;
+            box-shadow: 0 0 0 3px rgba(7, 150, 105, 0.15) !important;
+        }
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-sum-row,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-sum-row { color: #475569; }
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-sum-row.spcl-sum-total,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-sum-row.spcl-sum-total {
+            color: #059669;
+            border-top: 1px dashed #cbd5e1;
+        }
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-cta-btn,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-cta-btn {
+            background: #079669;
+            color: #ffffff;
+        }
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-cta-btn:hover:not(:disabled),
+        html[data-theme="light"] #tab-checkout-spesial .spcl-cta-btn:hover:not(:disabled) {
+            background: #067851;
+            filter: none;
+        }
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-safe-note,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-safe-note { color: #64748b; }
+        :root:not([data-theme="dark"]) #tab-checkout-spesial .spcl-mobile-bar,
+        html[data-theme="light"] #tab-checkout-spesial .spcl-mobile-bar {
+            background: rgba(255, 255, 255, 0.96);
+            border-top: 1px solid #e2e8f0;
+            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Dark Mode */
+        [data-theme="dark"] #tab-checkout-spesial { color: #eef3f1; }
+        [data-theme="dark"] #tab-checkout-spesial .spcl-page-title { color: #eef3f1; }
+        [data-theme="dark"] #tab-checkout-spesial .spcl-page-sub { color: #8a9a95; }
+        [data-theme="dark"] #tab-checkout-spesial .spcl-back-btn { color: #1fd18b; }
+        [data-theme="dark"] #tab-checkout-spesial .spcl-card {
+            background: #0f161a;
+            border: 1px solid #1d262b;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+            color: #eef3f1;
+        }
+        [data-theme="dark"] #tab-checkout-spesial .spcl-step-num { background: #1fd18b; color: #04251a; }
+        [data-theme="dark"] #tab-checkout-spesial .spcl-step-row h2,
+        [data-theme="dark"] #tab-checkout-spesial .spcl-step-row b { color: #eef3f1; }
+        [data-theme="dark"] #tab-checkout-spesial .spcl-prod-item,
+        [data-theme="dark"] #tab-checkout-spesial .spcl-summary-prod {
+            background: #141c20;
+            border: 1px solid #243038;
+        }
+        [data-theme="dark"] #tab-checkout-spesial .spcl-prod-head b,
+        [data-theme="dark"] #tab-checkout-spesial .spcl-summary-meta b { color: #eef3f1; }
+        [data-theme="dark"] #tab-checkout-spesial .spcl-le-badge {
+            border: 1px solid #ffd54a;
+            background: rgba(255, 213, 74, 0.14);
+            color: #ffd54a;
+        }
+        [data-theme="dark"] #tab-checkout-spesial .spcl-prod-info small { color: #8a9a95; }
+        [data-theme="dark"] #tab-checkout-spesial .spcl-prod-total,
+        [data-theme="dark"] #tab-checkout-spesial .spcl-summary-unit { color: #ffd54a; }
+        [data-theme="dark"] #tab-checkout-spesial .spcl-field label { color: #c4cfca; }
+        [data-theme="dark"] #tab-checkout-spesial .spcl-opt,
+        [data-theme="dark"] #tab-checkout-spesial .spcl-field-hint { color: #8a9a95; }
+        [data-theme="dark"] #tab-checkout-spesial .spcl-field input,
+        [data-theme="dark"] #tab-checkout-spesial .spcl-wa-row select {
+            border: 1px solid #243038 !important;
+            background: #0a0e11 !important;
+            color: #eef3f1 !important;
+        }
+        [data-theme="dark"] #tab-checkout-spesial .spcl-field input::placeholder { color: #6c7c77 !important; }
+        [data-theme="dark"] #tab-checkout-spesial .spcl-field input:focus,
+        [data-theme="dark"] #tab-checkout-spesial .spcl-wa-row select:focus {
+            border-color: #1fd18b !important;
+            box-shadow: 0 0 0 3px rgba(31, 209, 139, 0.16) !important;
+        }
+        [data-theme="dark"] #tab-checkout-spesial .spcl-sum-row { color: #c4cfca; }
+        [data-theme="dark"] #tab-checkout-spesial .spcl-sum-row.spcl-sum-total {
+            color: #1fd18b;
+            border-top: 1px dashed #243038;
+        }
+        [data-theme="dark"] #tab-checkout-spesial .spcl-cta-btn {
+            background: #1fd18b;
+            color: #04251a;
+        }
+        [data-theme="dark"] #tab-checkout-spesial .spcl-cta-btn:hover:not(:disabled) {
+            filter: brightness(1.06);
+        }
+        [data-theme="dark"] #tab-checkout-spesial .spcl-safe-note { color: #8a9a95; }
+        [data-theme="dark"] #tab-checkout-spesial .spcl-mobile-bar {
+            background: rgba(10, 14, 17, 0.94);
+            border-top: 1px solid #1d262b;
+            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.45);
+        }
+
         @media (max-width: 760px) {
             #tab-checkout-spesial .spcl-checkout-wrap { padding: 8px 0 116px; }
             #tab-checkout-spesial .spcl-grid { grid-template-columns: 1fr; gap: 16px; }
@@ -9990,13 +10145,7 @@ Teman tugas mahasiswa.`;
                 right: 0;
                 bottom: 0;
                 padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
-                background: rgba(10, 14, 17, 0.94);
-                backdrop-filter: blur(10px);
-                border-top: 1px solid #1d262b;
                 z-index: 990;
-            }
-            #tab-checkout-spesial .spcl-cta-mobile {
-                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
             }
         }
     </style>
@@ -10012,7 +10161,7 @@ Teman tugas mahasiswa.`;
     <script src="assets/ui-refinements.js?v=1.04"></script>
     <link rel="stylesheet" href="assets/mobile-fixes.css?v=1.06">
     <link rel="stylesheet" href="assets/desktop-storefront.css?v=20261009.5">
-    <script src="assets/catalog.js?v=20261013-spcl8"></script>
+    <script src="assets/catalog.js?v=20261013-spcl9"></script>
 
 </body>
 
