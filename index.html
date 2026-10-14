@@ -4677,6 +4677,176 @@
         .cart-header-badge{display:inline-grid;place-items:center;min-width:18px;height:18px;margin-left:4px;padding:0 5px;border-radius:999px;background:var(--error);color:#fff;font-size:.7rem;font-weight:800}
         .modal-close-btn-left{position:absolute;left:14px;top:14px;border:0;border-radius:8px;width:34px;height:34px;color:var(--text-secondary);background:var(--surface-secondary);cursor:pointer;font-size:1rem}.modal-close-btn-left:hover{color:var(--error)}
 
+        /* === NOTIFIKASI JAM OPERASIONAL MALAM (22:00 - 05:00 WIB) === */
+        #nightNoticeSlot {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index: 3050;
+            width: min(420px, calc(100vw - 32px));
+            pointer-events: none;
+        }
+        #bn-04-slot.has-night-notice {
+            bottom: 250px;
+            transition: bottom 0.28s ease;
+        }
+        .night-notice-card {
+            pointer-events: auto;
+            position: relative;
+            padding: 16px 18px 16px;
+            border-radius: 18px;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            background: var(--card-solid, #ffffff);
+            box-shadow: 0 16px 42px rgba(0, 0, 0, 0.16), 0 0 24px rgba(245, 158, 11, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            color: var(--text-main, #1b2430);
+            animation: nightNoticeSlideIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+            box-sizing: border-box;
+        }
+        .night-notice-card.is-closing {
+            animation: nightNoticeSlideOut 0.25s cubic-bezier(0.4, 0, 1, 1) forwards;
+        }
+        @keyframes nightNoticeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(28px) scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        @keyframes nightNoticeSlideOut {
+            to {
+                opacity: 0;
+                transform: translateY(18px) scale(0.95);
+            }
+        }
+        .night-notice-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.32);
+            color: #d97706;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 750;
+            letter-spacing: 0.02em;
+            width: fit-content;
+            max-width: calc(100% - 32px);
+        }
+        [data-theme="dark"] .night-notice-pill {
+            background: rgba(251, 191, 36, 0.15);
+            border-color: rgba(251, 191, 36, 0.35);
+            color: #fbbf24;
+        }
+        .night-notice-moon-icon {
+            font-size: 0.95rem;
+            line-height: 1;
+        }
+        .night-notice-close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: none;
+            background: var(--surface-secondary, rgba(0, 0, 0, 0.06));
+            color: var(--text-secondary, #64748b);
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+            transition: background 0.18s, color 0.18s, transform 0.18s;
+        }
+        .night-notice-close:hover {
+            background: rgba(239, 68, 68, 0.14);
+            color: #ef4444;
+            transform: scale(1.06);
+        }
+        .night-notice-content {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .night-notice-title {
+            margin: 0;
+            font-size: 0.98rem;
+            font-weight: 800;
+            line-height: 1.3;
+            color: var(--text-main, #0f172a);
+        }
+        [data-theme="dark"] .night-notice-title {
+            color: #f8fafc;
+        }
+        .night-notice-desc {
+            margin: 0;
+            font-size: 0.82rem;
+            line-height: 1.52;
+            color: var(--text-secondary, #475569);
+        }
+        [data-theme="dark"] .night-notice-desc {
+            color: #94a3b8;
+        }
+        .night-notice-desc strong {
+            color: #d97706;
+        }
+        [data-theme="dark"] .night-notice-desc strong {
+            color: #fcd34d;
+        }
+        .night-notice-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 4px;
+        }
+        .night-notice-btn-ack {
+            padding: 8px 16px;
+            border-radius: 10px;
+            border: none;
+            background: var(--primary, #079669);
+            color: #ffffff;
+            font-family: "Plus Jakarta Sans", sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: filter 0.18s, transform 0.18s;
+        }
+        .night-notice-btn-ack:hover {
+            filter: brightness(1.08);
+            transform: translateY(-1px);
+        }
+        [data-theme="dark"] .night-notice-card {
+            background: #111822;
+            border-color: rgba(245, 158, 11, 0.35);
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.5), 0 0 24px rgba(245, 158, 11, 0.1);
+        }
+        @media (max-width: 760px) {
+            #nightNoticeSlot {
+                right: 14px;
+                left: 14px;
+                bottom: calc(14px + env(safe-area-inset-bottom));
+                width: auto;
+            }
+            #bn-04-slot.has-night-notice {
+                bottom: calc(230px + env(safe-area-inset-bottom));
+            }
+            .night-notice-card {
+                padding: 14px 16px;
+            }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .night-notice-card,
+            .night-notice-card.is-closing {
+                animation: none !important;
+            }
+        }
+
         /* Posisi tombol tutup popup konsisten di kanan atas. */
         .mobile-modal-close { display:grid; place-items:center; position:absolute; z-index:13; top:14px; right:14px; width:36px; height:36px; padding:0; border:1px solid var(--border-color); border-radius:50%; background:var(--card-solid); color:var(--text-main); cursor:pointer; }
         .modal-close-btn-left { left:auto !important; right:14px !important; top:14px !important; z-index:13; }
@@ -4931,6 +5101,26 @@
 
     <!-- Toast Sonner-style -->
     <div id="bn-04-slot" role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- Floating Night Operational Notice (22:00 - 05:00 WIB) -->
+    <div id="nightNoticeSlot" class="night-notice-slot" aria-live="polite">
+        <div id="nightNoticeCard" class="night-notice-card" role="region" aria-label="Pemberitahuan Jam Operasional Malam" style="display: none;">
+            <div class="night-notice-pill">
+                <span class="night-notice-moon-icon" aria-hidden="true">🌙</span>
+                <span class="night-notice-pill-text">Jam Istirahat Admin (22:00 – 05:00 WIB)</span>
+            </div>
+            <button type="button" class="night-notice-close" aria-label="Tutup pemberitahuan" onclick="window.dismissNightNotice()">✕</button>
+            <div class="night-notice-content">
+                <h4 class="night-notice-title">Admin Sedang Istirahat / Slow Response</h4>
+                <p class="night-notice-desc">
+                    Halo kak! Saat ini sudah memasuki jam istirahat admin. Website dan sistem pemesanan tetap <strong>BUKA normal 24 jam</strong> untuk order tugas. Namun, untuk respon pesan chat dan verifikasi pesanan kemungkinan mengalami sedikit delay dan akan segera diproses & diprioritaskan mulai pukul <strong>05:00 WIB</strong>. Terima kasih atas pengertiannya! 🙏✨
+                </p>
+            </div>
+            <div class="night-notice-actions">
+                <button type="button" class="night-notice-btn-ack" onclick="window.dismissNightNotice()">Oke, Saya Mengerti</button>
+            </div>
+        </div>
+    </div>
 
     <!-- ============================================== -->
     <!-- NEW WELCOME POPUP (REDESIGNED) -->
@@ -6476,6 +6666,12 @@
                             <button type="button" class="spcl-cta-btn spcl-cta-desktop" id="spclSubmitBtnDesktop" onclick="window.submitSpecialCheckout()">
                                 Beli Sekarang
                             </button>
+                            <div id="spclNightNoticeBox" class="spcl-night-notice-box" style="display:none; margin: 10px 0 4px; padding: 10px 12px; border-radius: 12px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.28); font-size: 12px; line-height: 1.45;">
+                                <strong style="color: #d97706; display: flex; align-items: center; gap: 4px; margin-bottom: 2px;">
+                                    <span>🌙</span> Jam Istirahat Admin (22:00 – 05:00 WIB)
+                                </strong>
+                                <span style="color: var(--text-secondary);">Checkout tetap aktif normal. Pesananmu akan segera diverifikasi & diproses mulai pukul 05:00 WIB.</span>
+                            </div>
                             <p class="spcl-safe-note">Dengan menekan Beli Sekarang, kamu menyetujui syarat pemesanan.</p>
                         </div>
                     </div>
@@ -7431,6 +7627,78 @@
         };
 
         // ==========================================
+        // NOTIFIKASI JAM OPERASIONAL MALAM (22:00 - 05:00 WIB)
+        // ==========================================
+        function isNightOperationalHours() {
+            try {
+                if (new URLSearchParams(window.location.search).get('test_night_notice') === '1') {
+                    return true;
+                }
+            } catch (_) { }
+
+            try {
+                const formatter = new Intl.DateTimeFormat('en-US', {
+                    timeZone: 'Asia/Jakarta',
+                    hour: 'numeric',
+                    hour12: false
+                });
+                const hour = parseInt(formatter.format(new Date()), 10);
+                return hour >= 22 || hour < 5;
+            } catch (_) {
+                const localHour = new Date().getHours();
+                return localHour >= 22 || localHour < 5;
+            }
+        }
+        window.isNightOperationalHours = isNightOperationalHours;
+
+        window.showNightOperationalNotice = (force = false) => {
+            const card = document.getElementById('nightNoticeCard');
+            const slot = document.getElementById('nightNoticeSlot');
+            if (!card || !slot) return;
+            if (!force && !isNightOperationalHours()) return;
+
+            card.classList.remove('is-closing');
+            card.style.display = 'flex';
+            document.getElementById('bn-04-slot')?.classList.add('has-night-notice');
+        };
+
+        window.dismissNightNotice = () => {
+            const card = document.getElementById('nightNoticeCard');
+            if (!card || card.style.display === 'none') return;
+            try {
+                sessionStorage.setItem('jokiin_night_notice_dismissed', 'true');
+            } catch (_) { }
+            card.classList.add('is-closing');
+            setTimeout(() => {
+                card.style.display = 'none';
+                card.classList.remove('is-closing');
+                document.getElementById('bn-04-slot')?.classList.remove('has-night-notice');
+            }, 260);
+        };
+
+        function checkNightOperationalHours() {
+            if (!isNightOperationalHours()) return;
+            try {
+                if (sessionStorage.getItem('jokiin_night_notice_dismissed') === 'true') {
+                    return;
+                }
+            } catch (_) { }
+
+            setTimeout(() => {
+                window.showNightOperationalNotice();
+            }, 850);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const card = document.getElementById('nightNoticeCard');
+                if (card && card.style.display !== 'none') {
+                    window.dismissNightNotice();
+                }
+            }
+        });
+
+        // ==========================================
         // WELCOME POPUP
         // ==========================================
 
@@ -7942,6 +8210,17 @@
                 </div>
             </div>`;
             });
+
+            if (isNightOperationalHours()) {
+                html += `
+            <div class="checkout-night-tip" style="margin-top:12px; padding:10px 14px; border-radius:12px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); display:flex; gap:10px; align-items:flex-start; font-size:0.8rem; line-height:1.45; color:var(--text-secondary);">
+                <span style="font-size:1.1rem; line-height:1;" aria-hidden="true">🌙</span>
+                <div>
+                    <strong style="color:#d97706; display:block; margin-bottom:2px;">Jam Istirahat Admin (22:00 – 05:00 WIB)</strong>
+                    Checkout tetap aktif normal. Pesananmu akan segera diverifikasi dan diproses mulai pukul 05:00 WIB.
+                </div>
+            </div>`;
+            }
 
             listContainer.innerHTML = html;
             document.getElementById('chkSubtotal').innerText = formatRupiah(subtotal);
@@ -9703,7 +9982,7 @@ Teman tugas mahasiswa.`;
         window.processGuestTrack = () => processTracking('trackInput', 'trackError', true);
 
         async function initializeApp() {
-            renderApp(); bindCheckoutFileDropzone(); bindCheckoutValidation(); loadPromo(); startWebsiteMetrics();
+            renderApp(); bindCheckoutFileDropzone(); bindCheckoutValidation(); loadPromo(); startWebsiteMetrics(); checkNightOperationalHours();
             // GitHub Pages memakai 404.html untuk fallback SPA; pulihkan rute aslinya setelah redirect.
             let fallbackPath = '';
             try { fallbackPath = sessionStorage.getItem('jokiin_spa_fallback_path') || localStorage.getItem('jokiin_spa_fallback_path') || ''; } catch (_) { }

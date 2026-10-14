@@ -482,6 +482,12 @@
         wInput.value = String(user.phone).replace(/\D/g, '').replace(/^(62|0)+/, '');
       }
     }
+
+    const nightBox = document.getElementById('spclNightNoticeBox');
+    if (nightBox) {
+      const isNight = typeof window.isNightOperationalHours === 'function' ? window.isNightOperationalHours() : false;
+      nightBox.style.display = isNight ? 'block' : 'none';
+    }
   };
 
   window.openSpecialCheckout = function (qtyOverride) {
