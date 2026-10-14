@@ -7307,6 +7307,16 @@
                     price: "Mulai dari Rp80.000", priceNum: 80000, features: ["Desain custom", "Revisi", "File final"]
                 },
                 {
+                    id: "pembuatan-cv", icon: "📄", image: "assets/catalog/portfolio-03.jpg", title: "Pembuatan CV", category: "Desain", popularity: 8,
+                    requiresDriveLink: false,
+                    desc: "Jasa pembuatan CV profesional, menarik, dan ATS-friendly untuk kebutuhan magang, kerja, atau beasiswa.",
+                    benefits: ["Format ATS-friendly", "Desain modern & profesional", "Penataan layout terstruktur", "Optimasi kata kunci (keyword)", "File PDF & Word siap pakai", "Revisi sesuai kesepakatan"],
+                    target: "Mahasiswa & fresh graduate untuk kebutuhan magang, lamaran kerja, atau beasiswa.",
+                    notIncluded: ["Penulisan portofolio kompleks", "Desain video CV"],
+                    estimatedTime: "1 Hari Kerja", revisionTerms: "Maksimal 2x Revisi",
+                    price: "Rp10.000", priceNum: 10000, features: ["ATS-Friendly", "Desain Modern", "File PDF & Word"]
+                },
+                {
                     id: "editing", icon: "✍️", image: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=900&q=80", title: "Edit & Revisi Karya Ilmiah", category: "Editing", popularity: 6,
                     requiresDriveLink: true,
                     desc: "Penyuntingan kata dan kalimat, revisi, serta perapian struktur dan format dokumen karya ilmiah.",
@@ -7406,7 +7416,8 @@
             'bimbingan-bab-4': { icon: '📊', category: 'Penelitian', popularity: 8, features: ['Analisis hasil', 'Pembahasan', 'Konsultasi'] },
             'bimbingan-bab-5': { icon: '✅', category: 'Penelitian', popularity: 7, features: ['Kesimpulan', 'Saran', 'Review'] },
             'bimbingan-artikel-jurnal': { icon: '📑', category: 'Penelitian', popularity: 8, features: ['Template jurnal', 'Studi literatur', 'Review'] },
-            'bimbingan-slr': { icon: '🧭', category: 'Penelitian', popularity: 9, features: ['Strategi pencarian', 'Seleksi studi', 'Pelaporan metode'] }
+            'bimbingan-slr': { icon: '🧭', category: 'Penelitian', popularity: 9, features: ['Strategi pencarian', 'Seleksi studi', 'Pelaporan metode'] },
+            'pembuatan-cv': { icon: '📄', category: 'Desain', popularity: 8, features: ['ATS-Friendly', 'Desain Modern', 'File PDF & Word'], benefits: ['Format ATS-friendly', 'Desain modern & profesional', 'Penataan layout terstruktur', 'File PDF & Word siap pakai', 'Revisi sesuai kesepakatan'], target: 'Mahasiswa & fresh graduate untuk magang, kerja, atau beasiswa.', estimatedTime: '1 Hari Kerja', revisionTerms: 'Maksimal 2x Revisi' }
         };
         const CATALOG_PHOTOS = Array.from({ length: 34 }, (_, index) => `assets/catalog/portfolio-${String(index + 1).padStart(2, '0')}.jpg`);
         const CATALOG_PHOTO_BY_SLUG = {
@@ -7416,7 +7427,7 @@
             'bimbingan-konversi-artikel':12, 'bimbingan-laporan':31,
             'bimbingan-mini-riset':14, 'bimbingan-proposal-skripsi':24,
             'bimbingan-proposal-tesis':5, 'bimbingan-bab-4':26, 'bimbingan-bab-5':20,
-            'bimbingan-artikel-jurnal':22, 'bimbingan-slr':7
+            'bimbingan-artikel-jurnal':22, 'bimbingan-slr':7, 'pembuatan-cv':3
         };
         const RESERVED_CATALOG_PHOTOS = CATALOG_PHOTOS.filter((_,index) => !Object.values(CATALOG_PHOTO_BY_SLUG).includes(index + 1));
         function catalogPhotoFor(slug, fallbackIndex) {
@@ -7429,7 +7440,8 @@
             artikel: { priceLabel: 'Rp8.000 / lembar' },
             editing: { priceLabel: 'Mulai dari Rp60.000' },
             poster: { priceLabel: 'Mulai dari Rp80.000' },
-            'bimbingan-parafrase': { priceLabel: 'Mulai dari Rp50.000' }
+            'bimbingan-parafrase': { priceLabel: 'Mulai dari Rp50.000' },
+            'pembuatan-cv': { priceLabel: 'Rp10.000' }
         };
         function renderCatalogueSkeleton() {
             const markup = Array.from({ length: 4 }, () => `<div class="service-card joki-skeleton" aria-hidden="true"><div class="joki-skeleton-block joki-skeleton-media"></div><div class="joki-skeleton-block joki-skeleton-title"></div><div class="joki-skeleton-block"></div><div class="joki-skeleton-block joki-skeleton-short"></div></div>`).join('');

@@ -13,6 +13,7 @@
   const indexFor = value => {
     const text = String(value || '').toLowerCase();
     if(/gemini/.test(text)) return 12;
+    if(/cv|curriculum vitae/.test(text)) return 0;
     if(/ppt|presentasi/.test(text)) return 2;
     if(/edit|revisi karya ilmiah/.test(text)) return 1;
     if(/desain|poster|palette/.test(text)) return 5;
