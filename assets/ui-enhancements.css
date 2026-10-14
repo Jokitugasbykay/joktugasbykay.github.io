@@ -371,6 +371,36 @@
         stroke-dashoffset: -52;
     }
 }
+.cf-upload.is-disabled {
+    cursor: not-allowed !important;
+    opacity: 0.78;
+    background: var(--surface-secondary) !important;
+    border: 1.5px dashed rgba(245, 158, 11, 0.45) !important;
+}
+.cf-upload.is-disabled::before {
+    display: none !important;
+}
+.cf-upload.is-disabled:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+.cf-upload.is-disabled * {
+    cursor: not-allowed !important;
+}
+.cf-upload.is-disabled .cf-upload__browse {
+    color: #f59e0b !important;
+    text-decoration: underline;
+}
+.cf-upload.is-disabled .cf-upload__outline rect,
+.cf-upload.is-disabled:hover .cf-upload__outline rect {
+    stroke: rgba(245, 158, 11, 0.5) !important;
+    animation: none !important;
+}
+.cf-upload.is-disabled:focus-visible,
+.cf-upload.is-disabled:focus-within {
+    outline: 2px solid rgba(245, 158, 11, 0.6) !important;
+    outline-offset: 3px;
+}
 .fu-06__art {
     position: relative;
     display: inline-block;
