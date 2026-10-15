@@ -85,7 +85,7 @@
       .jokiin-lim-inf { flex:1; display:flex; flex-direction:column; gap:14px; }
       .jokiin-lim-inf h2 { margin:0; font-size:clamp(22px, 2.6vw, 30px); font-weight:800; line-height:1.2; }
       .jokiin-lim-inf ul { margin:0; padding-left:18px; line-height:1.7; font-size:15px; }
-      .jokiin-le-badge { align-self:flex-start; font-weight:800; font-size:11px; letter-spacing:.1em; padding:5px 10px; border-radius:999px; display:inline-block; }
+      .jokiin-le-badge { display:none !important; }
       .jokiin-lim-pr { font-size:32px; font-weight:800; }
       .jokiin-lim-pr s { font-size:15px; font-weight:400; margin-left:8px; }
       .jokiin-lim-bar { height:8px; border-radius:8px; overflow:hidden; margin-top:4px; }
@@ -1236,7 +1236,6 @@
         <div class="jokiin-lim-in">
           <div class="jokiin-lim-vis" style="${visStyle}">${visText}</div>
           <div class="jokiin-lim-inf">
-            ${fp.is_limited_edition ? `<span class="jokiin-le-badge">LIMITED EDITION</span>` : ''}
             <h2>${escapeHtml(fp.nama)}</h2>
             <ul>
               ${benefits.map(b => `<li>${escapeHtml(b)}</li>`).join('')}
@@ -1396,13 +1395,8 @@
         const product = products.find(p => p.title === titleEl.textContent.trim());
         if (!product) return;
 
-        if (product.isLimitedEdition && !card.querySelector('.jokiin-card-le-badge')) {
-          const badge = document.createElement('span');
-          badge.className = 'jokiin-le-badge jokiin-card-le-badge';
-          badge.style.marginBottom = '4px';
-          badge.textContent = 'LIMITED EDITION';
-          titleEl.parentNode.insertBefore(badge, titleEl);
-        }
+        const existingLeBadge = card.querySelector('.jokiin-card-le-badge, .jokiin-le-badge');
+        if (existingLeBadge) existingLeBadge.remove();
 
         let stockEl = card.querySelector('.jokiin-stock-pill');
         if (typeof product.stok === 'number') {
