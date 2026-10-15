@@ -3188,6 +3188,73 @@
                 -webkit-overflow-scrolling: touch;
             }
 
+            /* --- ALUR STATUS PESANAN MOBILE (Fit 5 langkah sebaris tanpa scroll horizontal) --- */
+            .order-flow-wrapper {
+                padding: 24px 8px 20px !important;
+                margin-bottom: 35px !important;
+                overflow: hidden !important;
+                overflow-x: hidden !important;
+            }
+
+            .order-flow-wrapper::-webkit-scrollbar {
+                display: none !important;
+                width: 0 !important;
+                height: 0 !important;
+            }
+
+            .order-flow {
+                min-width: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: flex-start !important;
+                position: relative !important;
+            }
+
+            .order-flow::before {
+                top: 19px !important;
+                left: 10% !important;
+                right: 10% !important;
+                height: 2px !important;
+            }
+
+            .flow-step {
+                flex: 1 1 0 !important;
+                width: 20% !important;
+                max-width: 20% !important;
+                min-width: 0 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                padding: 0 1px !important;
+                box-sizing: border-box !important;
+            }
+
+            .flow-icon {
+                width: 38px !important;
+                height: 38px !important;
+                min-width: 38px !important;
+                min-height: 38px !important;
+                border-width: 2px !important;
+                margin-bottom: 8px !important;
+            }
+
+            .flow-icon img.jokiin-vector {
+                width: 17px !important;
+                height: 17px !important;
+            }
+
+            .flow-text {
+                font-size: clamp(0.55rem, 2.1vw, 0.72rem) !important;
+                line-height: 1.22 !important;
+                letter-spacing: -0.015em !important;
+                text-align: center !important;
+                word-break: normal !important;
+                overflow-wrap: break-word !important;
+            }
+
             /* --- WELCOME POPUP MOBILE (100% PROPORSIONAL DESKTOP SCALING) --- */
             .welcome-wrapper {
                 /* 1. Kunci layout ke ukuran referensi desktop murni */
@@ -10729,6 +10796,73 @@ Teman tugas mahasiswa.`;
                 width: 100%;
                 max-width: 100%;
                 overflow-x: clip;
+            }
+
+            /* Alur Status Pesanan: 5 langkah sebaris tanpa scroll horizontal */
+            .order-flow-wrapper {
+                padding: 24px 8px 20px !important;
+                margin-bottom: 35px !important;
+                overflow: hidden !important;
+                overflow-x: hidden !important;
+            }
+
+            .order-flow-wrapper::-webkit-scrollbar {
+                display: none !important;
+                width: 0 !important;
+                height: 0 !important;
+            }
+
+            .order-flow {
+                min-width: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: flex-start !important;
+                position: relative !important;
+            }
+
+            .order-flow::before {
+                top: 19px !important;
+                left: 10% !important;
+                right: 10% !important;
+                height: 2px !important;
+            }
+
+            .flow-step {
+                flex: 1 1 0 !important;
+                width: 20% !important;
+                max-width: 20% !important;
+                min-width: 0 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                padding: 0 1px !important;
+                box-sizing: border-box !important;
+            }
+
+            .flow-icon {
+                width: 38px !important;
+                height: 38px !important;
+                min-width: 38px !important;
+                min-height: 38px !important;
+                border-width: 2px !important;
+                margin-bottom: 8px !important;
+            }
+
+            .flow-icon img.jokiin-vector {
+                width: 17px !important;
+                height: 17px !important;
+            }
+
+            .flow-text {
+                font-size: clamp(0.55rem, 2.1vw, 0.72rem) !important;
+                line-height: 1.22 !important;
+                letter-spacing: -0.015em !important;
+                text-align: center !important;
+                word-break: normal !important;
+                overflow-wrap: break-word !important;
             }
 
             /* Header ringkas: logo satu baris, tombol tidak lagi menciptakan scroll horizontal. */
