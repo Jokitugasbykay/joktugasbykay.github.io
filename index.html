@@ -1017,6 +1017,16 @@
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .filter-pills::-webkit-scrollbar,
+        #hargaFilterContainer::-webkit-scrollbar {
+            display: none;
+            width: 0;
+            height: 0;
         }
 
         .filter-pill {
@@ -3145,8 +3155,19 @@
 
             /* Sembunyikan scrollbar agar rapi tapi tetap bisa discroll */
             .header-actions::-webkit-scrollbar,
-            .nav-pills::-webkit-scrollbar {
+            .nav-pills::-webkit-scrollbar,
+            #hargaFilterContainer::-webkit-scrollbar,
+            .filter-pills::-webkit-scrollbar {
                 display: none;
+                width: 0;
+                height: 0;
+            }
+
+            #hargaFilterContainer,
+            .filter-pills {
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+                -webkit-overflow-scrolling: touch;
             }
 
             .nav-pills {
@@ -10600,19 +10621,28 @@ Teman tugas mahasiswa.`;
         @media (max-width: 760px) {
 
             html,
-            body {
-                width: 100%;
-                max-width: 100%;
-                overflow-x: hidden !important;
-                scrollbar-width: none;
-                -ms-overflow-style: none;
+            body,
+            #hargaFilterContainer,
+            .filter-pills,
+            #testimoniFilterContainer,
+            #orderFilterContainer,
+            .filter-sort-bar {
+                scrollbar-width: none !important;
+                -ms-overflow-style: none !important;
             }
 
             html::-webkit-scrollbar,
             body::-webkit-scrollbar,
             .nav-pills::-webkit-scrollbar,
-            .header-actions::-webkit-scrollbar {
-                display: none;
+            .header-actions::-webkit-scrollbar,
+            #hargaFilterContainer::-webkit-scrollbar,
+            .filter-pills::-webkit-scrollbar,
+            #testimoniFilterContainer::-webkit-scrollbar,
+            #orderFilterContainer::-webkit-scrollbar,
+            .filter-sort-bar::-webkit-scrollbar {
+                display: none !important;
+                width: 0 !important;
+                height: 0 !important;
             }
 
             .container {

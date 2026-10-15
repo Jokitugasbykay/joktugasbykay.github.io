@@ -306,3 +306,16 @@ test('7. File artefak kode sumber lengkap dan valid', () => {
   assert.ok(fs.existsSync(path.join(root, 'supabase/functions/jokiin-catalog/index.ts')), 'Edge function exists');
   assert.ok(fs.existsSync(path.join(root, 'src/catalog.js')), 'Storefront catalog.js exists');
 });
+
+test('8. Category filter chips hide scrollbar on mobile while preserving horizontal scroll', () => {
+  const root = path.resolve(__dirname, '..');
+  const indexHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const catalogJs = fs.readFileSync(path.join(root, 'assets', 'catalog.js'), 'utf8');
+
+  assert.ok(indexHtml.includes('#hargaFilterContainer::-webkit-scrollbar'), 'index.html must hide webkit scrollbar on #hargaFilterContainer');
+  assert.ok(indexHtml.includes('.filter-pills::-webkit-scrollbar'), 'index.html must hide webkit scrollbar on .filter-pills');
+  assert.ok(indexHtml.includes('scrollbar-width: none'), 'index.html must set scrollbar-width: none');
+
+  assert.ok(catalogJs.includes('#hargaFilterContainer::-webkit-scrollbar'), 'catalog.js must hide webkit scrollbar on mobile');
+  assert.ok(catalogJs.includes('scrollbar-width: none'), 'catalog.js must set scrollbar-width: none on mobile filter container');
+});

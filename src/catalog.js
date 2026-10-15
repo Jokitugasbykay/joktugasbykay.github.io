@@ -267,7 +267,19 @@
           background-size: cover !important;
           background-position: center !important;
         }
-        #hargaFilterContainer { flex-wrap:nowrap !important; overflow-x:auto !important; padding-bottom:6px; }
+        #hargaFilterContainer, .filter-pills {
+          flex-wrap: nowrap !important;
+          overflow-x: auto !important;
+          padding-bottom: 2px !important;
+          scrollbar-width: none !important;
+          -ms-overflow-style: none !important;
+          -webkit-overflow-scrolling: touch;
+        }
+        #hargaFilterContainer::-webkit-scrollbar, .filter-pills::-webkit-scrollbar {
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
+        }
       }
     `;
     document.head.appendChild(style);
