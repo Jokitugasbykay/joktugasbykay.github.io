@@ -21,7 +21,7 @@
       deskripsi: 'Akses penuh Gemini Advanced 18 bulan, Garansi selama 1 minggu, Akun pribadi siap pakai',
       harga_dasar: 50000,
       diskon_persen: 60,
-      stok: 14,
+      stok: 0,
       stok_awal: 20,
       batas_beli_per_orang: 1,
       is_active: true,
@@ -1516,6 +1516,12 @@
           if (Array.isArray(sRows) && sRows.length) {
             const mapped = sRows.map(s => {
               const isLimited = Boolean(s.slug === 'gemini-pro-18-bulan' || s.is_limited_edition || s.sale_label === 'LIMITED EDITION');
+              let stokVal = null;
+              if (typeof s.stok === 'number') {
+                stokVal = s.stok;
+              } else if (s.stok !== undefined && s.stok !== null && s.stok !== '' && !isNaN(Number(s.stok))) {
+                stokVal = Number(s.stok);
+              }
               return {
                 id: s.id,
                 nama: s.name,
@@ -1524,7 +1530,7 @@
                 deskripsi: s.description || '',
                 harga_dasar: Number(s.price || 0),
                 diskon_persen: Number(s.sale_percent || 0),
-                stok: isLimited ? 13 : null,
+                stok: stokVal,
                 is_active: s.is_active !== false,
                 is_limited_edition: isLimited
               };
