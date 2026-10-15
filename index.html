@@ -6729,7 +6729,6 @@
                         <span style="color:var(--text-secondary); font-size:0.85em; display:block;">ID Pesanan</span>
                         <div style="display:flex; align-items:center; gap:8px; margin-top:4px; flex-wrap:wrap;">
                             <strong id="succOrderId" style="color:var(--primary); font-size:1.05em; letter-spacing:0.03em; word-break:break-all;">-</strong>
-                            <span id="succOrderTypeBadge" style="display:none; font-size:10px; font-weight:800; padding:3px 8px; border-radius:999px; letter-spacing:0.06em;"></span>
                         </div>
                     </div>
                     <button type="button" id="btnCopySuccessOrderId" onclick="window.copySuccessOrderId()" aria-label="Salin ID Pesanan" style="min-height:44px; padding:0 14px; border-radius:10px; border:1px solid #1fd18b; background:rgba(31,209,139,0.12); color:#1fd18b; font:700 13px 'Plus Jakarta Sans',sans-serif; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
@@ -8509,16 +8508,12 @@
 
         function renderOrderSuccess(order) {
             const code = String(order.orderCode || order.id || '');
-            const isSpesial = code.startsWith('SPCL') || order.tipe === 'SPESIAL';
             document.getElementById('succOrderId').textContent = code;
             document.getElementById('succTotal').textContent = formatRupiah(order.total);
             const typeBadge = document.getElementById('succOrderTypeBadge');
             if (typeBadge) {
-                typeBadge.style.display = 'inline-flex';
-                typeBadge.textContent = isSpesial ? 'PENAWARAN SPESIAL · LIMITED EDITION' : 'PESANAN REGULER';
-                typeBadge.style.background = isSpesial ? 'rgba(255,213,74,0.16)' : 'rgba(31,209,139,0.14)';
-                typeBadge.style.color = isSpesial ? '#ffd54a' : '#1fd18b';
-                typeBadge.style.border = isSpesial ? '1px solid rgba(255,213,74,0.4)' : '1px solid rgba(31,209,139,0.35)';
+                typeBadge.style.display = 'none';
+                typeBadge.textContent = '';
             }
             const emailNotice = document.getElementById('succEmailNotice');
             const emailAddr = order.emailConfirmation?.to || order.customer?.email || order.gmail || '';

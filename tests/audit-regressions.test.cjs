@@ -30,3 +30,16 @@ test('all page inline scripts and local JavaScript parse', () => {
     assert.equal(result.status, 0, file + '\n' + result.stderr);
   }
 });
+
+test('payment pending page does not display pesanan reguler or pesanan spesial badge', () => {
+  const indexHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  // 1. In HTML markup for tab-order-success, succOrderTypeBadge span should not exist
+  assert.ok(!indexHtml.includes('id="succOrderTypeBadge"'), 'succOrderTypeBadge span should be removed from tab-order-success');
+  // 2. In renderOrderSuccess implementation, PESANAN REGULER string should not be rendered
+  const fnStart = indexHtml.indexOf('function renderOrderSuccess(order)');
+  const fnEnd = indexHtml.indexOf('\n        function savePendingMayarOrder', fnStart);
+  const fnCode = indexHtml.slice(fnStart, fnEnd);
+  assert.ok(!fnCode.includes('PESANAN REGULER'), 'renderOrderSuccess must not output PESANAN REGULER');
+  assert.ok(!fnCode.includes('PENAWARAN SPESIAL · LIMITED EDITION'), 'renderOrderSuccess must not output PENAWARAN SPESIAL');
+});
+
