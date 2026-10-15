@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS products (
   harga_dasar BIGINT NOT NULL CHECK (harga_dasar >= 0),
   diskon_persen SMALLINT NOT NULL DEFAULT 0 CHECK (diskon_persen BETWEEN 0 AND 100),
   stok INTEGER NOT NULL DEFAULT 0 CHECK (stok >= 0),
-  batas_beli_per_orang INTEGER NOT NULL DEFAULT 1 CHECK (batas_beli_per_orang >= 1),
+  batas_beli_per_orang INTEGER NOT NULL DEFAULT 2 CHECK (batas_beli_per_orang >= 1),
   is_active BOOLEAN NOT NULL DEFAULT true,
   is_limited_edition BOOLEAN NOT NULL DEFAULT false,
   gambar_url TEXT DEFAULT NULL,
@@ -145,8 +145,8 @@ $$;
 -- Seed initial products matching design reference
 INSERT INTO products (nama, slug, kategori, deskripsi, harga_dasar, diskon_persen, stok, batas_beli_per_orang, is_active, is_limited_edition) VALUES
   ('Gemini Pro 18 Bulan', 'gemini-pro-18-bulan', 'Digital', 'Akses penuh Gemini Advanced 18 bulan, Garansi selama 1 minggu, Akun pribadi siap pakai', 50000, 60, 20, 1, true, true),
-  ('Cek Turnitin', 'cek-turnitin', 'Pengecekan', 'Pengecekan plagiarisme Turnitin no-repository aman dan cepat.', 4000, 0, 999, 10, true, false),
-  ('Joki Skripsi', 'joki-skripsi', 'Penelitian', 'Pendampingan dan pengerjaan skripsi lengkap hingga sidang.', 16000000, 19, 10, 1, true, false),
-  ('Joki PPT', 'joki-ppt', 'Desain', 'Pembuatan slide presentasi profesional, menarik, dan rapi.', 13000, 0, 100, 5, true, false),
+  ('Cek Turnitin', 'cek-turnitin', 'Pengecekan', 'Pengecekan plagiarisme Turnitin no-repository aman dan cepat.', 4000, 0, 999, 2, true, false),
+  ('Joki Skripsi', 'joki-skripsi', 'Penelitian', 'Pendampingan dan pengerjaan skripsi lengkap hingga sidang.', 16000000, 19, 10, 2, true, false),
+  ('Joki PPT', 'joki-ppt', 'Desain', 'Pembuatan slide presentasi profesional, menarik, dan rapi.', 13000, 0, 100, 2, true, false),
   ('Joki Proposal Skripsi', 'joki-proposal-skripsi', 'Penelitian', 'Penyusunan proposal skripsi Bab 1-3 lengkap beserta referensi.', 1300000, 0, 25, 2, true, false)
 ON CONFLICT (slug) DO NOTHING;

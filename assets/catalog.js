@@ -1163,14 +1163,18 @@
         const existing = products.find(
           cp => cp.id === ap.slug || cp.id === mappedSlug || cp.title.toLowerCase() === String(ap.nama || '').toLowerCase()
         );
+        const isLimited = Boolean(ap.is_limited_edition);
+        const batasBeli = isLimited
+          ? Math.max(1, Number(ap.batas_beli_per_orang) || 1)
+          : Math.max(2, Number(ap.batas_beli_per_orang) || 2);
         if (existing) {
           existing.priceNum = finalPrice;
           existing.originalPrice = ap.harga_dasar;
           existing.hasSale = (ap.diskon_persen || 0) > 0;
           existing.price = formatRupiah(finalPrice);
           existing.stok = ap.stok;
-          existing.isLimitedEdition = Boolean(ap.is_limited_edition);
-          existing.batasBeli = ap.batas_beli_per_orang || 1;
+          existing.isLimitedEdition = isLimited;
+          existing.batasBeli = batasBeli;
         } else {
           products.push({
             id: ap.slug || ap.id,
@@ -1181,8 +1185,8 @@
             originalPrice: ap.harga_dasar,
             hasSale: (ap.diskon_persen || 0) > 0,
             stok: ap.stok,
-            isLimitedEdition: Boolean(ap.is_limited_edition),
-            batasBeli: ap.batas_beli_per_orang || 1,
+            isLimitedEdition: isLimited,
+            batasBeli: batasBeli,
             desc: ap.deskripsi || '',
             image: ap.gambar_url || 'assets/catalog/portfolio-06.jpg',
             popularity: 85

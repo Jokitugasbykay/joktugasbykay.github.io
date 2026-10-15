@@ -8016,11 +8016,18 @@
         }
         function maximumOrderQuantity(productId) {
             const product = CONFIG.PRODUCTS.find(p => p.id === productId);
-            if (!product) return 100;
-            if (product.batasBeli !== undefined) return Math.max(1, Number(product.batasBeli) || 1);
-            if (product.batas_beli_per_orang !== undefined) return Math.max(1, Number(product.batas_beli_per_orang) || 1);
-            if (product.id === 'gemini-pro-18-bulan' || product.isLimitedEdition || product.is_limited_edition) return 1;
-            return 100;
+            if (!product) return 2;
+            const isSpesial = product.id === 'gemini-pro-18-bulan' || product.isLimitedEdition || product.is_limited_edition;
+            if (isSpesial) {
+                const limit = product.batasBeli ?? product.batas_beli_per_orang;
+                return limit !== undefined ? Math.max(1, Number(limit) || 1) : 1;
+            }
+            // Layanan reguler: batas pembelian 2x per hari
+            const limit = product.batasBeli ?? product.batas_beli_per_orang;
+            if (limit !== undefined && Number(limit) > 0) {
+                return Math.max(2, Number(limit) || 2);
+            }
+            return 2;
         }
         function productPriceLabel(product) {
             const formatted = formatRupiah(product?.priceNum || 0);
@@ -8164,8 +8171,8 @@
                 const product = CONFIG.PRODUCTS.find(p => p.id === item.productId);
                 const maxQ = maximumOrderQuantity(item.productId);
                 const isAtMax = item.quantity >= maxQ;
-                const limitBadge = maxQ <= 1 ? `<div style="font-size:0.75em; color:#f59e0b; margin-top:3px; font-weight:700;">Batas 1x per hari</div>` : '';
-                html += `<div class="cart-item"><div class="cart-item-info"><h4>${escapeHTML(item.name)}</h4><p>${escapeHTML(productPriceLabel(product))}</p>${limitBadge}<div style="font-size:0.85em; color:var(--text-secondary); margin-top:5px;">Subtotal: ${formatRupiah(sub)}</div></div><div class="cart-qty-controls"><button class="btn-qty" onclick="window.changeCartQty('${item.productId}', -1)">-</button><span style="font-weight:600; width:20px; text-align:center; color:var(--text-main);">${item.quantity}</span><button class="btn-qty" ${isAtMax ? 'disabled style="opacity:0.35;cursor:not-allowed;" title="Batas maksimal pembelian 1x per hari"' : ''} onclick="window.changeCartQty('${item.productId}', 1)">+</button></div></div>`;
+                const limitBadge = maxQ <= 1 ? `<div style="font-size:0.75em; color:#f59e0b; margin-top:3px; font-weight:700;">Batas 1x per hari</div>` : (maxQ === 2 ? `<div style="font-size:0.75em; color:#f59e0b; margin-top:3px; font-weight:700;">Batas 2x per hari</div>` : '');
+                html += `<div class="cart-item"><div class="cart-item-info"><h4>${escapeHTML(item.name)}</h4><p>${escapeHTML(productPriceLabel(product))}</p>${limitBadge}<div style="font-size:0.85em; color:var(--text-secondary); margin-top:5px;">Subtotal: ${formatRupiah(sub)}</div></div><div class="cart-qty-controls"><button class="btn-qty" onclick="window.changeCartQty('${item.productId}', -1)">-</button><span style="font-weight:600; width:20px; text-align:center; color:var(--text-main);">${item.quantity}</span><button class="btn-qty" ${isAtMax ? `disabled style="opacity:0.35;cursor:not-allowed;" title="Batas maksimal pembelian ${maxQ}x per hari"` : ''} onclick="window.changeCartQty('${item.productId}', 1)">+</button></div></div>`;
             });
             c.innerHTML = html; document.getElementById('cartTotalPrice').innerText = formatRupiah(total);
         }
@@ -8457,7 +8464,7 @@
                 const sub = item.price * item.quantity; subtotal += sub;
                 const maxQ = maximumOrderQuantity(item.productId);
                 const isAtMax = item.quantity >= maxQ;
-                const limitBadge = maxQ <= 1 ? `<div style="font-size:0.75em; color:#f59e0b; margin-top:3px; font-weight:700;">Batas 1x per hari</div>` : '';
+                const limitBadge = maxQ <= 1 ? `<div style="font-size:0.75em; color:#f59e0b; margin-top:3px; font-weight:700;">Batas 1x per hari</div>` : (maxQ === 2 ? `<div style="font-size:0.75em; color:#f59e0b; margin-top:3px; font-weight:700;">Batas 2x per hari</div>` : '');
                 html += `
             <div class="cart-item">
                 <div class="cart-item-info">
@@ -8469,7 +8476,7 @@
                 <div class="cart-qty-controls">
                     <button class="btn-qty" onclick="window.changeCheckoutQty('${item.productId}', -1)">-</button>
                     <span style="font-weight:600; width:20px; text-align:center; color:var(--text-main);">${item.quantity}</span>
-                    <button class="btn-qty" ${isAtMax ? 'disabled style="opacity:0.35;cursor:not-allowed;" title="Batas maksimal pembelian 1x per hari"' : ''} onclick="window.changeCheckoutQty('${item.productId}', 1)">+</button>
+                    <button class="btn-qty" ${isAtMax ? `disabled style="opacity:0.35;cursor:not-allowed;" title="Batas maksimal pembelian ${maxQ}x per hari"` : ''} onclick="window.changeCheckoutQty('${item.productId}', 1)">+</button>
                 </div>
             </div>`;
             });
