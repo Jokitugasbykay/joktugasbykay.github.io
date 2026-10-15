@@ -94,3 +94,33 @@ test('cart conflict mobile bottom sheet drag gestures (up/down swipe to dismiss/
   const dampedUp = Math.max(-60, dragUpY * 0.25);
   assert.ok(dampedUp < 0 && dampedUp > dragUpY, 'Dragging up must apply rubberband damping');
 });
+
+test('cart conflict modal backdrop blur smoothly fades out on drag and dismiss without frozen blur artifact', () => {
+  [indexHtml, assetsCatalogJs, srcCatalogJs].forEach((code, idx) => {
+    const fileLabel = idx === 0 ? 'index.html' : idx === 1 ? 'assets/catalog.js' : 'src/catalog.js';
+
+    // Must have transition for backdrop-filter on modal overlay
+    assert.ok(code.includes('backdrop-filter 0.22s') || code.includes('backdrop-filter: blur(0px)'), `${fileLabel} must transition or fade backdrop-filter`);
+    assert.ok(code.includes('modal.style.backdropFilter'), `${fileLabel} must dynamically update backdropFilter during sheet gestures`);
+    assert.ok(code.includes('modal.style.webkitBackdropFilter'), `${fileLabel} must dynamically update webkitBackdropFilter during sheet gestures`);
+  });
+});
+
+test('cart conflict modal grip handle has clear contrast across light and dark themes', () => {
+  [indexHtml, assetsCatalogJs, srcCatalogJs].forEach((code, idx) => {
+    const fileLabel = idx === 0 ? 'index.html' : idx === 1 ? 'assets/catalog.js' : 'src/catalog.js';
+
+    assert.ok(code.includes('#cartTypeConflictModal .grip'), `${fileLabel} must define grip styles`);
+    assert.ok(code.includes('rgba(15, 23, 42') || code.includes('rgba(0, 0, 0'), `${fileLabel} must provide distinct high-contrast color for light mode`);
+    assert.ok(code.includes('rgba(255, 255, 255'), `${fileLabel} must provide distinct high-contrast color for dark mode`);
+  });
+});
+
+test('category filter container has smooth horizontal touch-scrolling with proper padding', () => {
+  [indexHtml, assetsCatalogJs, srcCatalogJs].forEach((code, idx) => {
+    const fileLabel = idx === 0 ? 'index.html' : idx === 1 ? 'assets/catalog.js' : 'src/catalog.js';
+
+    assert.ok(code.includes('scroll-snap-type'), `${fileLabel} must configure scroll-snap on category chips`);
+    assert.ok(code.includes('scroll-behavior: smooth') || code.includes('scroll-behavior:smooth'), `${fileLabel} must configure smooth scrolling on category chips`);
+  });
+});

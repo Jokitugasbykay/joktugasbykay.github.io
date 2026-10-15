@@ -187,6 +187,7 @@
         display: flex; align-items: flex-end; justify-content: center;
         z-index: 99999; padding: 0; -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
         box-sizing: border-box;
+        transition: background-color 0.22s ease-out, backdrop-filter 0.22s ease-out, -webkit-backdrop-filter 0.22s ease-out;
       }
       #cartTypeConflictModal .sheet,
       #cartTypeConflictModal .spcl-conflict-sheet {
@@ -221,11 +222,28 @@
         #cartTypeConflictModal .sheet,
         #cartTypeConflictModal .spcl-conflict-sheet { animation: none !important; }
       }
-      #cartTypeConflictModal .grip { width: 36px; height: 4px; border-radius: 2px; background: var(--line); margin: 0 auto 20px; cursor: grab; touch-action: none; position: relative; transition: background-color .15s, transform .15s; }
+      #cartTypeConflictModal .grip {
+        width: 42px; height: 5px; border-radius: 999px;
+        background: rgba(15, 23, 42, 0.32);
+        margin: 0 auto 18px; cursor: grab; touch-action: none; position: relative;
+        transition: background-color .15s, transform .15s;
+      }
+      :root[data-theme="dark"] #cartTypeConflictModal .grip,
+      html[data-theme="dark"] #cartTypeConflictModal .grip {
+        background: rgba(255, 255, 255, 0.35);
+      }
+      :root:not([data-theme="dark"]) #cartTypeConflictModal .grip,
+      html:not([data-theme="dark"]) #cartTypeConflictModal .grip {
+        background: rgba(15, 23, 42, 0.32);
+      }
       #cartTypeConflictModal .grip::before { content: ""; position: absolute; top: -14px; bottom: -16px; left: -35px; right: -35px; cursor: grab; }
-      #cartTypeConflictModal .grip:hover, #cartTypeConflictModal .grip:active { background: var(--muted); }
+      #cartTypeConflictModal .grip:hover, #cartTypeConflictModal .grip:active { background: rgba(15, 23, 42, 0.6); }
+      :root[data-theme="dark"] #cartTypeConflictModal .grip:hover,
+      :root[data-theme="dark"] #cartTypeConflictModal .grip:active { background: rgba(255, 255, 255, 0.7); }
       #cartTypeConflictModal .sheet.is-dragging, #cartTypeConflictModal .spcl-conflict-sheet.is-dragging { user-select: none; -webkit-user-select: none; cursor: grabbing; }
-      #cartTypeConflictModal .sheet.is-dragging .grip, #cartTypeConflictModal .spcl-conflict-sheet.is-dragging .grip { cursor: grabbing; background: var(--muted); transform: scale(1.1); }
+      #cartTypeConflictModal .sheet.is-dragging .grip, #cartTypeConflictModal .spcl-conflict-sheet.is-dragging .grip { cursor: grabbing; background: rgba(15, 23, 42, 0.6); transform: scale(1.08); }
+      :root[data-theme="dark"] #cartTypeConflictModal .sheet.is-dragging .grip,
+      :root[data-theme="dark"] #cartTypeConflictModal .spcl-conflict-sheet.is-dragging .grip { background: rgba(255, 255, 255, 0.7); }
       #cartTypeConflictModal .eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--warn); font-weight: 600; margin-bottom: 10px; }
       #cartTypeConflictModal h1,
       #cartTypeConflictModal .spcl-conflict-title { font-size: 22px; font-weight: 650; letter-spacing: -0.01em; margin-bottom: 8px; color: var(--text); line-height: 1.25; }
@@ -270,10 +288,16 @@
         #hargaFilterContainer, .filter-pills {
           flex-wrap: nowrap !important;
           overflow-x: auto !important;
-          padding-bottom: 2px !important;
+          padding: 4px 6px 4px 4px !important;
+          scroll-behavior: smooth;
+          scroll-snap-type: x proximity;
           scrollbar-width: none !important;
           -ms-overflow-style: none !important;
           -webkit-overflow-scrolling: touch;
+        }
+        #hargaFilterContainer .filter-pill, .filter-pills .filter-pill {
+          scroll-snap-align: start;
+          flex-shrink: 0;
         }
         #hargaFilterContainer::-webkit-scrollbar, .filter-pills::-webkit-scrollbar {
           display: none !important;
@@ -427,6 +451,8 @@
       sheet.style.animation = '';
       modal.style.transition = '';
       modal.style.backgroundColor = '';
+      modal.style.backdropFilter = '';
+      modal.style.webkitBackdropFilter = '';
     }
 
     function onPointerDown(e) {
@@ -467,10 +493,15 @@
         const sheetH = sheet.offsetHeight || 380;
         const progress = Math.min(1, Math.max(0, dy / sheetH));
         modal.style.backgroundColor = `rgba(0, 0, 0, ${(0.7 * (1 - progress * 0.75)).toFixed(3)})`;
+        const blurPx = Math.max(0, 4 * (1 - progress));
+        modal.style.backdropFilter = `blur(${blurPx.toFixed(1)}px)`;
+        modal.style.webkitBackdropFilter = `blur(${blurPx.toFixed(1)}px)`;
       } else {
         const damped = Math.max(-60, dy * 0.25);
         sheet.style.transform = `translateY(${damped}px)`;
         modal.style.backgroundColor = '';
+        modal.style.backdropFilter = '';
+        modal.style.webkitBackdropFilter = '';
       }
       if (e.cancelable) e.preventDefault();
     }
@@ -497,8 +528,11 @@
       if (shouldDismiss) {
         sheet.style.transition = 'transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1)';
         sheet.style.transform = `translateY(${Math.max(sheetH + 20, 450)}px)`;
-        modal.style.transition = 'background-color 0.22s ease-out';
+        modal.style.transition = 'background-color 0.22s ease-out, backdrop-filter 0.22s ease-out, -webkit-backdrop-filter 0.22s ease-out';
         modal.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+        modal.style.backdropFilter = 'blur(0px)';
+        modal.style.webkitBackdropFilter = 'blur(0px)';
+        document.body.classList.remove('modal-open');
 
         let closed = false;
         const finalizeClose = () => {
@@ -515,8 +549,10 @@
       } else {
         sheet.style.transition = 'transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)';
         sheet.style.transform = 'translateY(0)';
-        modal.style.transition = 'background-color 0.25s ease-out';
+        modal.style.transition = 'background-color 0.25s ease-out, backdrop-filter 0.25s ease-out, -webkit-backdrop-filter 0.25s ease-out';
         modal.style.backgroundColor = '';
+        modal.style.backdropFilter = '';
+        modal.style.webkitBackdropFilter = '';
 
         let snapped = false;
         const finalizeSnap = () => {
@@ -579,6 +615,8 @@
     setupCartConflictSheetGestures();
 
     modal.style.backgroundColor = '';
+    modal.style.backdropFilter = '';
+    modal.style.webkitBackdropFilter = '';
     modal.style.transition = '';
     const sheet = modal.querySelector('.sheet') || modal.querySelector('.spcl-conflict-sheet');
     if (sheet) {
@@ -642,6 +680,8 @@
     if (modal) {
       modal.style.display = 'none';
       modal.style.backgroundColor = '';
+      modal.style.backdropFilter = '';
+      modal.style.webkitBackdropFilter = '';
       modal.style.transition = '';
       const sheet = modal.querySelector('.sheet') || modal.querySelector('.spcl-conflict-sheet');
       if (sheet) {
