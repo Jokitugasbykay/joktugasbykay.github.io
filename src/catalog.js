@@ -160,17 +160,87 @@
       html[data-theme="light"] .jokiin-catalog-div::after { background: #e2e8f0; }
 
       /* Cart Conflict Modal */
-      .spcl-conflict-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:99999; padding:16px; -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); }
-      .spcl-conflict-modal-content { background:#0f161a; color:#eef3f1; border:1px solid #1d262b; border-radius:18px; max-width:440px; width:100%; padding:24px; box-sizing:border-box; box-shadow:0 24px 60px rgba(0,0,0,0.5); }
-      .spcl-conflict-title { font-size:18px; font-weight:800; margin:0 0 8px; line-height:1.3; }
-      .spcl-conflict-msg { font-size:14px; line-height:1.5; margin:0 0 20px; color:#c4cfca; }
-      .spcl-conflict-actions { display:flex; gap:10px; justify-content:flex-end; }
-      .spcl-conflict-btn-cancel { min-height:44px; padding:0 16px; border-radius:10px; border:1px solid #243138; background:transparent; color:#eef3f1; font:600 14px "Plus Jakarta Sans",sans-serif; cursor:pointer; }
-      .spcl-conflict-btn-confirm { min-height:44px; padding:0 16px; border-radius:10px; border:none; background:#1fd18b; color:#04251a; font:700 14px "Plus Jakarta Sans",sans-serif; cursor:pointer; }
-      :root:not([data-theme="dark"]) .spcl-conflict-modal-content, html[data-theme="light"] .spcl-conflict-modal-content { background:#ffffff; color:#0f172a; border-color:#e2e8f0; box-shadow:0 20px 48px rgba(0,0,0,0.12); }
-      :root:not([data-theme="dark"]) .spcl-conflict-msg, html[data-theme="light"] .spcl-conflict-msg { color:#475569; }
-      :root:not([data-theme="dark"]) .spcl-conflict-btn-cancel, html[data-theme="light"] .spcl-conflict-btn-cancel { border-color:#cbd5e1; background:#f8fafc; color:#334155; }
-      :root:not([data-theme="dark"]) .spcl-conflict-btn-confirm, html[data-theme="light"] .spcl-conflict-btn-confirm { background:#079669; color:#ffffff; }
+      #cartTypeConflictModal {
+        --bg-page: #0c0f0e;
+        --surface: #161a18;
+        --line: #262c29;
+        --text: #f1f3f0;
+        --muted: #8d958f;
+        --accent: #2fd08a;
+        --accent-ink: #04150d;
+        --warn: #e7b547;
+      }
+      :root:not([data-theme="dark"]) #cartTypeConflictModal,
+      html[data-theme="light"] #cartTypeConflictModal {
+        --bg-page: #f8fafc;
+        --surface: #ffffff;
+        --line: #e2e8f0;
+        --text: #0f172a;
+        --muted: #64748b;
+        --accent: #10b981;
+        --accent-ink: #ffffff;
+        --warn: #d97706;
+      }
+      #cartTypeConflictModal.modal-overlay,
+      #cartTypeConflictModal.spcl-conflict-modal-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+        display: flex; align-items: flex-end; justify-content: center;
+        z-index: 99999; padding: 0; -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+        box-sizing: border-box;
+      }
+      #cartTypeConflictModal .sheet,
+      #cartTypeConflictModal .spcl-conflict-sheet {
+        width: 100%; max-width: 460px; background: var(--surface); color: var(--text);
+        border-top: 1px solid var(--line); border-radius: 20px 20px 0 0;
+        animation: slideUp .32s cubic-bezier(.2,.8,.2,1) both;
+        padding: 12px 22px calc(22px + env(safe-area-inset-bottom, 0px));
+        box-sizing: border-box;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Plus Jakarta Sans", sans-serif;
+      }
+      @keyframes slideUp {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+      }
+      @media (min-width: 640px) {
+        #cartTypeConflictModal.modal-overlay,
+        #cartTypeConflictModal.spcl-conflict-modal-overlay {
+          align-items: center; padding: 16px;
+        }
+        #cartTypeConflictModal .sheet,
+        #cartTypeConflictModal .spcl-conflict-sheet {
+          max-width: 420px; border: 1px solid var(--line); border-radius: 20px;
+          padding: 26px 26px 24px; animation: popIn .2s ease-out both;
+        }
+        #cartTypeConflictModal .grip { display: none !important; }
+        @keyframes popIn {
+          from { opacity: 0; transform: translateY(8px) scale(.97); }
+          to { opacity: 1; transform: none; }
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #cartTypeConflictModal .sheet,
+        #cartTypeConflictModal .spcl-conflict-sheet { animation: none !important; }
+      }
+      #cartTypeConflictModal .grip { width: 36px; height: 4px; border-radius: 2px; background: var(--line); margin: 0 auto 20px; }
+      #cartTypeConflictModal .eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--warn); font-weight: 600; margin-bottom: 10px; }
+      #cartTypeConflictModal h1,
+      #cartTypeConflictModal .spcl-conflict-title { font-size: 22px; font-weight: 650; letter-spacing: -0.01em; margin-bottom: 8px; color: var(--text); line-height: 1.25; }
+      #cartTypeConflictModal p.desc,
+      #cartTypeConflictModal .spcl-conflict-msg { font-size: 15px; line-height: 1.55; color: var(--muted); margin-bottom: 20px; }
+      #cartTypeConflictModal .split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 22px; }
+      #cartTypeConflictModal .cart { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; background: var(--bg-page); cursor: pointer; transition: border-color .15s, color .15s; box-sizing: border-box; }
+      #cartTypeConflictModal .cart.regular.on { border-color: var(--accent); }
+      #cartTypeConflictModal .cart.regular.on strong { color: var(--accent); }
+      #cartTypeConflictModal .cart.special.on { border-color: var(--warn); }
+      #cartTypeConflictModal .cart.special.on strong { color: var(--warn); }
+      #cartTypeConflictModal .cart small { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+      #cartTypeConflictModal .cart strong { font-size: 14px; font-weight: 600; color: var(--text); }
+      #cartTypeConflictModal .btn { display: block; width: 100%; padding: 15px; border-radius: 12px; font-size: 15px; font-weight: 600; border: 0; cursor: pointer; font-family: inherit; box-sizing: border-box; text-align: center; text-decoration: none; }
+      #cartTypeConflictModal .btn-primary,
+      #cartTypeConflictModal .spcl-conflict-btn-confirm { background: var(--accent); color: var(--accent-ink); margin-bottom: 6px; }
+      #cartTypeConflictModal .btn-ghost,
+      #cartTypeConflictModal .spcl-conflict-btn-cancel { background: transparent; color: var(--muted); font-weight: 500; }
+      #cartTypeConflictModal .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
       @keyframes jokiin-promo-spin { to { transform:rotate(360deg); } }
       @keyframes jokiin-promo-glow { 50% { box-shadow:0 0 56px rgba(255,213,74,.28); } }
@@ -299,30 +369,90 @@
     } catch (_) {}
   }
 
+  function setupCartConflictCardToggles() {
+    const modalCards = document.querySelectorAll('#cartTypeConflictModal .cart');
+    modalCards.forEach(card => {
+      if (card.dataset.toggleBound === 'true') return;
+      card.dataset.toggleBound = 'true';
+      const toggle = () => {
+        const wasOn = card.classList.contains('on');
+        modalCards.forEach(c => c.classList.remove('on'));
+        if (!wasOn) card.classList.add('on');
+      };
+      card.addEventListener('click', toggle);
+      card.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggle();
+        }
+      });
+    });
+  }
+
   function showCartConflictModal(conflictExistingTipe, onConfirmClear) {
     state.pendingConflictAction = onConfirmClear;
     const modal = document.getElementById('cartTypeConflictModal');
+    const titleEl = document.getElementById('cartConflictTitle');
     const msgEl = document.getElementById('cartConflictMessage');
     const clearBtn = document.getElementById('btnConfirmClearConflictCart') || document.getElementById('btnConflictClearCart');
+    const leftCard = document.getElementById('conflictCardLeft');
+    const leftLabel = document.getElementById('conflictCardLeftLabel');
+    const leftStatus = document.getElementById('conflictCardLeftStatus');
+    const rightCard = document.getElementById('conflictCardRight');
+    const rightLabel = document.getElementById('conflictCardRightLabel');
+    const rightStatus = document.getElementById('conflictCardRightStatus');
+
     if (!modal) {
       if (typeof onConfirmClear === 'function') onConfirmClear();
       return;
     }
+
+    setupCartConflictCardToggles();
+
     if (conflictExistingTipe === 'REGULER') {
+      if (titleEl) titleEl.textContent = 'Pesanan spesial dibayar terpisah';
       if (msgEl) {
-        msgEl.textContent = 'Penawaran Spesial harus dibayar terpisah. Kosongkan keranjang reguler atau selesaikan pesanan reguler dulu?';
+        msgEl.textContent = 'Penawaran Spesial tidak bisa digabung dengan keranjang reguler. Kosongkan keranjang reguler, atau selesaikan pesanan spesial lebih dulu.';
       }
       if (clearBtn) {
         clearBtn.textContent = 'Kosongkan Keranjang Reguler';
       }
+      if (leftCard) {
+        leftCard.className = 'cart regular on';
+        leftCard.setAttribute('data-cart', 'regular');
+      }
+      if (leftLabel) leftLabel.textContent = 'Keranjang reguler';
+      if (leftStatus) leftStatus.textContent = 'Akan dikosongkan';
+
+      if (rightCard) {
+        rightCard.className = 'cart special';
+        rightCard.setAttribute('data-cart', 'special');
+      }
+      if (rightLabel) rightLabel.textContent = 'Penawaran Spesial';
+      if (rightStatus) rightStatus.textContent = 'Tetap disimpan';
     } else {
+      if (titleEl) titleEl.textContent = 'Pesanan reguler dibayar terpisah';
       if (msgEl) {
-        msgEl.textContent = 'Penawaran Spesial harus dibayar terpisah. Kosongkan keranjang Penawaran Spesial atau selesaikan pesanan spesial dulu?';
+        msgEl.textContent = 'Keranjang reguler tidak bisa digabung dengan Penawaran Spesial. Kosongkan Penawaran Spesial, atau selesaikan pesanan reguler lebih dulu.';
       }
       if (clearBtn) {
-        clearBtn.textContent = 'Kosongkan Keranjang Reguler';
+        clearBtn.textContent = 'Kosongkan Penawaran Spesial';
       }
+      if (leftCard) {
+        leftCard.className = 'cart special on';
+        leftCard.setAttribute('data-cart', 'special');
+      }
+      if (leftLabel) leftLabel.textContent = 'Penawaran Spesial';
+      if (leftStatus) leftStatus.textContent = 'Akan dikosongkan';
+
+      if (rightCard) {
+        rightCard.className = 'cart regular';
+        rightCard.setAttribute('data-cart', 'regular');
+      }
+      if (rightLabel) rightLabel.textContent = 'Keranjang reguler';
+      if (rightStatus) rightStatus.textContent = 'Tetap disimpan';
     }
+
     modal.style.display = 'flex';
     document.body.classList.add('modal-open');
   }

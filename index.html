@@ -5085,6 +5085,223 @@
     <link rel="stylesheet" href="assets/home-banner.css?v=20261003-themes">
     <script src="assets/review-moderation.js?v=20261004-censor"></script>
     <link rel="stylesheet" href="assets/review-compose.css?v=20261004">
+    <style id="cart-conflict-sheet-styles">
+        #cartTypeConflictModal {
+            --bg-page: #0c0f0e;
+            --surface: #161a18;
+            --line: #262c29;
+            --text: #f1f3f0;
+            --muted: #8d958f;
+            --accent: #2fd08a;
+            --accent-ink: #04150d;
+            --warn: #e7b547;
+            color-scheme: dark;
+        }
+
+        :root:not([data-theme="dark"]) #cartTypeConflictModal,
+        html[data-theme="light"] #cartTypeConflictModal {
+            --bg-page: #f8fafc;
+            --surface: #ffffff;
+            --line: #e2e8f0;
+            --text: #0f172a;
+            --muted: #64748b;
+            --accent: #10b981;
+            --accent-ink: #ffffff;
+            --warn: #d97706;
+            color-scheme: light;
+        }
+
+        /* Backdrop Overlay */
+        #cartTypeConflictModal.modal-overlay,
+        #cartTypeConflictModal.spcl-conflict-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: flex-end; /* Mobile default: docked to bottom */
+            justify-content: center;
+            z-index: 99999;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Mobile Animation & Sheet Styling */
+        #cartTypeConflictModal .sheet,
+        #cartTypeConflictModal .spcl-conflict-sheet {
+            width: 100%;
+            max-width: 460px;
+            background: var(--surface);
+            color: var(--text);
+            border-top: 1px solid var(--line);
+            border-radius: 20px 20px 0 0;
+            animation: slideUp .32s cubic-bezier(.2, .8, .2, 1) both;
+            padding: 12px 22px calc(22px + env(safe-area-inset-bottom, 0px));
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Plus Jakarta Sans", sans-serif;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        /* PC / Desktop Animation & Modal Centering */
+        @media (min-width: 640px) {
+            #cartTypeConflictModal.modal-overlay,
+            #cartTypeConflictModal.spcl-conflict-modal-overlay {
+                align-items: center;
+                padding: 16px;
+            }
+
+            #cartTypeConflictModal .sheet,
+            #cartTypeConflictModal .spcl-conflict-sheet {
+                max-width: 420px;
+                border: 1px solid var(--line);
+                border-radius: 20px;
+                padding: 26px 26px 24px;
+                animation: popIn .2s ease-out both;
+            }
+
+            #cartTypeConflictModal .grip {
+                display: none !important;
+            }
+
+            @keyframes popIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(8px) scale(.97);
+                }
+                to {
+                    opacity: 1;
+                    transform: none;
+                }
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            #cartTypeConflictModal .sheet,
+            #cartTypeConflictModal .spcl-conflict-sheet {
+                animation: none !important;
+            }
+        }
+
+        #cartTypeConflictModal .grip {
+            width: 36px;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--line);
+            margin: 0 auto 20px;
+        }
+
+        #cartTypeConflictModal .eyebrow {
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--warn);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        #cartTypeConflictModal h1,
+        #cartTypeConflictModal .spcl-conflict-title {
+            font-size: 22px;
+            font-weight: 650;
+            letter-spacing: -0.01em;
+            margin-bottom: 8px;
+            color: var(--text);
+            line-height: 1.25;
+        }
+
+        #cartTypeConflictModal p.desc,
+        #cartTypeConflictModal .spcl-conflict-msg {
+            font-size: 15px;
+            line-height: 1.55;
+            color: var(--muted);
+            margin-bottom: 20px;
+        }
+
+        #cartTypeConflictModal .split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+
+        #cartTypeConflictModal .cart {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 12px 14px;
+            background: var(--bg-page);
+            cursor: pointer;
+            transition: border-color .15s, color .15s;
+            box-sizing: border-box;
+        }
+
+        #cartTypeConflictModal .cart.regular.on {
+            border-color: var(--accent);
+        }
+
+        #cartTypeConflictModal .cart.regular.on strong {
+            color: var(--accent);
+        }
+
+        #cartTypeConflictModal .cart.special.on {
+            border-color: var(--warn);
+        }
+
+        #cartTypeConflictModal .cart.special.on strong {
+            color: var(--warn);
+        }
+
+        #cartTypeConflictModal .cart small {
+            display: block;
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        #cartTypeConflictModal .cart strong {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        #cartTypeConflictModal .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            border: 0;
+            cursor: pointer;
+            font-family: inherit;
+            box-sizing: border-box;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        #cartTypeConflictModal .btn-primary,
+        #cartTypeConflictModal .spcl-conflict-btn-confirm {
+            background: var(--accent);
+            color: var(--accent-ink);
+            margin-bottom: 6px;
+        }
+
+        #cartTypeConflictModal .btn-ghost,
+        #cartTypeConflictModal .spcl-conflict-btn-cancel {
+            background: transparent;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        #cartTypeConflictModal .btn:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+    </style>
 </head>
 
 <body>
@@ -6688,23 +6905,26 @@
         </div>
 
         <!-- DIALOG KONFIRMASI PISAH KERANJANG (REGULER vs SPESIAL) -->
-        <div id="cartTypeConflictModal" class="modal-overlay" style="display:none; z-index:9999;" role="dialog" aria-modal="true" aria-labelledby="cartConflictTitle">
-            <div class="modal-content spcl-conflict-modal-content" style="max-width:440px; border-radius:18px; padding:24px;">
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-                    <span style="background:rgba(255,213,74,.16); color:#ffd54a; border:1px solid rgba(255,213,74,.4); font-weight:800; font-size:11px; padding:4px 10px; border-radius:999px;">PISAH KERANJANG</span>
+        <div id="cartTypeConflictModal" class="modal-overlay spcl-conflict-modal-overlay" style="display:none; z-index:9999;" role="dialog" aria-modal="true" aria-labelledby="cartConflictTitle" onclick="if(event.target===this) window.closeCartConflictModal()">
+            <div class="sheet spcl-conflict-sheet" role="document">
+                <div class="grip" aria-hidden="true"></div>
+                <div class="eyebrow">Pisah keranjang</div>
+                <h1 id="cartConflictTitle" class="spcl-conflict-title">Pesanan spesial dibayar terpisah</h1>
+                <p class="desc spcl-conflict-msg" id="cartConflictMessage">Penawaran Spesial tidak bisa digabung dengan keranjang reguler. Kosongkan keranjang reguler, atau selesaikan pesanan spesial lebih dulu.</p>
+
+                <div class="split" aria-hidden="true">
+                    <div class="cart regular on" id="conflictCardLeft" data-cart="regular" role="button" tabindex="0">
+                        <small id="conflictCardLeftLabel">Keranjang reguler</small>
+                        <strong id="conflictCardLeftStatus">Akan dikosongkan</strong>
+                    </div>
+                    <div class="cart special" id="conflictCardRight" data-cart="special" role="button" tabindex="0">
+                        <small id="conflictCardRightLabel">Penawaran Spesial</small>
+                        <strong id="conflictCardRightStatus">Tetap disimpan</strong>
+                    </div>
                 </div>
-                <h3 id="cartConflictTitle" class="spcl-conflict-title" style="margin:0 0 10px; font-size:18px; font-weight:800;">Alur Pembayaran Terpisah</h3>
-                <p id="cartConflictMessage" class="spcl-conflict-msg" style="margin:0 0 22px; font-size:14px; line-height:1.6;">
-                    Penawaran Spesial harus dibayar terpisah. Kosongkan keranjang reguler atau selesaikan pesanan reguler dulu?
-                </p>
-                <div style="display:flex; flex-direction:column; gap:10px;">
-                    <button type="button" id="btnConfirmClearConflictCart" class="spcl-conflict-btn-confirm" onclick="window.confirmClearCartForConflict()" style="min-height:48px; border-radius:12px; border:0; font:800 14px 'Plus Jakarta Sans',sans-serif; cursor:pointer;">
-                        Kosongkan Keranjang Reguler
-                    </button>
-                    <button type="button" id="btnCancelConflictCart" class="spcl-conflict-btn-cancel" onclick="window.closeCartConflictModal()" style="min-height:48px; border-radius:12px; font:700 14px 'Plus Jakarta Sans',sans-serif; cursor:pointer;">
-                        Batal
-                    </button>
-                </div>
+
+                <button type="button" class="btn btn-primary spcl-conflict-btn-confirm" id="btnConfirmClearConflictCart" onclick="window.confirmClearCartForConflict()">Kosongkan Keranjang Reguler</button>
+                <button type="button" class="btn btn-ghost spcl-conflict-btn-cancel" id="btnCancelConflictCart" onclick="window.closeCartConflictModal()">Batal</button>
             </div>
         </div>
 
