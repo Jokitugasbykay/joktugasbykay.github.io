@@ -4276,11 +4276,12 @@
 
             /* Full-bleed mobile header: no inset edge or separator line. */
             .container>header {
-                width: calc(100% + 40px);
-                max-width: none;
-                margin-left: -20px;
-                margin-right: -20px;
-                padding: 16px 20px !important;
+                width: calc(100% + 32px);
+                max-width: calc(100% + 32px);
+                margin-left: -16px;
+                margin-right: -16px;
+                padding: 12px 16px !important;
+                box-sizing: border-box !important;
                 border: 0 !important;
                 box-shadow: none !important;
                 background: var(--card-solid) !important;
@@ -10619,7 +10620,22 @@ Teman tugas mahasiswa.`;
         @media (max-width: 760px) {
 
             html,
-            body,
+            body {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow-x: clip !important;
+            }
+
+            #promoStrip.promo-strip {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+                box-sizing: border-box !important;
+            }
+
             #hargaFilterContainer,
             .filter-pills,
             #testimoniFilterContainer,
@@ -10734,6 +10750,11 @@ Teman tugas mahasiswa.`;
 
             /* Header ringkas: logo satu baris, tombol tidak lagi menciptakan scroll horizontal. */
             .container>header:not(.checkout-mode) {
+                width: calc(100% + 32px) !important;
+                max-width: calc(100% + 32px) !important;
+                margin-left: -16px !important;
+                margin-right: -16px !important;
+                box-sizing: border-box !important;
                 display: grid !important;
                 grid-template-columns: minmax(0, 1fr) !important;
                 justify-items: stretch !important;
@@ -10777,6 +10798,11 @@ Teman tugas mahasiswa.`;
 
             /* Header checkout hanya berisi judul dan tidak menyisakan ruang logo. */
             .container>header.checkout-mode {
+                width: calc(100% + 32px) !important;
+                max-width: calc(100% + 32px) !important;
+                margin-left: -16px !important;
+                margin-right: -16px !important;
+                box-sizing: border-box !important;
                 min-height: 56px !important;
                 padding: 12px 16px !important;
                 flex-direction: row !important;
@@ -10846,7 +10872,7 @@ Teman tugas mahasiswa.`;
             #full-harga .cf-price-card .cf-sale-ribbon { top:16px; right:-32px; width:112px; font-size:.56rem; padding:5px 2px; }
             #full-harga .cf-price-card .cf-card-actions { flex-direction:column; }
             #full-harga .cf-price-card .cf-card-actions button { min-height:40px; }
-            .container > header:not(.checkout-mode) .header-actions, header:not(.checkout-mode) .header-actions { display:flex!important; width:max-content!important; max-width:calc(100% - 16px)!important; margin-left:auto!important; margin-right:0!important; gap:6px!important; flex-wrap:nowrap!important; justify-content:flex-end!important; overflow-x:auto!important; }
+            .container > header:not(.checkout-mode) .header-actions, header:not(.checkout-mode) .header-actions { display:flex!important; width:100%!important; max-width:100%!important; box-sizing:border-box!important; margin:0!important; gap:6px!important; flex-wrap:nowrap!important; justify-content:flex-end!important; overflow:visible!important; }
             header:not(.checkout-mode) .header-actions button { flex:none!important; box-sizing:border-box!important; width:auto!important; min-width:0!important; max-width:none!important; padding:9px 5px!important; font-size:11px!important; line-height:1.1!important; white-space:nowrap!important; }
             header:not(.checkout-mode) #cartHeaderBtn { width:90px!important; }
             header:not(.checkout-mode) #ordersHeaderBtn { width:104px!important; }
