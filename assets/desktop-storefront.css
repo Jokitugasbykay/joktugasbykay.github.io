@@ -1,5 +1,5 @@
 /* Desktop only. Checkout shares brand alignment; its form and controls stay intact. */
-@media (min-width: 761px) and (hover: hover) and (pointer: fine) {
+@media (min-width: 761px) {
     body:not(:has(.container > header.checkout-mode)) { background: var(--bg-color) !important; }
     .container > header:not(.checkout-mode) {
         display: flex !important;

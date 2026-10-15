@@ -43,3 +43,18 @@ test('payment pending page does not display pesanan reguler or pesanan spesial b
   assert.ok(!fnCode.includes('PENAWARAN SPESIAL · LIMITED EDITION'), 'renderOrderSuccess must not output PENAWARAN SPESIAL');
 });
 
+test('desktop mode on mobile displays proper desktop header without stretched or 62px buttons', () => {
+  const indexHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const desktopCss = fs.readFileSync(path.join(root, 'assets/desktop-storefront.css'), 'utf8');
+
+  // 1. desktop-storefront.css must not lock desktop rules behind hover:hover pointer:fine
+  assert.ok(!desktopCss.includes('@media (min-width: 761px) and (hover: hover)'), 'desktop-storefront.css must apply to touch devices in desktop mode');
+
+  // 2. index.html mobile-final-fixes must target max-width 760px, not 1024px portrait
+  assert.ok(!indexHtml.includes('@media (max-width: 1024px) and (orientation: portrait)'), 'mobile-final-fixes must not hijack desktop mode view (width > 760px)');
+
+  // 3. index.html must declare desktop header rules for min-width: 761px
+  assert.ok(indexHtml.includes('@media (min-width: 761px)'), 'index.html must include @media (min-width: 761px) header styles');
+});
+
+

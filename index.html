@@ -10155,9 +10155,9 @@ Teman tugas mahasiswa.`;
         })();
     </script>
     <style id="jokiin-mobile-final-fixes">
-        /* Semua perbaikan berikut hanya berlaku saat layar ponsel portrait,
-           termasuk ketika browser ponsel mengaktifkan mode situs desktop. */
-        @media (max-width: 1024px) and (orientation: portrait) {
+        /* Semua perbaikan berikut hanya berlaku saat layar ponsel (lebar <= 760px).
+           Pada mode situs desktop di ponsel (lebar >= 761px), tata letak mengikuti desktop header. */
+        @media (max-width: 760px) {
 
             html,
             body {
@@ -10300,6 +10300,55 @@ Teman tugas mahasiswa.`;
             header:not(.checkout-mode) #cartHeaderBtn { width:90px!important; }
             header:not(.checkout-mode) #ordersHeaderBtn { width:104px!important; }
             header:not(.checkout-mode) #authHeaderBtn { width:64px!important; min-width:64px!important; max-width:64px!important; padding:8px 5px!important; font-size:10px!important; }
+        }
+
+        /* Desktop Header Layout (Termasuk Mode Desktop di ponsel / lebar layar >= 761px) */
+        @media (min-width: 761px) {
+            .container > header:not(.checkout-mode) {
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                padding: 14px 24px !important;
+                gap: 16px !important;
+                min-height: 60px !important;
+            }
+            .container > header:not(.checkout-mode) .logo {
+                width: auto !important;
+                flex: none !important;
+                margin: 0 !important;
+                justify-content: flex-start !important;
+            }
+            .container > header:not(.checkout-mode) .header-actions {
+                display: flex !important;
+                flex-direction: row !important;
+                width: auto !important;
+                flex: none !important;
+                margin-left: auto !important;
+                margin-right: 0 !important;
+                gap: 10px !important;
+                flex-wrap: nowrap !important;
+                align-items: center !important;
+                justify-content: flex-end !important;
+                overflow: visible !important;
+            }
+            .container > header:not(.checkout-mode) .header-actions button {
+                width: auto !important;
+                min-width: 0 !important;
+                max-width: none !important;
+                flex: none !important;
+                min-height: 42px !important;
+                padding: 10px 14px !important;
+                font-size: 13px !important;
+                border-radius: 8px !important;
+                white-space: nowrap !important;
+            }
+            .container > header:not(.checkout-mode) #cartIconWrapper {
+                display: inline !important;
+            }
+            .container > header:not(.checkout-mode) #cartHeaderBadge {
+                margin-left: 5px !important;
+            }
         }
         @media (prefers-reduced-motion:reduce) { #full-harga .cf-price-card .cf-sale-ribbon, .spcl-cta-btn { animation:none!important; transition:none!important; } }
 
