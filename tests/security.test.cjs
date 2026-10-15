@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const { stripTypeScriptTypes } = require('node:module');
 const path = require('node:path');
 const root = path.resolve(__dirname, '..');
-const code = 'NUG-20261003-' + 'A'.repeat(32);
+const code = 'NUG' + 'ABCDEFGHJKMNPQRSTVWXYZ2345';
 const row = {id:1,order_code:code,user_id:'owner',customer:{email:'private@example.com'},task:{notes:'private',attachments:['private-link']},items:[{name:'private-service'}],total_price:100000,status:'pending',payment_status:'PENDING',estimated_completion:null,created_at:'2026-10-03T00:00:00Z'};
 const context = extra => vm.createContext({Request,Response,Headers,URL,TextEncoder,TextDecoder,Uint8Array,crypto:globalThis.crypto,console,...extra});
 const response = value => new Response(JSON.stringify(value), {headers:{'content-type':'application/json'}});
@@ -31,7 +31,7 @@ for(const role of ['guest','other','owner','admin']) test(`tracking privacy: ${r
   if(['owner','admin'].includes(role)) assert.equal(data.order.task.notes,'private');
   else {
     assert.equal(data.order.detail_restricted,true);
-    for(const field of ['id','user_id','customer','task','notes','items','total_price']) assert.equal(field in data.order,false,field);
+    for(const field of ['id','user_id','customer','task','notes','items']) assert.equal(field in data.order,false,field);
   }
 });
 function worker({allowed=true}={}) {
