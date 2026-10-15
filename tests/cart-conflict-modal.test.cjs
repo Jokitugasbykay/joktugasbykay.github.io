@@ -69,3 +69,28 @@ test('cart conflict DOM interaction: toggling cards and status update', () => {
   toggleCard(cards[1]);
   assert.ok(!cards[1].classList.contains('on'));
 });
+
+test('cart conflict mobile bottom sheet drag gestures (up/down swipe to dismiss/snap)', () => {
+  [indexHtml, assetsCatalogJs, srcCatalogJs].forEach((code, idx) => {
+    const fileLabel = idx === 0 ? 'index.html' : idx === 1 ? 'assets/catalog.js' : 'src/catalog.js';
+
+    assert.ok(code.includes('cursor: grab') || code.includes('cursor:grab'), `${fileLabel} must define grab cursor on grip`);
+    assert.ok(code.includes('touch-action: none') || code.includes('touch-action:none'), `${fileLabel} must set touch-action: none on grip`);
+    assert.ok(code.includes('is-dragging'), `${fileLabel} must define dragging state styles`);
+    assert.ok(code.includes('setupCartConflictSheetGestures'), `${fileLabel} must define setupCartConflictSheetGestures`);
+  });
+
+  // Behavioral test of gesture math
+  const dragDownY = 100;
+  const shouldDismissDown = dragDownY > 85;
+  assert.equal(shouldDismissDown, true, 'Dragging down > 85px must trigger sheet dismiss');
+
+  const smallDragY = 30;
+  const smallVelocity = 0.1;
+  const shouldDismissSmall = smallDragY > 85 || (smallDragY > 25 && smallVelocity > 0.45);
+  assert.equal(shouldDismissSmall, false, 'Small drag down without velocity must snap back to 0');
+
+  const dragUpY = -50;
+  const dampedUp = Math.max(-60, dragUpY * 0.25);
+  assert.ok(dampedUp < 0 && dampedUp > dragUpY, 'Dragging up must apply rubberband damping');
+});

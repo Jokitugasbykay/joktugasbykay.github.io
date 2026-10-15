@@ -221,7 +221,11 @@
         #cartTypeConflictModal .sheet,
         #cartTypeConflictModal .spcl-conflict-sheet { animation: none !important; }
       }
-      #cartTypeConflictModal .grip { width: 36px; height: 4px; border-radius: 2px; background: var(--line); margin: 0 auto 20px; }
+      #cartTypeConflictModal .grip { width: 36px; height: 4px; border-radius: 2px; background: var(--line); margin: 0 auto 20px; cursor: grab; touch-action: none; position: relative; transition: background-color .15s, transform .15s; }
+      #cartTypeConflictModal .grip::before { content: ""; position: absolute; top: -14px; bottom: -16px; left: -35px; right: -35px; cursor: grab; }
+      #cartTypeConflictModal .grip:hover, #cartTypeConflictModal .grip:active { background: var(--muted); }
+      #cartTypeConflictModal .sheet.is-dragging, #cartTypeConflictModal .spcl-conflict-sheet.is-dragging { user-select: none; -webkit-user-select: none; cursor: grabbing; }
+      #cartTypeConflictModal .sheet.is-dragging .grip, #cartTypeConflictModal .spcl-conflict-sheet.is-dragging .grip { cursor: grabbing; background: var(--muted); transform: scale(1.1); }
       #cartTypeConflictModal .eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--warn); font-weight: 600; margin-bottom: 10px; }
       #cartTypeConflictModal h1,
       #cartTypeConflictModal .spcl-conflict-title { font-size: 22px; font-weight: 650; letter-spacing: -0.01em; margin-bottom: 8px; color: var(--text); line-height: 1.25; }
@@ -302,14 +306,12 @@
         batasBeli: fp.batas_beli_per_orang || 1,
         desc: fp.deskripsi || '',
         image: fp.gambar_url || 'assets/catalog/gemini-pro.png',
-        reviewImage: 'assets/ui-art/gemini.png',
         popularity: 99,
         _isBannerOnly: true
       });
     } else {
       existing.title = fp.nama || existing.title;
       existing.image = fp.gambar_url || 'assets/catalog/gemini-pro.png';
-      existing.reviewImage = existing.reviewImage || 'assets/ui-art/gemini.png';
       existing.priceNum = finalPrice;
       existing.originalPrice = fp.harga_dasar;
       existing.hasSale = (fp.diskon_persen || 0) > 0;
@@ -391,6 +393,158 @@
     });
   }
 
+  function setupCartConflictSheetGestures() {
+    const modal = document.getElementById('cartTypeConflictModal');
+    if (!modal) return;
+    const sheet = modal.querySelector('.sheet') || modal.querySelector('.spcl-conflict-sheet');
+    const grip = modal.querySelector('.grip');
+    if (!sheet) return;
+    if (modal.dataset.gesturesBound === 'true') return;
+    modal.dataset.gesturesBound = 'true';
+
+    let isDragging = false;
+    let startY = 0;
+    let currentY = 0;
+    let startTime = 0;
+    let activePointerId = null;
+
+    function resetSheetStyles() {
+      sheet.classList.remove('is-dragging');
+      sheet.style.transition = '';
+      sheet.style.transform = '';
+      sheet.style.animation = '';
+      modal.style.transition = '';
+      modal.style.backgroundColor = '';
+    }
+
+    function onPointerDown(e) {
+      if (window.innerWidth >= 640) return;
+      if (e.button && e.button !== 0) return;
+
+      const isGrip = grip && (e.target === grip || grip.contains(e.target));
+      const sheetRect = sheet.getBoundingClientRect();
+      const isTopZone = !e.target.closest('button, a, input, .cart') && (e.clientY - sheetRect.top <= 54);
+
+      if (!isGrip && !isTopZone) return;
+
+      isDragging = true;
+      startY = e.clientY;
+      currentY = e.clientY;
+      startTime = Date.now();
+      activePointerId = e.pointerId !== undefined ? e.pointerId : null;
+
+      if (activePointerId !== null && grip && typeof grip.setPointerCapture === 'function' && isGrip) {
+        try { grip.setPointerCapture(activePointerId); } catch (_) {}
+      }
+
+      sheet.classList.add('is-dragging');
+      sheet.style.animation = 'none';
+      sheet.style.transition = 'none';
+      if (e.cancelable) e.preventDefault();
+    }
+
+    function onPointerMove(e) {
+      if (!isDragging) return;
+      if (activePointerId !== null && e.pointerId !== undefined && e.pointerId !== activePointerId) return;
+
+      currentY = e.clientY;
+      const dy = currentY - startY;
+
+      if (dy > 0) {
+        sheet.style.transform = `translateY(${dy}px)`;
+        const sheetH = sheet.offsetHeight || 380;
+        const progress = Math.min(1, Math.max(0, dy / sheetH));
+        modal.style.backgroundColor = `rgba(0, 0, 0, ${(0.7 * (1 - progress * 0.75)).toFixed(3)})`;
+      } else {
+        const damped = Math.max(-60, dy * 0.25);
+        sheet.style.transform = `translateY(${damped}px)`;
+        modal.style.backgroundColor = '';
+      }
+      if (e.cancelable) e.preventDefault();
+    }
+
+    function onPointerUp(e) {
+      if (!isDragging) return;
+      if (activePointerId !== null && e.pointerId !== undefined && e.pointerId !== activePointerId) return;
+
+      isDragging = false;
+      sheet.classList.remove('is-dragging');
+
+      if (activePointerId !== null && grip && typeof grip.releasePointerCapture === 'function') {
+        try { grip.releasePointerCapture(activePointerId); } catch (_) {}
+      }
+      activePointerId = null;
+
+      const dy = (e.clientY !== undefined ? e.clientY : currentY) - startY;
+      const elapsed = Math.max(1, Date.now() - startTime);
+      const velocity = dy / elapsed;
+
+      const sheetH = sheet.offsetHeight || 380;
+      const shouldDismiss = dy > 85 || (dy > 25 && velocity > 0.45);
+
+      if (shouldDismiss) {
+        sheet.style.transition = 'transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1)';
+        sheet.style.transform = `translateY(${Math.max(sheetH + 20, 450)}px)`;
+        modal.style.transition = 'background-color 0.22s ease-out';
+        modal.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+
+        let closed = false;
+        const finalizeClose = () => {
+          if (closed) return;
+          closed = true;
+          sheet.removeEventListener('transitionend', finalizeClose);
+          if (typeof window.closeCartConflictModal === 'function') {
+            window.closeCartConflictModal();
+          }
+          resetSheetStyles();
+        };
+        sheet.addEventListener('transitionend', finalizeClose);
+        setTimeout(finalizeClose, 250);
+      } else {
+        sheet.style.transition = 'transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)';
+        sheet.style.transform = 'translateY(0)';
+        modal.style.transition = 'background-color 0.25s ease-out';
+        modal.style.backgroundColor = '';
+
+        let snapped = false;
+        const finalizeSnap = () => {
+          if (snapped) return;
+          snapped = true;
+          sheet.removeEventListener('transitionend', finalizeSnap);
+          resetSheetStyles();
+        };
+        sheet.addEventListener('transitionend', finalizeSnap);
+        setTimeout(finalizeSnap, 270);
+      }
+    }
+
+    if (window.PointerEvent) {
+      if (grip) grip.addEventListener('pointerdown', onPointerDown);
+      sheet.addEventListener('pointerdown', onPointerDown);
+      window.addEventListener('pointermove', onPointerMove, { passive: false });
+      window.addEventListener('pointerup', onPointerUp);
+      window.addEventListener('pointercancel', onPointerUp);
+    } else {
+      const touchWrapper = (fn) => (e) => {
+        const touch = e.touches[0] || e.changedTouches[0];
+        if (touch) {
+          fn({
+            clientY: touch.clientY,
+            target: e.target,
+            button: 0,
+            cancelable: e.cancelable,
+            preventDefault: () => e.preventDefault()
+          });
+        }
+      };
+      if (grip) grip.addEventListener('touchstart', touchWrapper(onPointerDown), { passive: false });
+      sheet.addEventListener('touchstart', touchWrapper(onPointerDown), { passive: false });
+      window.addEventListener('touchmove', touchWrapper(onPointerMove), { passive: false });
+      window.addEventListener('touchend', touchWrapper(onPointerUp));
+      window.addEventListener('touchcancel', touchWrapper(onPointerUp));
+    }
+  }
+
   function showCartConflictModal(conflictExistingTipe, onConfirmClear) {
     state.pendingConflictAction = onConfirmClear;
     const modal = document.getElementById('cartTypeConflictModal');
@@ -410,6 +564,17 @@
     }
 
     setupCartConflictCardToggles();
+    setupCartConflictSheetGestures();
+
+    modal.style.backgroundColor = '';
+    modal.style.transition = '';
+    const sheet = modal.querySelector('.sheet') || modal.querySelector('.spcl-conflict-sheet');
+    if (sheet) {
+      sheet.classList.remove('is-dragging');
+      sheet.style.transform = '';
+      sheet.style.transition = '';
+      sheet.style.animation = '';
+    }
 
     if (conflictExistingTipe === 'REGULER') {
       if (titleEl) titleEl.textContent = 'Pesanan spesial dibayar terpisah';
@@ -462,7 +627,18 @@
   window.closeCartConflictModal = function () {
     state.pendingConflictAction = null;
     const modal = document.getElementById('cartTypeConflictModal');
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+      modal.style.display = 'none';
+      modal.style.backgroundColor = '';
+      modal.style.transition = '';
+      const sheet = modal.querySelector('.sheet') || modal.querySelector('.spcl-conflict-sheet');
+      if (sheet) {
+        sheet.classList.remove('is-dragging');
+        sheet.style.transform = '';
+        sheet.style.transition = '';
+        sheet.style.animation = '';
+      }
+    }
     if (!document.querySelector('.modal-overlay[style*="display: flex"]')) {
       document.body.classList.remove('modal-open');
     }
@@ -563,8 +739,7 @@
     bindSpecialCheckoutInputs();
 
     const fp = state.featuredProduct;
-    const maxLimit = fp.batas_beli_per_orang || 1;
-    const qty = Math.min(maxLimit, Math.max(1, Number(qtyOverride) || state.specialCheckoutQty || 1));
+    const qty = Math.max(1, Number(qtyOverride) || state.specialCheckoutQty || 1);
     state.specialCheckoutQty = qty;
     const unitPrice = Math.round((fp.harga_dasar || 0) * (1 - (fp.diskon_persen || 0) / 100));
     const total = unitPrice * qty;
@@ -611,12 +786,6 @@
       if (wInput && !wInput.value && user.phone) {
         wInput.value = String(user.phone).replace(/\D/g, '').replace(/^(62|0)+/, '');
       }
-    }
-
-    const nightBox = document.getElementById('spclNightNoticeBox');
-    if (nightBox) {
-      const isNight = typeof window.isNightOperationalHours === 'function' ? window.isNightOperationalHours() : false;
-      nightBox.style.display = isNight ? 'block' : 'none';
     }
   };
 
@@ -921,48 +1090,11 @@
       const items = getActiveCartItems();
       if (items.length > 0 && items.some(i => isProductSpesial(i.productId))) {
         const spItem = items.find(i => isProductSpesial(i.productId));
-        const maxLimit = state.featuredProduct?.batas_beli_per_orang || 1;
-        window.openSpecialCheckout(Math.min(maxLimit, spItem?.quantity || 1));
+        window.openSpecialCheckout(spItem?.quantity || 1);
         return;
       }
       origGoToCheckout();
     };
-
-    const origChangeCartQty = window.changeCartQty;
-    if (typeof origChangeCartQty === 'function') {
-      window.changeCartQty = function (id, delta) {
-        if (delta > 0 && isProductSpesial(id)) {
-          const maxLimit = state.featuredProduct?.batas_beli_per_orang || 1;
-          const items = getActiveCartItems();
-          const existing = items.find(i => i.productId === id);
-          if (existing && existing.quantity >= maxLimit) {
-            if (typeof window.showToast === 'function') {
-              window.showToast(`Batas pembelian Penawaran Spesial maksimal ${maxLimit}x per hari per orang.`, 'Batas Pembelian', 'warn');
-            }
-            return;
-          }
-        }
-        origChangeCartQty(id, delta);
-      };
-    }
-
-    const origChangeCheckoutQty = window.changeCheckoutQty;
-    if (typeof origChangeCheckoutQty === 'function') {
-      window.changeCheckoutQty = function (id, delta) {
-        if (delta > 0 && isProductSpesial(id)) {
-          const maxLimit = state.featuredProduct?.batas_beli_per_orang || 1;
-          const items = getActiveCartItems();
-          const existing = items.find(i => i.productId === id);
-          if (existing && existing.quantity >= maxLimit) {
-            if (typeof window.showToast === 'function') {
-              window.showToast(`Batas pembelian Penawaran Spesial maksimal ${maxLimit}x per hari per orang.`, 'Batas Pembelian', 'warn');
-            }
-            return;
-          }
-        }
-        origChangeCheckoutQty(id, delta);
-      };
-    }
 
     if (typeof origClearCart === 'function') {
       window.clearCart = function () {
