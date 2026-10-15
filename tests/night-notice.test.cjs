@@ -8,12 +8,11 @@ const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 
 test('HTML contains night operational notice markup and elements', () => {
-  assert.ok(html.includes('id="nightNoticeSlot"'), 'nightNoticeSlot element exists');
-  assert.ok(html.includes('id="nightNoticeCard"'), 'nightNoticeCard element exists');
-  assert.ok(html.includes('Jam Istirahat Admin (22:00 – 05:00 WIB)'), 'Notice badge text exists');
-  assert.ok(html.includes('Admin Sedang Istirahat / Slow Response'), 'Notice title exists');
-  assert.ok(html.includes('window.dismissNightNotice()'), 'Dismiss button hook exists');
-  assert.ok(html.includes('id="spclNightNoticeBox"'), 'Special checkout night notice box exists');
+  assert.ok(html.includes('id="admin-break-popup"'), 'admin-break-popup element exists');
+  assert.ok(html.includes('class="abp"'), 'abp class exists');
+  assert.ok(html.includes('Admin istirahat · 22.00–05.00 WIB'), 'Notice badge text exists');
+  assert.ok(html.includes('class="abp-close"'), 'abp-close button exists');
+  assert.ok(html.includes('class="abp-ok"'), 'abp-ok button exists');
 });
 
 test('isNightOperationalHours logic correctly classifies hours (22:00 - 05:00 WIB)', () => {
@@ -43,48 +42,32 @@ test('isNightOperationalHours logic correctly classifies hours (22:00 - 05:00 WI
   assert.equal(checkHour(21), false, '21:00 is not night');
 });
 
-test('Night notice show and dismiss DOM lifecycle', () => {
-  let displayVal = 'none';
-  let slotHasClass = false;
-  let sessionStored = null;
+test('Admin break popup lifecycle and session storage dismissal', () => {
+  let isHidden = true;
+  let sessionStored = {};
 
-  const cardMock = {
-    style: { display: 'none' },
-    classList: {
-      remove: (c) => {},
-      add: (c) => {}
-    }
+  const boxMock = {
+    set hidden(val) { isHidden = Boolean(val); },
+    get hidden() { return isHidden; }
   };
 
-  const slotMock = {};
+  const KEY = 'abp-dismissed-2026-10-15';
 
-  const bn04Mock = {
-    classList: {
-      add: (c) => { if (c === 'has-night-notice') slotHasClass = true; },
-      remove: (c) => { if (c === 'has-night-notice') slotHasClass = false; }
-    }
-  };
+  function close() {
+    boxMock.hidden = true;
+    sessionStored[KEY] = '1';
+  }
 
-  const fakeWindow = {
-    location: { search: '?test_night_notice=1' },
-    isNightOperationalHours: () => true,
-    showNightOperationalNotice: (force = false) => {
-      cardMock.style.display = 'flex';
-      bn04Mock.classList.add('has-night-notice');
-    },
-    dismissNightNotice: () => {
-      sessionStored = 'true';
-      cardMock.style.display = 'none';
-      bn04Mock.classList.remove('has-night-notice');
-    }
-  };
+  // When admin break is active:
+  boxMock.hidden = false;
+  assert.equal(boxMock.hidden, false);
 
-  fakeWindow.showNightOperationalNotice(true);
-  assert.equal(cardMock.style.display, 'flex');
-  assert.equal(slotHasClass, true);
+  // User dismisses:
+  close();
+  assert.equal(boxMock.hidden, true);
+  assert.equal(sessionStored[KEY], '1');
 
-  fakeWindow.dismissNightNotice();
-  assert.equal(cardMock.style.display, 'none');
-  assert.equal(slotHasClass, false);
-  assert.equal(sessionStored, 'true');
+  // Next check in same session:
+  const shouldSkip = Boolean(sessionStored[KEY]);
+  assert.equal(shouldSkip, true);
 });
