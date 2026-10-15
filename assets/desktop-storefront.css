@@ -1,5 +1,8 @@
 /* Desktop only. Checkout shares brand alignment; its form and controls stay intact. */
 @media (min-width: 761px) {
+    html, body {
+        overflow-x: clip !important;
+    }
     body:not(:has(.container > header.checkout-mode)) { background: var(--bg-color) !important; }
     .container > header:not(.checkout-mode) {
         display: flex !important;
@@ -243,7 +246,7 @@
         box-shadow: none;
         backdrop-filter: none;
     }
-    .container :is(#tab-informasi, #tab-carapesan, #tab-bantuan) :is(.info-container, .order-flow-wrapper, .help-hero, .track-section) {
+    .container :is(#tab-informasi, #tab-carapesan, #tab-bantuan) :is(.info-container, .help-hero) {
         padding: 32px 0;
         border: 0;
         border-bottom: 1px solid var(--desktop-line);
@@ -251,12 +254,86 @@
         background: transparent;
         box-shadow: none;
     }
-    .container :is(#tab-informasi, #tab-carapesan, #tab-bantuan) :is(.info-card, .step-card, .help-cat-card, .tip-card, .faq-item) {
-        border-radius: 8px;
+    .container :is(#tab-informasi, #tab-carapesan, #tab-bantuan) :is(.info-card, .step-card, .help-cat-card, .tip-card, .faq-item, .order-flow-wrapper, .track-section) {
+        border-radius: 16px;
         background: var(--desktop-paper);
-        border-color: var(--desktop-line);
-        box-shadow: none;
+        border: 1px solid var(--desktop-line);
+        box-shadow: var(--shadow-card);
         backdrop-filter: none;
+    }
+    .container #tab-bantuan .order-flow-wrapper {
+        border-radius: 16px;
+        background: var(--desktop-paper);
+        border: 1px solid var(--desktop-line);
+        box-shadow: var(--shadow-card);
+        padding: 36px 32px 28px;
+        max-width: 920px;
+        margin: 0 auto 48px;
+        overflow: hidden;
+    }
+    .container #tab-bantuan .order-flow {
+        min-width: 0;
+        width: 100%;
+        max-width: 860px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        position: relative;
+    }
+    .container #tab-bantuan .order-flow::before {
+        top: 25px;
+        left: 45px;
+        right: 45px;
+        height: 2px;
+        background: var(--desktop-line);
+        border-radius: 2px;
+    }
+    .container #tab-bantuan .flow-step {
+        width: 130px;
+        flex: 1;
+        max-width: 150px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        position: relative;
+        z-index: 2;
+    }
+    .container #tab-bantuan .flow-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: var(--desktop-soft);
+        border: 2px solid var(--desktop-line);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 12px;
+        z-index: 2;
+        transition: var(--transition);
+    }
+    .container #tab-bantuan .flow-step:hover .flow-icon {
+        border-color: var(--desktop-accent);
+        transform: translateY(-2px);
+        box-shadow: 0 0 16px rgba(37, 199, 122, 0.25);
+    }
+    .container #tab-bantuan .flow-text {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--desktop-muted);
+        line-height: 1.35;
+        text-align: center;
+    }
+    .container #tab-bantuan .track-section {
+        border-radius: 16px;
+        background: var(--desktop-paper);
+        border: 1px solid var(--desktop-line);
+        box-shadow: var(--shadow-card);
+        padding: 36px 32px;
+        max-width: 920px;
+        margin: 0 auto 40px;
+        text-align: center;
     }
     #globalFooter { background: var(--desktop-paper); }
     #globalFooter .footer-container { max-width: 1440px; padding-inline: 32px; }

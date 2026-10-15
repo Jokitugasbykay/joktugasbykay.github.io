@@ -69,12 +69,17 @@
             padding: 0;
         }
 
+        html {
+            overflow-x: clip;
+        }
+
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             padding: 0;
             line-height: 1.6;
+            overflow-x: clip;
         }
 
         /* Mengunci halaman saat modal terbuka */
@@ -1344,11 +1349,12 @@
 
         .track-section {
             background: linear-gradient(145deg, var(--card-solid) 0%, var(--surface-secondary) 100%);
-            border: 1px solid var(--border-highlight);
-            padding: 40px;
+            border: 1px solid var(--border-color);
+            padding: 36px 32px;
             border-radius: var(--radius);
             text-align: center;
-            margin-bottom: 50px;
+            max-width: 920px;
+            margin: 0 auto 50px;
             box-shadow: var(--shadow-card);
         }
 
@@ -1446,9 +1452,11 @@
             background: var(--card-solid);
             border: 1px solid var(--border-color);
             border-radius: var(--radius);
-            padding: 40px 20px;
-            margin-bottom: 50px;
-            overflow-x: auto;
+            padding: 36px 28px 28px;
+            margin: 0 auto 50px;
+            max-width: 920px;
+            overflow: hidden;
+            overflow-x: hidden;
             box-shadow: var(--shadow-card);
         }
 
@@ -1456,8 +1464,9 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            min-width: 700px;
-            max-width: 900px;
+            min-width: 0;
+            width: 100%;
+            max-width: 860px;
             margin: 0 auto;
             position: relative;
         }
@@ -1466,19 +1475,21 @@
             content: '';
             position: absolute;
             top: 25px;
-            left: 40px;
-            right: 40px;
-            height: 3px;
+            left: 45px;
+            right: 45px;
+            height: 2px;
             background: var(--surface-secondary);
             z-index: 1;
-            border-radius: 3px;
+            border-radius: 2px;
         }
 
         .flow-step {
             position: relative;
             z-index: 2;
             text-align: center;
-            width: 120px;
+            width: 130px;
+            flex: 1;
+            max-width: 150px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -1487,31 +1498,31 @@
         .flow-icon {
             width: 50px;
             height: 50px;
-            background: var(--bg-color);
-            border: 3px solid var(--border-highlight);
+            background: var(--card-solid);
+            border: 2px solid var(--border-color);
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             font-size: 1.2em;
             margin-bottom: 12px;
-            color: var(--primary);
+            color: var(--text-main);
             transition: var(--transition);
             z-index: 2;
         }
 
         .flow-step:hover .flow-icon {
-            transform: scale(1.1);
+            transform: translateY(-2px) scale(1.05);
             border-color: var(--primary);
-            box-shadow: 0 0 15px rgba(37, 99, 235, 0.2);
-            background: #fff;
+            box-shadow: 0 0 16px rgba(37, 199, 122, 0.25);
         }
 
         .flow-text {
             font-size: 0.85em;
             font-weight: 600;
             color: var(--text-secondary);
-            line-height: 1.3;
+            line-height: 1.35;
+            text-align: center;
         }
 
         .contact-cta-box {
@@ -3554,8 +3565,13 @@
             outline-offset: 3px;
         }
 
-        [data-theme="dark"] :is(.hero-box, .help-hero, .track-section) {
+        [data-theme="dark"] :is(.hero-box, .help-hero) {
             background: #111419;
+            border-color: var(--border-color);
+        }
+
+        [data-theme="dark"] :is(.track-section, .order-flow-wrapper) {
+            background: var(--card-solid);
             border-color: var(--border-color);
         }
 
