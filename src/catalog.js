@@ -1058,11 +1058,11 @@
       state.specialCheckoutInFlight = false;
       if (btnDesktop) {
         btnDesktop.disabled = false;
-        btnDesktop.textContent = 'Beli Sekarang';
+        btnDesktop.textContent = 'Beli sekarang';
       }
       if (btnMobile) {
         btnMobile.disabled = false;
-        btnMobile.innerHTML = `Beli Sekarang - <span id="spclMobileBtnTotal">${escapeHtml(formatRupiah(total))}</span>`;
+        btnMobile.textContent = 'Beli sekarang';
       }
     }
   };
