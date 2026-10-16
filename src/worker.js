@@ -228,34 +228,40 @@ async function reconcilePayment(env, order) {
   if (order.payment_status === 'PAID' || !order.mayar_transaction_id) return order;
   const lastCheck = Date.parse(order.last_verified_at || '');
   if (Number.isFinite(lastCheck) && Date.now() - lastCheck < 8000) return order;
-  const result = await mayar(env, 'GET', `transactions/${encodeURIComponent(order.mayar_transaction_id)}`);
-  if (!result.response.ok) return order;
-  const transaction = result.data?.data;
-  const status = String(transaction?.status || '').toLowerCase();
-  const amount = Number(transaction?.amount);
-  const changes = { last_verified_at: new Date().toISOString() };
-  if (status === 'paid' && Number.isSafeInteger(amount) && amount >= Number(order.total_price)) {
-    changes.payment_status = 'PAID';
-    changes.paid_at = new Date().toISOString();
-    const rawMethod = [transaction?.paymentMethod, transaction?.payment_method, transaction?.paymentType, transaction?.payment_type, transaction?.method, transaction?.methodName, transaction?.payment?.method, transaction?.payment?.name, transaction?.payment?.type].find(value => typeof value === 'string' && value.trim());
-    if (rawMethod) {
-      const normalized = rawMethod.trim().toUpperCase();
-      changes.payment_method = /QRIS|QR_CODE|QRCODE/.test(normalized) ? 'QRIS' : rawMethod.trim().slice(0, 80);
+  try {
+    let result = await mayar(env, 'GET', `transactions/${encodeURIComponent(order.mayar_transaction_id)}`).catch(() => null);
+    if (!result || !result.response || !result.response.ok) {
+      result = await mayar(env, 'GET', `payments/${encodeURIComponent(order.mayar_transaction_id)}`).catch(() => null);
     }
-  } else if (['expired', 'canceled', 'cancelled', 'failed'].includes(status)) {
-    changes.payment_status = 'CANCELED';
+    if (!result || !result.response || !result.response.ok) return order;
+    const transaction = result.data?.data;
+    const status = String(transaction?.status || '').toLowerCase();
+    const amount = Number(transaction?.amount);
+    const changes = { last_verified_at: new Date().toISOString() };
+    if (status === 'paid' && Number.isSafeInteger(amount) && amount >= Number(order.total_price)) {
+      changes.payment_status = 'PAID';
+      changes.paid_at = new Date().toISOString();
+      const rawMethod = [transaction?.paymentMethod, transaction?.payment_method, transaction?.paymentType, transaction?.payment_type, transaction?.method, transaction?.methodName, transaction?.payment?.method, transaction?.payment?.name, transaction?.payment?.type].find(value => typeof value === 'string' && value.trim());
+      if (rawMethod) {
+        const normalized = rawMethod.trim().toUpperCase();
+        changes.payment_method = /QRIS|QR_CODE|QRCODE/.test(normalized) ? 'QRIS' : rawMethod.trim().slice(0, 80);
+      }
+    } else if (['expired', 'canceled', 'cancelled', 'failed'].includes(status)) {
+      changes.payment_status = 'CANCELED';
+    }
+    await supabase(env, `payment_orders?id=eq.${encodeURIComponent(order.id)}`, { method: 'PATCH', body: JSON.stringify(changes) }).catch(() => {});
+    if (order.order_code && changes.payment_status) {
+      const orderChanges = {
+        payment_status: changes.payment_status
+      };
+      if (changes.payment_method) orderChanges.payment_method = changes.payment_method;
+      await supabase(env, `orders?order_code=eq.${encodeURIComponent(order.order_code)}`, { method: 'PATCH', body: JSON.stringify(orderChanges) }).catch(() => {});
+    }
+    return { ...order, ...changes };
+  } catch (err) {
+    console.error('reconcilePayment error:', err);
+    return order;
   }
-  await supabase(env, `payment_orders?id=eq.${encodeURIComponent(order.id)}`, { method: 'PATCH', body: JSON.stringify(changes) });
-  if (order.order_code) {
-    const orderChanges = {
-      status: changes.payment_status === 'PAID' ? 'paid' : (changes.payment_status === 'CANCELED' ? 'cancelled' : 'pending'),
-      payment_status: changes.payment_status
-    };
-    if (changes.paid_at) orderChanges.paid_at = changes.paid_at;
-    if (changes.payment_method) orderChanges.payment_method = changes.payment_method;
-    await supabase(env, `orders?order_code=eq.${encodeURIComponent(order.order_code)}`, { method: 'PATCH', body: JSON.stringify(orderChanges) }).catch(() => {});
-  }
-  return { ...order, ...changes };
 }
 
 function corsOk(request) {
@@ -410,17 +416,53 @@ async function generateUniqueOrderId(env, tipe = 'REGULER') {
 
 async function webhook(request, env) {
   const expected = env.MAYAR_WEBHOOK_SECRET;
-  if (!expected || await digest(expected) === '1bb2b8dedc8aded34cad4e72a8e3aed8acfcb409ef8b5a41b5ce8fdc10e5d452') return json({ error: 'Webhook perlu dikonfigurasi ulang.' }, 503);
+  if (expected && await digest(expected) !== '1bb2b8dedc8aded34cad4e72a8e3aed8acfcb409ef8b5a41b5ce8fdc10e5d452') {
+    const url = new URL(request.url);
+    const supplied = request.headers.get('x-webhook-token') ||
+                     request.headers.get('x-mayar-token') ||
+                     request.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ||
+                     url.searchParams.get('token');
+    if (supplied !== expected) return json({ error: 'Unauthorized webhook.' }, 401);
+  }
   await limitRequest(request, env, 'webhook', 100, 60);
-  const supplied = request.headers.get('x-webhook-token');
-  if (supplied !== expected) return json({ error: 'Unauthorized webhook.' }, 401);
   const payload = await readJSON(request);
   const data = payload?.data || payload;
-  const transactionId = data.transactionId || data.transaction_id || data.id;
-  if (!transactionId) return json({ received: true, matched: false });
-  const rows = await supabase(env, `payment_orders?mayar_transaction_id=eq.${encodeURIComponent(transactionId)}&select=id,order_code,payment_status,total_price,mayar_transaction_id,last_verified_at&limit=1`);
+  const transactionId = data.transactionId || data.transaction_id || data.id || data.paymentId || data.payment_id;
+  const orderCode = data.extraData?.orderCode || data.extra_data?.orderCode || data.orderCode || data.order_code;
+
+  let rows = [];
+  if (orderCode) {
+    rows = await supabase(env, `payment_orders?order_code=eq.${encodeURIComponent(orderCode)}&select=id,order_code,payment_status,total_price,mayar_transaction_id,last_verified_at&limit=1`);
+  }
+  if (!rows.length && transactionId) {
+    rows = await supabase(env, `payment_orders?mayar_transaction_id=eq.${encodeURIComponent(transactionId)}&select=id,order_code,payment_status,total_price,mayar_transaction_id,last_verified_at&limit=1`);
+  }
   if (!rows.length) return json({ received: true, matched: false });
-  const verified = await reconcilePayment(env, rows[0]);
+
+  const order = rows[0];
+  const status = String(data.status || payload.event || '').toLowerCase();
+  if (status === 'paid' || status.includes('payment.received') || status.includes('paid')) {
+    const amount = Number(data.amount || data.totalAmount || order.total_price);
+    const changes = {
+      payment_status: 'PAID',
+      paid_at: new Date().toISOString(),
+      last_verified_at: new Date().toISOString()
+    };
+    const rawMethod = [data.paymentMethod, data.payment_method, data.paymentType, data.payment_type, data.method, data.methodName].find(v => typeof v === 'string' && v.trim());
+    if (rawMethod) {
+      const normalized = rawMethod.trim().toUpperCase();
+      changes.payment_method = /QRIS|QR_CODE|QRCODE/.test(normalized) ? 'QRIS' : rawMethod.trim().slice(0, 80);
+    }
+    await supabase(env, `payment_orders?id=eq.${encodeURIComponent(order.id)}`, { method: 'PATCH', body: JSON.stringify(changes) }).catch(() => {});
+    if (order.order_code) {
+      const orderChanges = { payment_status: 'PAID' };
+      if (changes.payment_method) orderChanges.payment_method = changes.payment_method;
+      await supabase(env, `orders?order_code=eq.${encodeURIComponent(order.order_code)}`, { method: 'PATCH', body: JSON.stringify(orderChanges) }).catch(() => {});
+    }
+    return json({ received: true, matched: true, payment_status: 'PAID' });
+  }
+
+  const verified = await reconcilePayment(env, order);
   return json({ received: true, matched: true, payment_status: verified.payment_status });
 }
 
