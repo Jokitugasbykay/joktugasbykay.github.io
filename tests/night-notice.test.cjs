@@ -10,7 +10,7 @@ const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 test('HTML contains night operational notice markup and elements', () => {
   assert.ok(html.includes('id="admin-break-popup"'), 'admin-break-popup element exists');
   assert.ok(html.includes('class="abp"'), 'abp class exists');
-  assert.ok(html.includes('Admin istirahat · 22.00–05.00 WIB'), 'Notice badge text exists');
+  assert.ok(html.includes('Admin istirahat · 22.00-05.00 WIB'), 'Notice badge text exists');
   assert.ok(html.includes('class="abp-close"'), 'abp-close button exists');
   assert.ok(html.includes('class="abp-ok"'), 'abp-ok button exists');
 });

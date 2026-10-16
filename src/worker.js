@@ -363,7 +363,9 @@ async function createPayment(request, env) {
     })))
   }).catch(() => {});
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-  const payment = await mayar(env, 'POST', 'payments/create', { name: `Pembayaran JOKI.IN - ${lines[0].name}`, amount: total, email: order.customer.email, mobile: order.customer.whatsapp, description: `Pesanan JOKI.IN ${orderCode}. Silakan selesaikan pembayaran untuk memulai pengerjaan.`, expiredAt: expiresAt });
+  const customerName = String(order.customer?.name || order.customer?.nama || order.nama || 'Pelanggan JOKI.IN').trim();
+  const prodSummary = lines.map(l => l.name + ' x' + l.quantity).join(', ');
+  const payment = await mayar(env, 'POST', 'payments/create', { name: customerName, amount: total, email: order.customer.email, mobile: order.customer.whatsapp, description: `Pesanan JOKI.IN ${orderCode} - ${prodSummary}`, expiredAt: expiresAt });
   const data = payment.data?.data || {};
   const paymentUrl = data.link;
   const transactionId = data.transactionId || data.transaction_id || data.id;
@@ -534,15 +536,16 @@ async function handleSpecialCheckoutWithMayar(request, env, url) {
       const redirectUrl = `${originUrl}/?payment=complete&order_id=${encodeURIComponent(orderCode)}`;
       const customerEmail = String(order.gmail || order.customer?.email || '').trim();
       const customerWa = String(order.whatsapp || order.customer?.whatsapp || '').trim();
+      const customerName = String(order.nama || order.customer?.name || order.customer?.nama || 'Pelanggan JOKI.IN').trim();
       const prodName = String(order.product?.nama || order.items?.[0]?.name || 'Gemini Pro 18 Bulan');
 
       const payment = await mayar(env, 'POST', 'payments/create', {
-        name: `Pembayaran JOKI.IN - ${prodName}`,
+        name: customerName,
         amount: total,
         email: customerEmail,
         mobile: customerWa,
         redirectUrl,
-        description: `Pesanan Penawaran Spesial JOKI.IN ${orderCode}. Silakan selesaikan pembayaran untuk menerima akses akun.`,
+        description: `Pesanan Penawaran Spesial JOKI.IN ${orderCode} - ${prodName}`,
         expiredAt: expiresAt
       });
 

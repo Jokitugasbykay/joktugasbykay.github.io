@@ -402,6 +402,7 @@ async function createMayarPaymentIfConfigured(order: any, originUrl: string): Pr
     const total = Number(order.total || order.total_price || 0);
     if (total <= 0) return null;
     const expiredAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    const customerName = String(order.nama || order.customer?.name || order.customer?.nama || 'Pelanggan JOKI.IN').trim();
     const prodName = String(order.product?.nama || order.items?.[0]?.name || 'Gemini Pro 18 Bulan');
     const res = await fetch(`${MAYAR_BASE_URL}/payments/create`, {
       method: 'POST',
@@ -410,12 +411,12 @@ async function createMayarPaymentIfConfigured(order: any, originUrl: string): Pr
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        name: `Pembayaran JOKI.IN - ${prodName}`,
+        name: customerName,
         email: String(order.gmail || order.customer?.email || ''),
         amount: total,
         mobile: String(order.whatsapp || order.customer?.whatsapp || '').slice(0, 20),
         redirectUrl: `${originUrl}/?payment=complete&order_id=${encodeURIComponent(orderCode)}`,
-        description: `Pesanan JOKI.IN ${orderCode} (${order.tipe || 'SPESIAL'})`,
+        description: `Pesanan JOKI.IN ${orderCode} - ${prodName}`,
         expiredAt,
         extraData: {
           orderCode,
@@ -466,7 +467,7 @@ function validateProduct(body: any, partial = false) {
   }
   if (body.diskon_persen !== undefined) {
     const d = Number(body.diskon_persen);
-    if (!Number.isInteger(d) || d < 0 || d > 100) throw new ApiError(400, 'Diskon 0–100.');
+    if (!Number.isInteger(d) || d < 0 || d > 100) throw new ApiError(400, 'Diskon 0-100.');
     out.diskon_persen = d;
   }
   if (body.stok !== undefined) {
@@ -506,7 +507,7 @@ Deno.serve(async (req: Request) => {
       return ok({ cart });
     }
 
-    // POST /api/cart/items — Rejects mixed REGULER and SPESIAL items with 409
+    // POST /api/cart/items - Rejects mixed REGULER and SPESIAL items with 409
     if (method === 'POST' && path === '/api/cart/items') {
       const body = await req.json().catch(() => { throw new ApiError(400, 'Body tidak valid.'); });
       const cartId = String(body?.cart_id || req.headers.get('x-cart-id') || url.searchParams.get('cart_id') || getIp(req)).slice(0, 120);
@@ -604,7 +605,7 @@ Deno.serve(async (req: Request) => {
       return ok({ cart: savedCart || { id: cartId, tipe: newItemTipe, items: finalItems } });
     }
 
-    // DELETE /api/cart — Clears active cart
+    // DELETE /api/cart - Clears active cart
     if (method === 'DELETE' && path === '/api/cart') {
       const body = await req.json().catch(() => ({}));
       const cartId = String(body?.cart_id || url.searchParams.get('cart_id') || req.headers.get('x-cart-id') || getIp(req)).slice(0, 120);
@@ -615,7 +616,7 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // POST /api/checkout/spesial — Creates SPCL... order (27 chars) with row lock, stock check, and buy limit check
+    // POST /api/checkout/spesial - Creates SPCL... order (27 chars) with row lock, stock check, and buy limit check
     if (method === 'POST' && path === '/api/checkout/spesial') {
       const body = await req.json().catch(() => { throw new ApiError(400, 'Body tidak valid.'); });
       const user = await getUser(req);
@@ -714,7 +715,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // POST /api/checkout/reguler — Creates NUG... order (29 chars)
+    // POST /api/checkout/reguler - Creates NUG... order (29 chars)
     if (method === 'POST' && path === '/api/checkout/reguler') {
       const body = await req.json().catch(() => { throw new ApiError(400, 'Body tidak valid.'); });
       const user = await getUser(req);
@@ -800,7 +801,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // GET /api/orders/:orderCode — Public order lookup reading prefix (NUG vs SPCL)
+    // GET /api/orders/:orderCode - Public order lookup reading prefix (NUG vs SPCL)
     const orderLookupMatch = path.match(/^\/api\/orders\/([^/]+)$/);
     if (method === 'GET' && orderLookupMatch) {
       const code = decodeURIComponent(orderLookupMatch[1]).trim().toUpperCase();

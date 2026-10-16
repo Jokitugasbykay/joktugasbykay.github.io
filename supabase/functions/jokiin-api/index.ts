@@ -76,7 +76,7 @@ Deno.serve(async(req:Request)=>{
    if(!/^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}(?::\d{2})?)?$/.test(task.deadline)||!Number.isFinite(Date.parse(task.deadline)))throw new ApiError(400,'Deadline tidak valid.');
    if(task.googleDriveUrl){let url:URL;try{url=new URL(task.googleDriveUrl);}catch{throw new ApiError(400,'Link Drive tidak valid.');}if(url.protocol!=='https:'||!['drive.google.com','docs.google.com'].includes(url.hostname)||url.username||url.password)throw new ApiError(400,'Gunakan link HTTPS Google Drive atau Google Docs.');}
    if(!Array.isArray(input.items)||input.items.length<1||input.items.length>20)throw new ApiError(400,'Keranjang tidak valid.');
-   const items=input.items.map((item:any)=>{if(!item||!Number.isInteger(item.quantity)||item.quantity<1||item.quantity>100)throw new ApiError(400,'Jumlah layanan harus 1–100.');const productId=str(item.productId,'Layanan',80);if(!/^[a-z0-9-]+$/.test(productId))throw new ApiError(400,'Layanan tidak valid.');if(productId==='gemini-pro-18-bulan'||item.is_limited_edition===true||String(item.tipe||'').toUpperCase()==='SPESIAL')throw new ApiError(409,'Penawaran Spesial harus dibayar terpisah. Kosongkan keranjang reguler atau selesaikan pesanan reguler dulu.');return {productId,quantity:item.quantity};});
+   const items=input.items.map((item:any)=>{if(!item||!Number.isInteger(item.quantity)||item.quantity<1||item.quantity>100)throw new ApiError(400,'Jumlah layanan harus 1-100.');const productId=str(item.productId,'Layanan',80);if(!/^[a-z0-9-]+$/.test(productId))throw new ApiError(400,'Layanan tidak valid.');if(productId==='gemini-pro-18-bulan'||item.is_limited_edition===true||String(item.tipe||'').toUpperCase()==='SPESIAL')throw new ApiError(409,'Penawaran Spesial harus dibayar terpisah. Kosongkan keranjang reguler atau selesaikan pesanan reguler dulu.');return {productId,quantity:item.quantity};});
    const paymentMethod=str(input.paymentMethod,'Pembayaran',30);
    const promo=str(input.promo,'Promo',30,false).toUpperCase();
    const expectedTotal=input.expectedTotal;if(typeof expectedTotal!=='number'||!Number.isFinite(expectedTotal)||expectedTotal<0)throw new ApiError(400,'Total tidak valid.');
@@ -107,7 +107,7 @@ Deno.serve(async(req:Request)=>{
   }
   if(!user)throw new ApiError(401,'Silakan login untuk menulis ulasan.');
   const requestKey=uuid(input.requestKey);
-  const rating=input.rating;if(!Number.isInteger(rating)||rating<1||rating>5)throw new ApiError(400,'Pilih rating 1–5.');
+  const rating=input.rating;if(!Number.isInteger(rating)||rating<1||rating>5)throw new ApiError(400,'Pilih rating 1-5.');
   const comment=await db('rpc/censor_review_comment','POST',{value:str(input.comment,'Ulasan',500)});const slug=str(input.productId,'Layanan',80);
   if(!/^[a-z0-9-]+$/.test(slug))throw new ApiError(400,'Layanan tidak valid.');
   const services=await db(`services?slug=eq.${slug}&select=id&limit=1`);if(!services.length)throw new ApiError(400,'Layanan tidak ditemukan.');

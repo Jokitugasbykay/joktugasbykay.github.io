@@ -1,4 +1,4 @@
-// JOKI.IN Storefront — Dynamic Promo Banner, Cart Type Separation & Special Checkout
+// JOKI.IN Storefront - Dynamic Promo Banner, Cart Type Separation & Special Checkout
 // Mengambil data produk, stok, diskon, dan status Penawaran Spesial dari jokiin-catalog API
 // serta memisahkan keranjang & alur checkout REGULER (NUG...) vs SPESIAL (SPCL...)
 (function () {
@@ -1062,7 +1062,7 @@
       }
       if (btnMobile) {
         btnMobile.disabled = false;
-        btnMobile.innerHTML = `Beli Sekarang — <span id="spclMobileBtnTotal">${escapeHtml(formatRupiah(total))}</span>`;
+        btnMobile.innerHTML = `Beli Sekarang - <span id="spclMobileBtnTotal">${escapeHtml(formatRupiah(total))}</span>`;
       }
     }
   };

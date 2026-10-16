@@ -120,12 +120,13 @@ try {
     $appUrl = rtrim((string) env('APP_URL', 'https://jokiin.my.id'), '/');
     $expiresAt = (new DateTimeImmutable('+24 hours', new DateTimeZone('UTC')))->format('Y-m-d\TH:i:s.000\Z');
     $summary = implode(', ', array_map(fn($l) => $l['name'] . ' x' . $l['quantity'], $pricing['lines']));
+    $customerName = !empty($in['name']) ? trim($in['name']) : 'Pelanggan JOKI.IN';
     $payload = [
-        'name' => str_clip('JOKI.IN - ' . $pricing['lines'][0]['name'], 100),
+        'name' => str_clip($customerName, 100),
         'amount' => $total,
         'email' => $in['email'],
         'mobile' => $in['whatsapp'],
-        'description' => str_clip('Pesanan ' . $orderId . ': ' . $summary, 250),
+        'description' => str_clip('Pesanan ' . $orderId . ' - ' . $summary, 250),
         'expiredAt' => $expiresAt,
         'redirectUrl' => $appUrl . '/?payment=complete&order_id=' . $orderId,
     ];
