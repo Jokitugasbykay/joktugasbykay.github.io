@@ -180,8 +180,9 @@ test('8. assets/catalog.js menampilkan stok dan jumlah terjual tanpa emoji', () 
   assert.ok(catalogJs.includes('jokiin-sold-info'), 'Harus ada elemen jokiin-sold-info');
   assert.ok(catalogJs.includes('terjual'), 'Harus memuat teks terjual');
 
-  // Verify product_sales integration
-  assert.ok(catalogJs.includes('product_sales'), 'Harus memuat fetch product_sales view');
+  // Verify total_sold default is 80
+  assert.ok(catalogJs.includes('total_sold: 80'), 'Default total_sold harus 80');
+  assert.ok(catalogJs.includes('fp.total_sold : 80'), 'Fallback total_sold harus 80');
 
   // Verify NO emojis in sold count text
   assert.ok(!/jokiin-sold-info.*[\u{1F300}-\u{1F9FF}]/u.test(catalogJs), 'Dilarang menggunakan emoji pada sold count');
