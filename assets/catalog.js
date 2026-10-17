@@ -21,8 +21,9 @@
       deskripsi: 'Akses penuh Gemini Advanced 18 bulan, Garansi selama 1 minggu, Akun pribadi siap pakai',
       harga_dasar: 50000,
       diskon_persen: 60,
-      stok: 0,
+      stok: 12,
       stok_awal: 20,
+      total_sold: 8,
       batas_beli_per_orang: 1,
       is_active: true,
       is_limited_edition: true,
@@ -115,6 +116,8 @@
       .jokiin-lim-pr s { color: #7d8c87; }
       .jokiin-lim-bar { background: #1d2a2f; }
       .jokiin-stock-slot { color: #8a9a95; }
+      .jokiin-sold-info { font-size: 13px; font-weight: 600; color: #8a9a95; margin-top: 6px; letter-spacing: 0.01em; }
+      .jokiin-card-sold-info { display: block; font-size: 11px; font-weight: 600; color: #8a9a95; margin-top: 2px; }
       .jokiin-lim-btn.f { background: #1fd18b; color: #04251a; border: 1px solid #1fd18b; }
       .jokiin-lim-btn:not(.f) { border: 1px solid #2a3a37; background: transparent; color: #1fd18b; }
       .jokiin-lim-btn:not(.f):hover:not(:disabled) { background: rgba(31, 209, 139, 0.08); border-color: #1fd18b; }
@@ -146,6 +149,10 @@
       html[data-theme="light"] .jokiin-lim-bar { background: #e2e8f0; }
       :root:not([data-theme="dark"]) .jokiin-stock-slot,
       html[data-theme="light"] .jokiin-stock-slot { color: #64748b; }
+      :root:not([data-theme="dark"]) .jokiin-sold-info,
+      html[data-theme="light"] .jokiin-sold-info { color: #64748b; }
+      :root:not([data-theme="dark"]) .jokiin-card-sold-info,
+      html[data-theme="light"] .jokiin-card-sold-info { color: #64748b; }
       :root:not([data-theme="dark"]) .jokiin-lim-btn.f,
       html[data-theme="light"] .jokiin-lim-btn.f { background: #079669; color: #ffffff; border-color: #079669; box-shadow: 0 2px 8px rgba(7, 150, 105, 0.2); }
       :root:not([data-theme="dark"]) .jokiin-lim-btn:not(.f),
@@ -1247,6 +1254,7 @@
             <div>
               <small class="jokiin-stock-slot">${isSoldOut ? 'Habis terjual' : `Tersisa ${fp.stok} dari ${maxSlot} slot`}</small>
               <div class="jokiin-lim-bar"><i style="width:${pct}%"></i></div>
+              <div class="jokiin-sold-info">${(fp.total_sold !== undefined && fp.total_sold !== null) ? fp.total_sold : 8} terjual</div>
             </div>
             <div class="jokiin-lim-row">
               <button type="button" class="jokiin-lim-btn f" id="jokiin-promo-buy-btn" ${isSoldOut ? 'disabled' : ''}>
@@ -1321,7 +1329,8 @@
       state.featuredProduct = {
         ...state.featuredProduct,
         ...limited,
-        stok_awal: Math.max(20, limited.stok || 20)
+        total_sold: typeof limited.total_sold === 'number' ? limited.total_sold : (state.featuredProduct.total_sold ?? 8),
+        stok_awal: Math.max(20, state.featuredProduct.stok_awal || 20)
       };
     }
 
@@ -1358,6 +1367,7 @@
           existing.stok = ap.stok;
           existing.isLimitedEdition = isLimited;
           existing.batasBeli = batasBeli;
+          if (typeof ap.total_sold === 'number') existing.total_sold = ap.total_sold;
         } else {
           products.push({
             id: ap.slug || ap.id,
@@ -1372,7 +1382,8 @@
             batasBeli: batasBeli,
             desc: ap.deskripsi || '',
             image: ap.gambar_url || 'assets/catalog/portfolio-06.jpg',
-            popularity: 85
+            popularity: 85,
+            total_sold: typeof ap.total_sold === 'number' ? ap.total_sold : 0
           });
         }
       });
@@ -1419,6 +1430,19 @@
           }
         } else if (stockEl) {
           stockEl.remove();
+        }
+
+        let soldEl = card.querySelector('.jokiin-card-sold-info');
+        if (typeof product.total_sold === 'number' && product.total_sold > 0) {
+          if (!soldEl) {
+            soldEl = document.createElement('span');
+            soldEl.className = 'jokiin-card-sold-info';
+            const priceBox = card.querySelector('.pricing-price-box');
+            if (priceBox) priceBox.appendChild(soldEl);
+          }
+          soldEl.textContent = `${product.total_sold} terjual`;
+        } else if (soldEl) {
+          soldEl.remove();
         }
       });
     } finally {
@@ -1536,6 +1560,32 @@
               };
             });
             applyCatalogProductsToStorefront(mapped);
+          }
+        }
+      } catch (_) {}
+
+      // Ambil data jumlah terjual riil dari Supabase product_sales view
+      try {
+        const salesRes = await fetch('https://xdbnwjvxqtpkoaigedsk.supabase.co/rest/v1/product_sales', {
+          headers: {
+            apikey: 'sb_publishable_WuihnHZo0ZJbVGCMe1sWJg_QVdRKw4z',
+            Authorization: 'Bearer sb_publishable_WuihnHZo0ZJbVGCMe1sWJg_QVdRKw4z'
+          }
+        }).catch(() => null);
+        if (salesRes && salesRes.ok) {
+          const salesRows = await salesRes.json();
+          if (Array.isArray(salesRows)) {
+            const productsList = getProductsList() || [];
+            salesRows.forEach(row => {
+              const count = Number(row.total_sold || 0);
+              const slug = String(row.product_slug || '').trim();
+              if (slug === 'gemini-pro-18-bulan' || slug === state.featuredProduct.slug || slug === state.featuredProduct.id) {
+                state.featuredProduct.total_sold = count;
+              }
+              const p = productsList.find(it => it.id === slug || it.slug === slug);
+              if (p) p.total_sold = count;
+            });
+            decorateStockAndLimitedBadges();
           }
         }
       } catch (_) {}

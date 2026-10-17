@@ -831,7 +831,19 @@ Deno.serve(async (req: Request) => {
       const kategori = url.searchParams.get('kategori');
       let q = 'products?is_active=eq.true&select=id,nama,slug,kategori,deskripsi,harga_dasar,diskon_persen,stok,batas_beli_per_orang,is_active,is_limited_edition,gambar_url&order=created_at.desc&limit=200';
       if (kategori) q += `&kategori=eq.${encodeURIComponent(kategori)}`;
-      const products = await dbFetch(q);
+      const [products, sales] = await Promise.all([
+        dbFetch(q),
+        dbFetch('product_sales').catch(() => []),
+      ]);
+      const salesMap = new Map<string, number>();
+      if (Array.isArray(sales)) {
+        for (const s of sales) {
+          if (s.product_slug) salesMap.set(String(s.product_slug), Number(s.total_sold || 0));
+        }
+      }
+      for (const p of (products || [])) {
+        p.total_sold = salesMap.get(p.slug) || 0;
+      }
       return ok({ products });
     }
 
@@ -845,7 +857,10 @@ Deno.serve(async (req: Request) => {
         : `products?slug=eq.${encodeURIComponent(idOrSlug)}&is_active=eq.true&select=id,nama,slug,kategori,deskripsi,harga_dasar,diskon_persen,stok,batas_beli_per_orang,is_active,is_limited_edition,gambar_url&limit=1`;
       const rows = await dbFetch(q);
       if (!rows.length) throw new ApiError(404, 'Produk tidak ditemukan.');
-      return ok({ product: rows[0] });
+      const prod = rows[0];
+      const sales = await dbFetch(`product_sales?product_slug=eq.${encodeURIComponent(prod.slug)}&limit=1`).catch(() => []);
+      prod.total_sold = Number(sales?.[0]?.total_sold || 0);
+      return ok({ product: prod });
     }
 
     // GET /api/promo/banner (public)
