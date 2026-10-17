@@ -416,15 +416,14 @@ async function generateUniqueOrderId(env, tipe = 'REGULER') {
 
 async function webhook(request, env) {
   const expected = env.MAYAR_WEBHOOK_SECRET;
-  if (expected && await digest(expected) !== '1bb2b8dedc8aded34cad4e72a8e3aed8acfcb409ef8b5a41b5ce8fdc10e5d452') {
-    const url = new URL(request.url);
-    const supplied = request.headers.get('x-webhook-token') ||
-                     request.headers.get('x-mayar-token') ||
-                     request.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ||
-                     url.searchParams.get('token');
-    if (supplied !== expected) return json({ error: 'Unauthorized webhook.' }, 401);
-  }
+  if (!expected) return json({ error: 'Konfigurasi webhook belum lengkap.' }, 503);
   await limitRequest(request, env, 'webhook', 100, 60);
+  const url = new URL(request.url);
+  const supplied = request.headers.get('x-webhook-token') ||
+                   request.headers.get('x-mayar-token') ||
+                   request.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ||
+                   url.searchParams.get('token');
+  if (supplied !== expected) return json({ error: 'Unauthorized webhook.' }, 401);
   const payload = await readJSON(request);
   const data = payload?.data || payload;
   const transactionId = data.transactionId || data.transaction_id || data.id || data.paymentId || data.payment_id;
