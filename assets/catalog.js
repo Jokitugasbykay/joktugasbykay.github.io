@@ -348,13 +348,13 @@
         isLimitedEdition: true,
         batasBeli: fp.batas_beli_per_orang || 1,
         desc: fp.deskripsi || '',
-        image: fp.gambar_url || 'assets/catalog/gemini-pro.png',
+        image: fp.gambar_url || '/assets/catalog/gemini-pro.png',
         popularity: 99,
         _isBannerOnly: true
       });
     } else {
       existing.title = fp.nama || existing.title;
-      existing.image = fp.gambar_url || 'assets/catalog/gemini-pro.png';
+      existing.image = fp.gambar_url || '/assets/catalog/gemini-pro.png';
       existing.priceNum = finalPrice;
       existing.originalPrice = fp.harga_dasar;
       existing.hasSale = (fp.diskon_persen || 0) > 0;
@@ -1381,7 +1381,7 @@
             isLimitedEdition: isLimited,
             batasBeli: batasBeli,
             desc: ap.deskripsi || '',
-            image: ap.gambar_url || 'assets/catalog/portfolio-06.jpg',
+            image: ap.gambar_url || '/assets/catalog/portfolio-06.jpg',
             popularity: 85,
             total_sold: typeof ap.total_sold === 'number' ? ap.total_sold : 0
           });

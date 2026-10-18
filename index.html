@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <base href="/">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JOKI.IN | Teman Tugas Mahasiswa</title>
     <meta name="description" content="JOKI.IN, teman tugas mahasiswa.">
@@ -3605,6 +3606,15 @@
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
             padding: 0 !important;
+        }
+
+        .tr-03__ava img,
+        .tr-24__avatar-circle img {
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            border-radius: 50% !important;
         }
 
         footer {
@@ -7668,7 +7678,7 @@
                     price: "Mulai dari Rp80.000", priceNum: 80000, features: ["Desain custom", "Revisi", "File final"]
                 },
                 {
-                    id: "pembuatan-cv", icon: "📄", image: "assets/catalog/portfolio-03.jpg", title: "Pembuatan CV", category: "Desain", popularity: 8,
+                    id: "pembuatan-cv", icon: "📄", image: "/assets/catalog/portfolio-03.jpg", title: "Pembuatan CV", category: "Desain", popularity: 8,
                     requiresDriveLink: false,
                     desc: "Jasa pembuatan CV profesional, menarik, dan ATS-friendly untuk kebutuhan magang, kerja, atau beasiswa.",
                     benefits: ["Format ATS-friendly", "Desain modern & profesional", "Penataan layout terstruktur", "Optimasi kata kunci (keyword)", "File PDF & Word siap pakai", "Revisi sesuai kesepakatan"],
@@ -7729,8 +7739,8 @@
                 },
                 {
                     id: "gemini-pro-18-bulan", title: "Gemini Pro 18 Bulan", category: "Digital", popularity: 10, icon: "✨",
-                    image: "assets/catalog/gemini-pro.png",
-                    reviewImage: "assets/ui-art/gemini.png",
+                    image: "/assets/catalog/gemini-pro.png",
+                    reviewImage: "/assets/ui-art/gemini.png",
                     desc: "Akses penuh Gemini Advanced 18 bulan, Garansi selama 1 minggu, Akun pribadi siap pakai",
                     benefits: ["Akses penuh Gemini Advanced 18 bulan", "Garansi selama 1 minggu", "Akun pribadi siap pakai"],
                     target: "Mahasiswa dan pengguna yang membutuhkan AI asisten akademik premium.",
@@ -7780,7 +7790,7 @@
             'bimbingan-slr': { icon: '🧭', category: 'Penelitian', popularity: 9, features: ['Strategi pencarian', 'Seleksi studi', 'Pelaporan metode'] },
             'pembuatan-cv': { icon: '📄', category: 'Desain', popularity: 8, features: ['ATS-Friendly', 'Desain Modern', 'File PDF & Word'], benefits: ['Format ATS-friendly', 'Desain modern & profesional', 'Penataan layout terstruktur', 'File PDF & Word siap pakai', 'Revisi sesuai kesepakatan'], target: 'Mahasiswa & fresh graduate untuk magang, kerja, atau beasiswa.', estimatedTime: '1 Hari Kerja', revisionTerms: 'Maksimal 2x Revisi' }
         };
-        const CATALOG_PHOTOS = Array.from({ length: 34 }, (_, index) => `assets/catalog/portfolio-${String(index + 1).padStart(2, '0')}.jpg`);
+        const CATALOG_PHOTOS = Array.from({ length: 34 }, (_, index) => `/assets/catalog/portfolio-${String(index + 1).padStart(2, '0')}.jpg`);
         const CATALOG_PHOTO_BY_SLUG = {
             makalah:17, ppt:8, artikel:30, poster:13, editing:34, skripsi:29,
             turnitin:18, jurnal:1, 'bimbingan-parafrase':33,
@@ -7792,7 +7802,7 @@
         };
         const RESERVED_CATALOG_PHOTOS = CATALOG_PHOTOS.filter((_,index) => !Object.values(CATALOG_PHOTO_BY_SLUG).includes(index + 1));
         function catalogPhotoFor(slug, fallbackIndex) {
-            if (slug === 'gemini-pro-18-bulan') return 'assets/catalog/gemini-pro.png';
+            if (slug === 'gemini-pro-18-bulan') return '/assets/catalog/gemini-pro.png';
             const photo = CATALOG_PHOTO_BY_SLUG[slug];
             return photo ? CATALOG_PHOTOS[photo - 1] : RESERVED_CATALOG_PHOTOS[fallbackIndex] || '';
         }
@@ -10010,7 +10020,7 @@ Teman tugas mahasiswa.`;
             const tr03Top = document.getElementById('detail-tr03-top');
             if (tr03Top) {
                 const isGemini = pId === 'gemini-pro-18-bulan' || (product.id && product.id.includes('gemini')) || (product.title && product.title.toLowerCase().includes('gemini'));
-                const displayImage = product.reviewImage || (isGemini ? 'assets/ui-art/gemini.png' : product.image);
+                const displayImage = product.reviewImage || (isGemini ? '/assets/ui-art/gemini.png' : product.image);
                 const mediaHtml = displayImage
                     ? `<div class="tr-03__media ${isGemini ? 'tr-03__media--gemini' : ''}"><img src="${escapeHTML(displayImage)}" alt="${escapeHTML(product.title)}" loading="lazy"><span class="tr-03__flag">Best Seller</span></div>`
                     : `<div class="tr-03__media"><div class="tr-03__media-fallback"><span class="tr-03__media-svg">${getServiceSVGIcon(product, 42)}</span><span class="tr-03__media-category">${escapeHTML(product.category)}</span></div><span class="tr-03__flag">Layanan Populer</span></div>`;

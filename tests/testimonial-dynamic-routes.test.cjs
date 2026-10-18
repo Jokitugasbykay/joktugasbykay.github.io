@@ -54,3 +54,11 @@ test('routing logic handles /testimonials/ without clobbering product detail on 
     assert.ok(indexHtml.includes("window.switchTab('testimoni', false)"), 'popstate must switch tab without rewriting history');
     assert.ok(indexHtml.includes('window.showProductReviews(resolvedId, false)'), 'showProductReviews must be invoked on direct load of /testimonials/:slug');
 });
+
+test('base href, catalog photos, and review avatar styling are configured for nested routes', () => {
+    assert.ok(indexHtml.includes('<base href="/">'), 'index.html must include <base href="/"> in <head>');
+    assert.ok(indexHtml.includes("CATALOG_PHOTOS = Array.from({ length: 34 }, (_, index) => `/assets/catalog/portfolio-"), 'CATALOG_PHOTOS must use absolute /assets/catalog paths');
+    assert.ok(uiCss.includes('.tr-03__ava > img'), 'ui-enhancements.css must style .tr-03__ava > img');
+    assert.ok(uiCss.includes('width: 100% !important'), 'ui-enhancements.css must set width 100% for avatar images');
+    assert.ok(uiCss.includes('object-fit: cover !important'), 'ui-enhancements.css must set object-fit cover for avatar images');
+});

@@ -877,6 +877,10 @@
     position: absolute;
     inset: 0;
     display: block;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
 }
 .tr-03__rh div {
     display: grid;
