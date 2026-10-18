@@ -100,7 +100,7 @@
         }
 
         /* === HEADER === */
-        header {
+        .container > header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -3188,7 +3188,7 @@
         @media(max-width: 768px) {
 
             /* --- FIX HEADER MOBILE LAYOUT --- */
-            header {
+            .container > header {
                 flex-direction: column !important;
                 /* Paksa susunan atas-bawah */
                 align-items: flex-start !important;
@@ -3577,7 +3577,7 @@
         }
 
         @media (max-width: 760px) {
-            header {
+            .container > header {
                 background: var(--glass-panel);
                 -webkit-backdrop-filter: blur(20px) saturate(145%);
                 backdrop-filter: blur(20px) saturate(145%);
@@ -3591,6 +3591,20 @@
                 backdrop-filter: none !important;
                 box-shadow: none !important;
             }
+        }
+
+        [data-theme="dark"] .container > header {
+            background: var(--card-solid) !important;
+        }
+
+        .tr-03__rh {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            position: static !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            padding: 0 !important;
         }
 
         footer {
@@ -9741,8 +9755,8 @@ Teman tugas mahasiswa.`;
             REVIEWS = REVIEWS.map(review => ({ ...review, comment: censorReviewText(review.comment) }));
             renderHomeTestimonials();
             if (currentTab === 'testimoni') {
-                if (document.getElementById('testimoni-list-view').style.display !== 'none') window.showTestimoniList();
-                else if (currentReviewProductId) window.showProductReviews(currentReviewProductId);
+                if (document.getElementById('testimoni-list-view').style.display !== 'none') window.showTestimoniList(false);
+                else if (currentReviewProductId) window.showProductReviews(currentReviewProductId, false);
             }
         }
 
@@ -9806,6 +9820,63 @@ Teman tugas mahasiswa.`;
         let currentTestimoniCategory = 'Semua';
         let currentTestimoniSearch = '';
 
+        const TESTIMONIAL_SLUG_MAP = {
+            'makalah': 'joki-makalah',
+            'ppt': 'joki-ppt',
+            'artikel': 'joki-artikel',
+            'poster': 'joki-poster',
+            'editing': 'joki-editing',
+            'skripsi': 'joki-skripsi',
+            'turnitin': 'joki-turnitin',
+            'jurnal': 'joki-jurnal',
+            'bimbingan-parafrase': 'joki-bimbingan-parafrase',
+            'konsultasi-olah-data-kualitatif': 'joki-olah-data-kualitatif',
+            'konsultasi-olah-data-kuantitatif': 'joki-olah-data-kuantitatif',
+            'bimbingan-konversi-artikel': 'joki-konversi-artikel',
+            'bimbingan-laporan': 'joki-laporan',
+            'bimbingan-mini-riset': 'joki-mini-riset',
+            'bimbingan-proposal-skripsi': 'joki-proposal-skripsi',
+            'bimbingan-proposal-tesis': 'joki-proposal-tesis',
+            'bimbingan-bab-4': 'joki-bab-4',
+            'bimbingan-bab-5': 'joki-bab-5',
+            'bimbingan-artikel-jurnal': 'joki-artikel-jurnal',
+            'bimbingan-slr': 'joki-slr',
+            'pembuatan-cv': 'joki-pembuatan-cv',
+            'gemini-pro-18-bulan': 'gemini-pro-18-bulan'
+        };
+
+        function getTestimonialPublicSlug(productId) {
+            if (!productId) return '';
+            if (TESTIMONIAL_SLUG_MAP[productId]) return TESTIMONIAL_SLUG_MAP[productId];
+            if (productId.startsWith('joki-')) return productId;
+            return 'joki-' + productId;
+        }
+
+        function resolveTestimonialSlug(slug) {
+            if (!slug) return null;
+            const normalized = String(slug).toLowerCase().trim().replace(/^\/+|\/+$/g, '');
+            for (const [prodId, pubSlug] of Object.entries(TESTIMONIAL_SLUG_MAP)) {
+                if (pubSlug === normalized || prodId === normalized) return prodId;
+            }
+            if (normalized === 'cek-turnitin' || normalized === 'joki-turnitin') return 'turnitin';
+            if (normalized === 'pembuatan-cv' || normalized === 'joki-pembuatan-cv') return 'pembuatan-cv';
+            if (normalized === 'joki-gemini-pro-18-bulan' || normalized === 'gemini-pro-18-bulan') return 'gemini-pro-18-bulan';
+            if (normalized === 'joki-parafrase' || normalized === 'bimbingan-parafrase' || normalized === 'joki-bimbingan-parafrase') return 'bimbingan-parafrase';
+            if (normalized === 'konsultasi-olah-data-kualitatif' || normalized === 'joki-konsultasi-olah-data-kualitatif' || normalized === 'joki-olah-data-kualitatif') return 'konsultasi-olah-data-kualitatif';
+            if (normalized === 'konsultasi-olah-data-kuantitatif' || normalized === 'joki-konsultasi-olah-data-kuantitatif' || normalized === 'joki-olah-data-kuantitatif') return 'konsultasi-olah-data-kuantitatif';
+            if (normalized.startsWith('joki-')) {
+                const stripped = normalized.slice(5);
+                const found = (CONFIG.PRODUCTS || []).find(p => p.id === stripped || p.id === 'bimbingan-' + stripped || p.id === 'konsultasi-' + stripped);
+                if (found) return found.id;
+            }
+            const foundDirect = (CONFIG.PRODUCTS || []).find(p => p.id === normalized);
+            if (foundDirect) return foundDirect.id;
+            return null;
+        }
+
+        window.getTestimonialPublicSlug = getTestimonialPublicSlug;
+        window.resolveTestimonialSlug = resolveTestimonialSlug;
+
         window.filterTestimoniCategory = (cat) => {
             currentTestimoniCategory = cat;
             const container = document.getElementById('testimoniFilterContainer');
@@ -9814,10 +9885,10 @@ Teman tugas mahasiswa.`;
                     btn.classList.toggle('active', btn.innerText.trim() === cat);
                 });
             }
-            window.showTestimoniList();
+            window.showTestimoniList(false);
         };
 
-        window.showTestimoniList = () => {
+        window.showTestimoniList = (updateHistory = true) => {
             const detailView = document.getElementById('testimoni-detail-view');
             const listView = document.getElementById('testimoni-list-view');
             if (detailView) detailView.style.display = 'none';
@@ -9826,6 +9897,11 @@ Teman tugas mahasiswa.`;
                 const nav = document.getElementById('nav-container');
                 if (nav) nav.style.display = 'flex';
             }
+
+            if (updateHistory && window.location.pathname !== ROUTES.testimoni) {
+                history.pushState({ tabId: 'testimoni' }, '', ROUTES.testimoni);
+            }
+            document.title = 'Testimoni Pelanggan - JOKI.IN';
 
             const grid = document.getElementById('testimoni-products-grid');
             if (!grid) return;
@@ -9880,20 +9956,50 @@ Teman tugas mahasiswa.`;
 
         window.filterReviewsByStar = (star) => {
             currentStarFilter = star;
-            window.showProductReviews(currentReviewProductId);
+            window.showProductReviews(currentReviewProductId, false);
         };
 
-        window.showProductReviews = (pId) => {
+        window.showProductReviews = (pId, updateHistory = true) => {
             const product = CONFIG.PRODUCTS.find(p => p.id === pId);
-            if (!product) return;
-            currentReviewProductId = pId;
-
             const listView = document.getElementById('testimoni-list-view');
             const detailView = document.getElementById('testimoni-detail-view');
+            const nav = document.getElementById('nav-container');
+
+            if (!product) {
+                if (listView) listView.style.display = 'none';
+                if (detailView) {
+                    detailView.style.display = 'block';
+                    const tr03Top = document.getElementById('detail-tr03-top');
+                    const reviewsGrid = document.getElementById('detail-tr03-reviews');
+                    if (tr03Top) {
+                        tr03Top.innerHTML = `
+                            <div style="padding: 48px 24px; text-align: center; width: 100%;">
+                                <h2 style="font-size: 1.5rem; margin-bottom: 8px; color: var(--text-main);">Layanan Tidak Ditemukan</h2>
+                                <p style="color: var(--text-secondary); margin-bottom: 20px;">Layanan atau produk yang Anda cari tidak tersedia di katalog.</p>
+                                <button class="btn-outline" onclick="window.showTestimoniList()">Lihat Semua Testimoni</button>
+                            </div>
+                        `;
+                    }
+                    if (reviewsGrid) reviewsGrid.innerHTML = '';
+                }
+                if (nav) nav.style.display = 'none';
+                return;
+            }
+
+            currentReviewProductId = pId;
+
             if (listView) listView.style.display = 'none';
             if (detailView) detailView.style.display = 'block';
-            const nav = document.getElementById('nav-container');
             if (nav) nav.style.display = 'none';
+
+            if (updateHistory) {
+                const pubSlug = getTestimonialPublicSlug(pId);
+                const targetUrl = '/testimonials/' + pubSlug;
+                if (window.location.pathname !== targetUrl) {
+                    history.pushState({ tabId: 'testimoni', productId: pId }, '', targetUrl);
+                }
+            }
+            document.title = 'Testimoni ' + product.title + ' - JOKI.IN';
 
             const s = getProductStats(pId);
             const scoreVal = s.avg > 0 ? Number(s.avg).toFixed(1) : '5.0';
@@ -10341,7 +10447,13 @@ Teman tugas mahasiswa.`;
             // Render FAQ
             document.getElementById('full-faq').innerHTML = CONFIG.faq.map(f => `<div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('active')">${f.q} <span class="faq-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></span></div><div class="faq-answer">${f.a}</div></div>`).join('');
 
-            window.showTestimoniList();
+            if (window.location.pathname.startsWith('/testimonials/')) {
+                const slug = window.location.pathname.replace(/^\/testimonials\/?/, '').trim();
+                const resolvedId = resolveTestimonialSlug(slug);
+                window.showProductReviews(resolvedId, false);
+            } else {
+                window.showTestimoniList(false);
+            }
         }
 
         // ==========================================
@@ -10398,7 +10510,7 @@ Teman tugas mahasiswa.`;
             }
         }
         window.goHome = () => { if (currentTab !== 'checkout' && currentTab !== 'checkout-spesial' && currentTab !== 'order-success') window.switchTab('beranda'); };
-        window.switchTab = (tabId) => {
+        window.switchTab = (tabId, updateHistory = true) => {
             if (tabId !== 'checkout' && tabId !== 'checkout-spesial' && tabId !== 'order-success') lastActiveTab = tabId;
 
             const searchInput = document.getElementById('searchInput');
@@ -10427,12 +10539,44 @@ Teman tugas mahasiswa.`;
             document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
             document.getElementById('tab-' + tabId).classList.add('active');
             currentTab = tabId;
-            const route = ROUTES[tabId];
-            if (route && window.location.pathname !== route) history.pushState({ tabId }, '', route);
-            if (tabId === 'testimoni') window.showTestimoniList(); window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            if (tabId === 'testimoni') {
+                if (window.location.pathname.startsWith('/testimonials/')) {
+                    if (updateHistory) {
+                        window.showTestimoniList(true);
+                    } else {
+                        const slug = window.location.pathname.replace(/^\/testimonials\/?/, '').trim();
+                        const resolvedId = resolveTestimonialSlug(slug);
+                        window.showProductReviews(resolvedId, false);
+                    }
+                } else {
+                    window.showTestimoniList(updateHistory);
+                }
+            } else {
+                const route = ROUTES[tabId];
+                if (updateHistory && route && window.location.pathname !== route) {
+                    history.pushState({ tabId }, '', route);
+                }
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
-        window.addEventListener('popstate', () => window.switchTab(TAB_BY_ROUTE[window.location.pathname] || 'beranda'));
+        window.addEventListener('popstate', () => {
+            const pathname = window.location.pathname;
+            if (pathname.startsWith('/testimonials/')) {
+                const slug = pathname.replace(/^\/testimonials\/?/, '').trim();
+                const resolvedId = resolveTestimonialSlug(slug);
+                window.switchTab('testimoni', false);
+                window.showProductReviews(resolvedId, false);
+            } else if (pathname === '/testimonials' || pathname === '/testimonials/') {
+                window.switchTab('testimoni', false);
+                window.showTestimoniList(false);
+            } else {
+                const routeAliases = { '/howtoorder': 'carapesan', '/informasi': 'informasi' };
+                const tab = TAB_BY_ROUTE[pathname] || routeAliases[pathname] || 'beranda';
+                window.switchTab(tab, false);
+            }
+        });
         window.addEventListener('resize', () => updateLiquidIndicator(false));
         document.fonts.ready.then(() => updateLiquidIndicator(false));
         new ResizeObserver(() => updateLiquidIndicator(false)).observe(document.getElementById('nav-container'));
@@ -10489,7 +10633,7 @@ Teman tugas mahasiswa.`;
         // Testimoni Live Search
         document.getElementById('testimoniSearchInput')?.addEventListener('input', function (e) {
             currentTestimoniSearch = e.target.value.trim();
-            window.showTestimoniList();
+            window.showTestimoniList(false);
         });
 
         // Help Category Filter
@@ -10568,16 +10712,23 @@ Teman tugas mahasiswa.`;
             try { sessionStorage.removeItem('jokiin_spa_fallback_path'); localStorage.removeItem('jokiin_spa_fallback_path'); } catch (_) { }
             if (fallbackPath && fallbackPath.startsWith('/')) history.replaceState(null, '', fallbackPath);
             const routeAliases = { '/howtoorder':'carapesan', '/informasi':'informasi' };
-            const initialTab = TAB_BY_ROUTE[window.location.pathname] || routeAliases[window.location.pathname] || 'beranda';
+            const pathname = window.location.pathname;
+            const isTestimonialsRoute = pathname.startsWith('/testimonials');
+            const initialTab = isTestimonialsRoute ? 'testimoni' : (TAB_BY_ROUTE[pathname] || routeAliases[pathname] || 'beranda');
             // /payment/pending membutuhkan data pesanan sebelum tab ditampilkan. Tanpa ini,
             // refresh hanya menampilkan tab awal walaupun URL masih menunjukkan pending.
             const restoredPending = initialTab === 'order-success' ? await restorePendingMayarPage() : false;
-            if (!restoredPending && initialTab !== 'beranda') window.switchTab(initialTab);
+            if (!restoredPending && initialTab !== 'beranda') window.switchTab(initialTab, false);
             else if (initialTab === 'beranda') requestAnimationFrame(() => updateLiquidIndicator(false));
             try { await ensureSession(); } catch (_) { window.showToast('Sesi belum dapat dipulihkan. Silakan login kembali.'); }
             await loadCart();
             const results = await Promise.allSettled([loadServices(), loadReviews(), loadAuthSettings()]);
             if (results[0].status === 'rejected') window.showToast('Layanan server belum dapat dimuat. Checkout menunggu koneksi pulih.');
+            if (window.location.pathname.startsWith('/testimonials/')) {
+                const slug = window.location.pathname.replace(/^\/testimonials\/?/, '').trim();
+                const resolvedId = resolveTestimonialSlug(slug);
+                window.showProductReviews(resolvedId, false);
+            }
             restoreCheckoutState();
             await handlePaymentReturn().catch(console.error);
             let lastOrderId = ''; try { lastOrderId = localStorage.getItem('jokiin_last_order_id') || localStorage.getItem(LEGACY_STORAGE_KEYS.lastOrderId) || ''; } catch (_) { }

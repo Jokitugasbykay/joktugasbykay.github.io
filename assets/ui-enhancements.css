@@ -847,6 +847,12 @@
     display: flex;
     align-items: center;
     gap: 12px;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    position: static !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
 }
 .tr-03__ava {
     width: 38px;
