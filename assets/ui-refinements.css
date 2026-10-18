@@ -1,6 +1,8 @@
 /* Keep the existing pill navigation; the indicator owns the active background. */
-#nav-container .pill.active { transform:none; background:transparent!important; box-shadow:none!important; }
-#nav-container .nav-liquid-indicator { box-shadow:0 2px 6px rgba(7,150,105,.18); }
+@media (max-width: 760px) {
+  #nav-container .pill.active { transform:none; background:transparent!important; box-shadow:none!important; }
+  #nav-container .nav-liquid-indicator { box-shadow:0 2px 6px rgba(7,150,105,.18); }
+}
 #nav-container .pill { flex-shrink:0; }
 #nav-container { scroll-padding-inline:12px; }
 #nav-container :focus-visible { outline:2px solid var(--primary); outline-offset:-2px; }

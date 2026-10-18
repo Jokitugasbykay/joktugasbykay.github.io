@@ -244,39 +244,101 @@
         }
 
         /* === NAV PILLS === */
-        .nav-pills {
-            display: flex;
-            gap: 10px;
-            width: fit-content;
-            max-width: 100%;
-            margin: 25px auto;
-            justify-content: center;
-            overflow-x: auto;
-            padding: 6px;
-            position: relative;
-            isolation: isolate;
-            border: 1px solid var(--glass-edge, var(--border-color));
-            border-radius: 999px;
-            background: color-mix(in srgb, var(--glass-panel, var(--card-solid)) 86%, transparent);
-            -webkit-backdrop-filter: blur(18px) saturate(145%);
-            backdrop-filter: blur(18px) saturate(145%);
-            box-shadow: var(--shadow-default);
+        @media (max-width: 760px) {
+            .nav-pills {
+                display: flex;
+                gap: 10px;
+                width: fit-content;
+                max-width: 100%;
+                margin: 25px auto;
+                justify-content: center;
+                overflow-x: auto;
+                padding: 6px;
+                position: relative;
+                isolation: isolate;
+                border: 1px solid var(--glass-edge, var(--border-color));
+                border-radius: 999px;
+                background: color-mix(in srgb, var(--glass-panel, var(--card-solid)) 86%, transparent);
+                -webkit-backdrop-filter: blur(18px) saturate(145%);
+                backdrop-filter: blur(18px) saturate(145%);
+                box-shadow: var(--shadow-default);
+            }
+
+            .nav-liquid-indicator {
+                position: absolute;
+                top: 6px;
+                left: 6px;
+                height: calc(100% - 12px);
+                width: 0;
+                border-radius: 999px;
+                background: linear-gradient(135deg, var(--primary-light), var(--primary));
+                box-shadow: 0 8px 22px color-mix(in srgb, var(--primary) 32%, transparent), inset 0 1px 1px rgba(255,255,255,.28);
+                pointer-events: none;
+                z-index: 0;
+                transform-origin: center center;
+                transition: none;
+                will-change: width, transform;
+            }
         }
 
-        .nav-liquid-indicator {
-            position: absolute;
-            top: 6px;
-            left: 6px;
-            height: calc(100% - 12px);
-            width: 0;
-            border-radius: 999px;
-            background: linear-gradient(135deg, var(--primary-light), var(--primary));
-            box-shadow: 0 8px 22px color-mix(in srgb, var(--primary) 32%, transparent), inset 0 1px 1px rgba(255,255,255,.28);
-            pointer-events: none;
-            z-index: 0;
-            transform-origin: center center;
-            transition: none;
-            will-change: width, transform;
+        @media (min-width: 761px) {
+            #nav-container {
+                display: flex;
+                width: 100%;
+                max-width: none;
+                min-height: 60px;
+                justify-content: flex-start;
+                gap: 8px;
+                margin: 0 0 24px;
+                padding: 0;
+                border: 0;
+                border-bottom: 1px solid var(--desktop-line, var(--border-color));
+                border-radius: 0;
+                background: transparent !important;
+                box-shadow: none !important;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                overflow: visible;
+                position: relative;
+                isolation: isolate;
+            }
+            #nav-container .nav-liquid-indicator {
+                display: none !important;
+                opacity: 0 !important;
+                visibility: hidden !important;
+                width: 0 !important;
+                height: 0 !important;
+                pointer-events: none !important;
+            }
+            #nav-container .pill {
+                display: inline-flex;
+                align-items: center;
+                align-self: stretch;
+                min-height: 60px;
+                padding: 16px 18px;
+                border-radius: 0;
+                border: 0;
+                border-bottom: 3px solid transparent;
+                color: var(--desktop-muted, var(--text-secondary));
+                font-size: 14px;
+                font-weight: 600;
+                letter-spacing: 0;
+            }
+            #nav-container .pill.active {
+                border-bottom-color: var(--desktop-accent, var(--primary));
+                color: var(--desktop-accent, var(--primary)) !important;
+            }
+            #nav-container .pill:hover:not(.active) {
+                background: var(--surface-secondary);
+                color: var(--text-main);
+            }
+            #nav-container #themeToggle {
+                margin-left: auto;
+                width: 40px;
+                height: 40px;
+                border-radius: 6px;
+                color: var(--desktop-muted, var(--text-secondary));
+            }
         }
 
         .pending-spinner {
@@ -3514,7 +3576,23 @@
             backdrop-filter: blur(16px) saturate(135%);
         }
 
-        header,
+        @media (max-width: 760px) {
+            header {
+                background: var(--glass-panel);
+                -webkit-backdrop-filter: blur(20px) saturate(145%);
+                backdrop-filter: blur(20px) saturate(145%);
+            }
+        }
+
+        @media (min-width: 761px) {
+            .container > header {
+                background: var(--card-solid) !important;
+                -webkit-backdrop-filter: none !important;
+                backdrop-filter: none !important;
+                box-shadow: none !important;
+            }
+        }
+
         footer {
             background: var(--glass-panel);
             -webkit-backdrop-filter: blur(20px) saturate(145%);
@@ -5357,6 +5435,7 @@
             outline-offset: 2px;
         }
     </style>
+    <link rel="stylesheet" href="assets/desktop-storefront.css?v=20261009.5">
 </head>
 
 <body>
@@ -10285,6 +10364,7 @@ Teman tugas mahasiswa.`;
         let liquidIndicatorX = 0;
         let liquidIndicatorWidth = 0;
         function updateLiquidIndicator(animate = true) {
+            if (window.innerWidth >= 761) return;
             const nav = document.getElementById('nav-container');
             const indicator = document.getElementById('navLiquidIndicator');
             const active = nav?.querySelector('.pill.active');
@@ -11178,7 +11258,6 @@ Teman tugas mahasiswa.`;
     <script src="assets/deadline-calendar.js?v=20261009.2"></script>
     <script src="assets/ui-refinements.js?v=1.08"></script>
     <link rel="stylesheet" href="assets/mobile-fixes.css?v=1.06">
-    <link rel="stylesheet" href="assets/desktop-storefront.css?v=20261009.5">
     <script src="assets/catalog.js?v=20261018-sold80"></script>
 
 </body>

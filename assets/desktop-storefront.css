@@ -92,7 +92,7 @@
         backdrop-filter: none;
         overflow: visible;
     }
-    #nav-container .nav-liquid-indicator { display: none; }
+    #nav-container .nav-liquid-indicator { display: none !important; }
     #nav-container .pill {
         display: inline-flex;
         align-items: center;
