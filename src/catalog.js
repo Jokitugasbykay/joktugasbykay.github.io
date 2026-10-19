@@ -23,7 +23,7 @@
       diskon_persen: 60,
       stok: 12,
       stok_awal: 20,
-      total_sold: 80,
+      total_sold: 100,
       batas_beli_per_orang: 1,
       is_active: true,
       is_limited_edition: true,
@@ -1254,7 +1254,7 @@
             <div>
               <small class="jokiin-stock-slot">${isSoldOut ? 'Habis terjual' : `Tersisa ${fp.stok} dari ${maxSlot} slot`}</small>
               <div class="jokiin-lim-bar"><i style="width:${pct}%"></i></div>
-              <div class="jokiin-sold-info">${(fp.total_sold !== undefined && fp.total_sold !== null) ? fp.total_sold : 80} terjual</div>
+              <div class="jokiin-sold-info">${(fp.total_sold !== undefined && fp.total_sold !== null) ? fp.total_sold : 100} terjual</div>
             </div>
             <div class="jokiin-lim-row">
               <button type="button" class="jokiin-lim-btn f" id="jokiin-promo-buy-btn" ${isSoldOut ? 'disabled' : ''}>
@@ -1329,7 +1329,7 @@
       state.featuredProduct = {
         ...state.featuredProduct,
         ...limited,
-        total_sold: typeof limited.total_sold === 'number' ? limited.total_sold : (state.featuredProduct.total_sold ?? 80),
+        total_sold: typeof limited.total_sold === 'number' ? limited.total_sold : (state.featuredProduct.total_sold ?? 100),
         stok_awal: Math.max(20, state.featuredProduct.stok_awal || 20)
       };
     }
