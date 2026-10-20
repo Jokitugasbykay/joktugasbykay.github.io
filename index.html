@@ -9883,7 +9883,9 @@ Teman tugas mahasiswa.`;
             if (updateHistory && window.location.pathname !== ROUTES.testimoni) {
                 history.pushState({ tabId: 'testimoni' }, '', ROUTES.testimoni);
             }
-            document.title = 'Testimoni Pelanggan - JOKI.IN';
+            if (currentTab === 'testimoni') {
+                document.title = 'Testimoni Pelanggan - JOKI.IN';
+            }
 
             const grid = document.getElementById('testimoni-products-grid');
             if (!grid) return;
@@ -9981,7 +9983,9 @@ Teman tugas mahasiswa.`;
                     history.pushState({ tabId: 'testimoni', productId: pId }, '', targetUrl);
                 }
             }
-            document.title = 'Testimoni ' + product.title + ' - JOKI.IN';
+            if (currentTab === 'testimoni' || window.location.pathname.startsWith('/testimonials')) {
+                document.title = 'Testimoni ' + product.title + ' - JOKI.IN';
+            }
 
             const s = getProductStats(pId);
             const scoreVal = s.avg > 0 ? Number(s.avg).toFixed(1) : '5.0';
@@ -10443,6 +10447,18 @@ Teman tugas mahasiswa.`;
         // ==========================================
         let lastActiveTab = 'beranda'; let currentTab = 'beranda';
         const ROUTES = { beranda: '/', layanan: '/services', harga: '/prices', testimoni: '/testimonials', informasi: '/information', carapesan: '/how-to-order', bantuan: '/help', checkout: '/payment', 'checkout-spesial': '/checkout/spesial', 'order-success': '/payment/pending' };
+        const TAB_TITLES = {
+            beranda: 'JOKI.IN | Teman Tugas Mahasiswa',
+            layanan: 'Layanan - JOKI.IN',
+            harga: 'Daftar Harga - JOKI.IN',
+            testimoni: 'Testimoni Pelanggan - JOKI.IN',
+            informasi: 'Pusat Informasi - JOKI.IN',
+            carapesan: 'Cara Pemesanan - JOKI.IN',
+            bantuan: 'Pusat Bantuan - JOKI.IN',
+            checkout: 'Pembayaran - JOKI.IN',
+            'checkout-spesial': 'Checkout Penawaran Spesial - JOKI.IN',
+            'order-success': 'Status Pesanan - JOKI.IN'
+        };
         const TAB_BY_ROUTE = Object.fromEntries(Object.entries(ROUTES).map(([tab, path]) => [path, tab]));
         document.addEventListener('dragstart', event => {
             const picture = event.target.closest('.home-banner, .recommendation-card-image, .service-photo img');
@@ -10535,6 +10551,7 @@ Teman tugas mahasiswa.`;
                     window.showTestimoniList(updateHistory);
                 }
             } else {
+                document.title = TAB_TITLES[tabId] || 'JOKI.IN | Teman Tugas Mahasiswa';
                 const route = ROUTES[tabId];
                 if (updateHistory && route && window.location.pathname !== route) {
                     history.pushState({ tabId }, '', route);
@@ -10701,7 +10718,10 @@ Teman tugas mahasiswa.`;
             // refresh hanya menampilkan tab awal walaupun URL masih menunjukkan pending.
             const restoredPending = initialTab === 'order-success' ? await restorePendingMayarPage() : false;
             if (!restoredPending && initialTab !== 'beranda') window.switchTab(initialTab, false);
-            else if (initialTab === 'beranda') requestAnimationFrame(() => updateLiquidIndicator(false));
+            else if (initialTab === 'beranda') {
+                document.title = TAB_TITLES.beranda;
+                requestAnimationFrame(() => updateLiquidIndicator(false));
+            }
             try { await ensureSession(); } catch (_) { window.showToast('Sesi belum dapat dipulihkan. Silakan login kembali.'); }
             await loadCart();
             const results = await Promise.allSettled([loadServices(), loadReviews(), loadAuthSettings()]);
