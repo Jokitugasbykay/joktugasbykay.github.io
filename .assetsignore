@@ -18,3 +18,5 @@
 /package*.json
 /README*
 /*.sql
+
+/frontend-next/**
