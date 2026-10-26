@@ -1358,7 +1358,7 @@
         const isLimited = Boolean(ap.is_limited_edition);
         const batasBeli = isLimited
           ? Math.max(1, Number(ap.batas_beli_per_orang) || 1)
-          : Math.max(2, Number(ap.batas_beli_per_orang) || 2);
+          : undefined;
         if (existing) {
           existing.priceNum = finalPrice;
           existing.originalPrice = ap.harga_dasar;

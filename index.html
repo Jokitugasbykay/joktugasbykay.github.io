@@ -7286,18 +7286,13 @@
         }
         function maximumOrderQuantity(productId) {
             const product = CONFIG.PRODUCTS.find(p => p.id === productId);
-            if (!product) return 2;
+            if (!product) return Infinity;
             const isSpesial = product.id === 'gemini-pro-18-bulan' || product.isLimitedEdition || product.is_limited_edition;
             if (isSpesial) {
                 const limit = product.batasBeli ?? product.batas_beli_per_orang;
                 return limit !== undefined ? Math.max(1, Number(limit) || 1) : 1;
             }
-            // Layanan reguler: batas pembelian 2x per hari
-            const limit = product.batasBeli ?? product.batas_beli_per_orang;
-            if (limit !== undefined && Number(limit) > 0) {
-                return Math.max(2, Number(limit) || 2);
-            }
-            return 2;
+            return Infinity;
         }
         function productPriceLabel(product) {
             const formatted = formatRupiah(product?.priceNum || 0);
@@ -7363,7 +7358,7 @@
         }
         function sanitizeCart(value) {
             if (!Array.isArray(value)) return [];
-            return value.filter(i => i && typeof i.productId === 'string' && /^[a-z0-9-]+$/.test(i.productId) && Number.isInteger(i.quantity) && i.quantity > 0 && i.quantity <= 100)
+            return value.filter(i => i && typeof i.productId === 'string' && /^[a-z0-9-]+$/.test(i.productId) && Number.isSafeInteger(i.quantity) && i.quantity > 0)
                 .map(i => {
                     const p = CONFIG.PRODUCTS.find(p => p.id === i.productId);
                     const minQ = minimumOrderQuantity(i.productId);
@@ -7432,7 +7427,7 @@
                 const product = CONFIG.PRODUCTS.find(p => p.id === item.productId);
                 const maxQ = maximumOrderQuantity(item.productId);
                 const isAtMax = item.quantity >= maxQ;
-                const limitBadge = maxQ <= 1 ? `<div style="font-size:0.75em; color:#f59e0b; margin-top:3px; font-weight:700;">Batas 1x per hari</div>` : (maxQ === 2 ? `<div style="font-size:0.75em; color:#f59e0b; margin-top:3px; font-weight:700;">Batas 2x per hari</div>` : '');
+                const limitBadge = Number.isFinite(maxQ) ? `<div style="font-size:0.75em; color:#f59e0b; margin-top:3px; font-weight:700;">Batas ${maxQ}x per hari</div>` : '';
                 html += `<div class="cart-item"><div class="cart-item-info"><h4>${escapeHTML(item.name)}</h4><p>${escapeHTML(productPriceLabel(product))}</p>${limitBadge}<div style="font-size:0.85em; color:var(--text-secondary); margin-top:5px;">Subtotal: ${formatRupiah(sub)}</div></div><div class="cart-qty-controls"><button class="btn-qty" onclick="window.changeCartQty('${item.productId}', -1)">-</button><span style="font-weight:600; width:20px; text-align:center; color:var(--text-main);">${item.quantity}</span><button class="btn-qty" ${isAtMax ? `disabled style="opacity:0.35;cursor:not-allowed;" title="Batas maksimal pembelian ${maxQ}x per hari"` : ''} onclick="window.changeCartQty('${item.productId}', 1)">+</button></div></div>`;
             });
             c.innerHTML = html; document.getElementById('cartTotalPrice').innerText = formatRupiah(total);
@@ -7919,7 +7914,7 @@
                 const sub = item.price * item.quantity; subtotal += sub;
                 const maxQ = maximumOrderQuantity(item.productId);
                 const isAtMax = item.quantity >= maxQ;
-                const limitBadge = maxQ <= 1 ? `<div style="font-size:0.75em; color:#f59e0b; margin-top:3px; font-weight:700;">Batas 1x per hari</div>` : (maxQ === 2 ? `<div style="font-size:0.75em; color:#f59e0b; margin-top:3px; font-weight:700;">Batas 2x per hari</div>` : '');
+                const limitBadge = Number.isFinite(maxQ) ? `<div style="font-size:0.75em; color:#f59e0b; margin-top:3px; font-weight:700;">Batas ${maxQ}x per hari</div>` : '';
                 html += `
             <div class="cart-item">
                 <div class="cart-item-info">
@@ -8071,7 +8066,7 @@
                 return;
             }
 
-            if (!itemsToProcess.length || itemsToProcess.some(i => !i.productId || !Number.isInteger(i.quantity) || i.quantity < 1 || i.quantity > 100)) {
+            if (!itemsToProcess.length || itemsToProcess.some(i => !i.productId || !Number.isSafeInteger(i.quantity) || i.quantity < 1)) {
                 window.showToast('Keranjang tidak valid. Periksa jumlah layanan.'); return;
             }
             if (!validDriveUrl(driveUrl)) { document.getElementById('errChkDrive').style.display = 'block'; return; }
@@ -10546,7 +10541,7 @@ Teman tugas mahasiswa.`;
     <script src="/assets/deadline-calendar.js?v=20261009.2"></script>
     <script src="/assets/ui-refinements.js?v=1.08"></script>
     <link rel="stylesheet" href="/assets/mobile-fixes.css?v=1.06">
-    <script src="/assets/catalog.js?v=20261022-sold108"></script>
+    <script src="/assets/catalog.js?v=20261026-regular-unlimited"></script>
 
 </body>
 

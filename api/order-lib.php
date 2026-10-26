@@ -89,12 +89,14 @@ function compute_order(array $items, string $promo): array
         if ($quantity < $minimum) throw new ApiException('Jumlah minimum untuk ' . $catalog[$slug]['name'] . ' adalah ' . $minimum . '.', 422);
         $lines[] = ['slug' => $slug, 'name' => $catalog[$slug]['name'], 'price' => $catalog[$slug]['price'], 'quantity' => $quantity];
         $subtotal += $catalog[$slug]['price'] * $quantity;
+        if (!is_int($subtotal) || $subtotal > 9007199254740991) throw new ApiException('Total pesanan tidak valid.');
     }
 
     $rate = $promo === 'MAHASISWA10' ? min(0.5, max(0.0, (float) env('PROMO_MAHASISWA10_RATE', '0.1'))) : 0.0;
     $discount = (int) round($subtotal * $rate);
     $fee = max(0, (int) env('SERVICE_FEE', '0'));
     $total = $subtotal - $discount + $fee;
+    if (!is_int($total) || $total > 9007199254740991) throw new ApiException('Total pesanan tidak valid.');
     if ($total < 1000) throw new ApiException('Total pembayaran minimal Rp1.000.', 422);
 
     return ['lines' => $lines, 'subtotal' => $subtotal, 'discount' => $discount, 'fee' => $fee, 'total' => $total];

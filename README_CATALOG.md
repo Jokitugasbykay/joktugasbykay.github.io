@@ -107,11 +107,19 @@ Base URL: `https://xdbnwjvxqtpkoaigedsk.supabase.co/functions/v1/jokiin-catalog`
 | Aturan | Implementasi |
 |--------|-------------|
 | Stok tidak negatif | PostgreSQL RPC `catalog_decrement_stock` dengan FOR UPDATE |
-| Batas beli per orang | PostgreSQL RPC `catalog_check_buy_limit` server-side |
+| Pembelian reguler | Tanpa kuota maksimum per orang/hari; jumlah tetap bilangan bulat positif dan stok tetap diperiksa |
+| Batas beli Penawaran Spesial | PostgreSQL RPC `catalog_checkout_spesial` server-side |
 | Banner hilang tanpa hapus gambar | PATCH `promo_settings` key `penawaran_spesial_aktif` |
 | Diskon tidak ubah harga dasar | `harga_akhir = harga_dasar * (1 - diskon/100)` computed di frontend |
 | Upload gambar aman | Random UUID filename + MIME validation + magic byte check |
 | Rate limit login | 5x/60s per IP di edge function |
+
+Penghapusan batas reguler memerlukan deployment storefront, Worker dan
+`jokiin-api`, serta migrasi
+`supabase/migrations/20261026000000_remove_regular_purchase_limits.sql`.
+Migrasi ini disiapkan dari definisi fungsi live dan menolak perubahan jika guard
+checkout sudah berbeda. Validasi di staging sebelum penerapan production;
+menyiapkan file migrasi tidak otomatis mengubah database live.
 
 ---
 

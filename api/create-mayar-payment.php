@@ -39,9 +39,9 @@ function parse_checkout_input(array $in): array
     foreach ($rawItems as $row) {
         $slug = is_array($row) && is_string($row['productId'] ?? null) ? $row['productId'] : '';
         $quantity = is_array($row) && is_int($row['quantity'] ?? null) ? $row['quantity'] : 0;
-        if (!preg_match('/^[a-z0-9-]{1,80}$/', $slug) || $quantity < 1 || $quantity > 100) throw new ApiException('Keranjang tidak valid.');
+        if (!preg_match('/^[a-z0-9-]{1,80}$/', $slug) || $quantity < 1) throw new ApiException('Keranjang tidak valid.');
         $items[$slug] = ($items[$slug] ?? 0) + $quantity;
-        if ($items[$slug] > 100) throw new ApiException('Keranjang tidak valid.');
+        if (!is_int($items[$slug])) throw new ApiException('Keranjang tidak valid.');
     }
 
     $promo = strtoupper($line($in['promo'] ?? '', 40));
