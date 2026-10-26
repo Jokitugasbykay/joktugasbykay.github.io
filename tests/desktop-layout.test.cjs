@@ -27,7 +27,7 @@ const root = path.resolve(__dirname, '..');
         // Exercise the real carousel without booting authentication or payment APIs.
         await page.addScriptTag({content: 'const CONFIG = {PRODUCTS: []};\n'
             + block('        function formatRupiah(', '        window.openWhatsApp =')
-            + block('        function productPriceLabel(', '        function formatFileSize(')
+            + block('        function productPriceLabel(', '        let selectedTaskFiles =')
             + block('        let recommendationIndex = 0;', '        let websiteMetrics = null;')});
         await page.evaluate(() => {
             CONFIG.PRODUCTS = Array.from({length: 7}, (_, i) => ({id: i === 0 ? 'makalah' : 'check-' + i,

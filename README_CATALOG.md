@@ -6,8 +6,8 @@
 joktugasbykay.github.io/          ← Storefront (katalog publik)
 ├── index.html                    ← SPA utama, ~9700 baris
 ├── src/
-│   ├── catalog.js                ← [BARU] Banner promo + grid produk dinamis
-│   └── worker.js                 ← Service worker
+│   └── worker.js                 ← Cloudflare payment API
+├── assets/catalog.js             ← Banner promo + grid produk dinamis
 ├── supabase/
 │   ├── functions/
 │   │   ├── jokiin-api/           ← Checkout, tracking, review (existing)

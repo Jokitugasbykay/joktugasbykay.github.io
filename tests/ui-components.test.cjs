@@ -14,17 +14,11 @@ function element(id) {
   return elements.get(id);
 }
 const context = vm.createContext({URL, document:{getElementById:element,querySelector:element}, sessionStorage:{getItem:()=>null}, CART:[], formatRupiah:n=>'Rp'+n, DEFAULT_PROMO:{}, clearInterval:()=>{}, setInterval:()=>1, Date, promoTimer:null, activePromoId:'', promoDismissedUntil:0});
-for (const name of ['validDriveUrl','validateTaskFiles','updateThresholdProgress','isPromoDismissed','renderPromo']) vm.runInContext(fn(name),context);
+for (const name of ['validDriveUrl','updateThresholdProgress','isPromoDismissed','renderPromo']) vm.runInContext(fn(name),context);
 assert.equal(context.validDriveUrl('https://drive.google.com/file/d/abc/view'), true);
 assert.equal(context.validDriveUrl('https://drive.google.com.attacker.test/a'), false);
 assert.equal(context.validDriveUrl('javascript:alert(1)'), false);
 assert.equal(context.validDriveUrl('https://someone@drive.google.com/a'), false);
-const mb=1024*1024;
-assert.equal(context.validateTaskFiles([{name:'a.pdf',size:51*mb}]).length,0);
-assert.equal(context.validateTaskFiles([{name:'a.pdf',size:30*mb},{name:'b.zip',size:21*mb}]).length,1);
-assert.equal(context.validateTaskFiles([{name:'a.pdf',size:30*mb},{name:'b.zip',size:20*mb}]).length,2);
-assert.equal(context.validateTaskFiles(Array.from({length:12},()=>({name:'a.pdf',size:1}))).length,10);
-assert.equal(context.validateTaskFiles([{name:'a.exe',size:1},{name:'empty.pdf',size:0},{name:'valid.DOCX',size:1}]).length,1);
 context.updateThresholdProgress(750000);
 assert.equal(element('cartThresholdTrack').attrs['aria-valuenow'],'50');
 context.updateThresholdProgress(1500001);
@@ -48,4 +42,4 @@ assert.equal(context.validateCheckoutField('chkEmail'),true);
 assert.equal(element('errChkEmail').style.display,'none');
 element('chkTaskDrive').value='';
 assert.equal(context.validateCheckoutField('chkTaskDrive'),true);
-console.log('PASS: Drive URL validation, file type/count/total size, progress updates, promo expiry, inline field errors.');
+console.log('PASS: Drive URL validation, progress updates, promo expiry, inline field errors.');

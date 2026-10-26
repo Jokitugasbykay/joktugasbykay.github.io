@@ -6,7 +6,6 @@ const path = require('node:path');
 const ROOT_DIR = path.resolve(__dirname, '..');
 const indexHtml = fs.readFileSync(path.join(ROOT_DIR, 'index.html'), 'utf8');
 const assetsCatalogJs = fs.readFileSync(path.join(ROOT_DIR, 'assets', 'catalog.js'), 'utf8');
-const srcCatalogJs = fs.readFileSync(path.join(ROOT_DIR, 'src', 'catalog.js'), 'utf8');
 
 test('cart conflict modal markup adheres to Pisah Keranjang design specs', () => {
   assert.ok(indexHtml.includes('id="cartTypeConflictModal"'), 'Modal overlay container must exist');
@@ -24,8 +23,8 @@ test('cart conflict modal markup adheres to Pisah Keranjang design specs', () =>
 });
 
 test('cart conflict responsive animations: mobile slideUp and PC popIn', () => {
-  [indexHtml, assetsCatalogJs, srcCatalogJs].forEach((code, idx) => {
-    const fileLabel = idx === 0 ? 'index.html' : idx === 1 ? 'assets/catalog.js' : 'src/catalog.js';
+  [indexHtml, assetsCatalogJs].forEach((code, idx) => {
+    const fileLabel = idx === 0 ? 'index.html' : 'assets/catalog.js';
 
     // Mobile slideUp animation
     assert.ok(code.includes('slideUp'), `${fileLabel} must define or use slideUp animation`);
@@ -71,8 +70,8 @@ test('cart conflict DOM interaction: toggling cards and status update', () => {
 });
 
 test('cart conflict mobile bottom sheet drag gestures (up/down swipe to dismiss/snap)', () => {
-  [indexHtml, assetsCatalogJs, srcCatalogJs].forEach((code, idx) => {
-    const fileLabel = idx === 0 ? 'index.html' : idx === 1 ? 'assets/catalog.js' : 'src/catalog.js';
+  [indexHtml, assetsCatalogJs].forEach((code, idx) => {
+    const fileLabel = idx === 0 ? 'index.html' : 'assets/catalog.js';
 
     assert.ok(code.includes('cursor: grab') || code.includes('cursor:grab'), `${fileLabel} must define grab cursor on grip`);
     assert.ok(code.includes('touch-action: none') || code.includes('touch-action:none'), `${fileLabel} must set touch-action: none on grip`);
@@ -96,8 +95,8 @@ test('cart conflict mobile bottom sheet drag gestures (up/down swipe to dismiss/
 });
 
 test('cart conflict modal backdrop blur smoothly fades out on drag and dismiss without frozen blur artifact', () => {
-  [indexHtml, assetsCatalogJs, srcCatalogJs].forEach((code, idx) => {
-    const fileLabel = idx === 0 ? 'index.html' : idx === 1 ? 'assets/catalog.js' : 'src/catalog.js';
+  [indexHtml, assetsCatalogJs].forEach((code, idx) => {
+    const fileLabel = idx === 0 ? 'index.html' : 'assets/catalog.js';
 
     // Must have transition for backdrop-filter on modal overlay
     assert.ok(code.includes('backdrop-filter 0.22s') || code.includes('backdrop-filter: blur(0px)'), `${fileLabel} must transition or fade backdrop-filter`);
@@ -107,8 +106,8 @@ test('cart conflict modal backdrop blur smoothly fades out on drag and dismiss w
 });
 
 test('cart conflict modal grip handle has clear contrast across light and dark themes', () => {
-  [indexHtml, assetsCatalogJs, srcCatalogJs].forEach((code, idx) => {
-    const fileLabel = idx === 0 ? 'index.html' : idx === 1 ? 'assets/catalog.js' : 'src/catalog.js';
+  [indexHtml, assetsCatalogJs].forEach((code, idx) => {
+    const fileLabel = idx === 0 ? 'index.html' : 'assets/catalog.js';
 
     assert.ok(code.includes('#cartTypeConflictModal .grip'), `${fileLabel} must define grip styles`);
     assert.ok(code.includes('rgba(15, 23, 42') || code.includes('rgba(0, 0, 0'), `${fileLabel} must provide distinct high-contrast color for light mode`);
@@ -117,8 +116,8 @@ test('cart conflict modal grip handle has clear contrast across light and dark t
 });
 
 test('category filter container has smooth horizontal touch-scrolling with proper padding', () => {
-  [indexHtml, assetsCatalogJs, srcCatalogJs].forEach((code, idx) => {
-    const fileLabel = idx === 0 ? 'index.html' : idx === 1 ? 'assets/catalog.js' : 'src/catalog.js';
+  [indexHtml, assetsCatalogJs].forEach((code, idx) => {
+    const fileLabel = idx === 0 ? 'index.html' : 'assets/catalog.js';
 
     assert.ok(code.includes('scroll-snap-type'), `${fileLabel} must configure scroll-snap on category chips`);
     assert.ok(code.includes('scroll-behavior: smooth') || code.includes('scroll-behavior:smooth'), `${fileLabel} must configure smooth scrolling on category chips`);

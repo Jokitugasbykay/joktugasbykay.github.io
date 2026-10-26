@@ -28,12 +28,6 @@ try {
    const bounds=await page.locator('.review-compose').boundingBox();assert(bounds.x>=0&&bounds.x+bounds.width<=width);
    await page.screenshot({path:'tests/review-'+width+'-'+theme+'.png'});
   }
-  await page.setContent('<img src="https://lh3.googleusercontent.com/a/ACg8ocKoDT683OYKT1A7eTyqcI66V6EBmT65ylHFSiWJGKo5lWYh=s96-c"><img src="https://lh3.googleusercontent.com/a/ACg8ocKUdNgMyjVlRqSZ3vHVRm9G6H19qEhlSDe7S4VPiAT__dJdWTg=s96-c">');
-  await page.waitForTimeout(2000);await page.screenshot({path:'tests/review-google-avatars.png'});
-  await page.evaluate(async()=>{for(const image of document.images) await window.checkReviewAvatar(image);});
-  assert((await page.locator('img').first().getAttribute('src')).endsWith('/default.jpg'));
-  assert((await page.locator('img').nth(1).getAttribute('src')).includes('ACg8ocKUdNg'));
-  console.log(await page.evaluate(async()=>{const img=new Image();img.crossOrigin='anonymous';const done=new Promise(resolve=>{img.onload=()=>{try{const c=document.createElement('canvas');c.width=96;c.height=96;c.getContext('2d').drawImage(img,0,0,96,96);resolve([...c.getContext('2d').getImageData(0,0,1,1).data]);}catch(e){resolve(e.message);}};img.onerror=()=>resolve('CORS image failed');});img.src='https://lh3.googleusercontent.com/a/ACg8ocKoDT683OYKT1A7eTyqcI66V6EBmT65ylHFSiWJGKo5lWYh=s96-c';return done;}));
   console.log('PASS: responsive review modal, rating controls, counter, light/dark screenshots.');
  } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

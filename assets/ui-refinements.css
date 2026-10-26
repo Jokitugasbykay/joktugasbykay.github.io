@@ -35,8 +35,6 @@
 #serviceDetailModal .mobile-modal-close { width:36px; height:36px; border-radius:8px; box-shadow:none; }
 .section-subtitle img[src*="sparkles"],img[src*="sparkles.svg"] { display:none!important; }
 @media(max-width:760px) {
-  #welcomeModal :is(.welcome-close,.mobile-modal-close) { display:none!important; }
-  #welcomeModal .welcome-content { overflow-y:auto; min-height:0; overscroll-behavior:contain; }
   #serviceDetailModal .modal-content { padding:24px 20px!important; width:calc(100% - 24px)!important; max-height:calc(100dvh - 24px)!important; }
   .service-detail-heading { gap:12px; }
   #detailSvcIcon,#detailSvcIcon .ui-art-icon { width:72px; height:72px; }

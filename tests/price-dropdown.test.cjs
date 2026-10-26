@@ -63,7 +63,7 @@ const root = path.resolve(__dirname, '..');
                 assert(await select.evaluate(el => document.activeElement === el), 'Escape restores select focus');
                 assert.notEqual(await select.evaluate(el => getComputedStyle(el).outlineStyle), 'none', 'Keyboard focus must be visible');
                 await select.click();
-                await page.getByRole('heading', {name: 'Daftar Harga Layanan', exact: true}).click();
+                await page.locator('#tab-harga .searchInputGlobal').click();
                 assert.equal(await select.evaluate(el => el.matches(':open')), false, 'Outside click dismisses the menu');
             }
         }

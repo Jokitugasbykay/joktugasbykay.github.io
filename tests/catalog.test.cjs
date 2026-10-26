@@ -304,7 +304,7 @@ test('7. File artefak kode sumber lengkap dan valid', () => {
   const root = path.resolve(__dirname, '..');
   assert.ok(fs.existsSync(path.join(root, 'supabase/migrations/20261012000000_catalog.sql')), 'Migration SQL exists');
   assert.ok(fs.existsSync(path.join(root, 'supabase/functions/jokiin-catalog/index.ts')), 'Edge function exists');
-  assert.ok(fs.existsSync(path.join(root, 'src/catalog.js')), 'Storefront catalog.js exists');
+  assert.ok(fs.existsSync(path.join(root, 'assets/catalog.js')), 'Storefront catalog.js exists');
 });
 
 test('8. Category filter chips hide scrollbar on mobile while preserving horizontal scroll', () => {

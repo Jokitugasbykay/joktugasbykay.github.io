@@ -8,7 +8,6 @@ const root = path.resolve(__dirname, '..');
 test('No em or en dashes exist across client storefront, catalog, and worker files', () => {
   const targetFiles = [
     'index.html',
-    'src/catalog.js',
     'assets/catalog.js',
     'src/worker.js',
     'login/index.html',

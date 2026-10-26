@@ -2094,258 +2094,6 @@
             background-color: #EFF6FF;
         }
 
-        /* === WELCOME MODAL SPECIFIC (NEW) === */
-        .welcome-wrapper {
-            background: var(--card-solid);
-            border-radius: 24px;
-            width: 94%;
-            max-width: 820px;
-            display: flex;
-            overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            animation: modalFadeScale 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            position: relative;
-        }
-
-        @keyframes modalFadeScale {
-            0% {
-                opacity: 0;
-                transform: scale(0.95) translateY(10px);
-            }
-
-            100% {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
-
-        .welcome-visual {
-            flex: 0 0 45%;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-            position: relative;
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            color: white;
-            overflow: hidden;
-        }
-
-        .welcome-visual::before {
-            content: '';
-            position: absolute;
-            top: -50px;
-            right: -50px;
-            width: 200px;
-            height: 200px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            filter: blur(20px);
-        }
-
-        .welcome-visual::after {
-            content: '';
-            position: absolute;
-            bottom: -30px;
-            left: -30px;
-            width: 150px;
-            height: 150px;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 50%;
-            filter: blur(15px);
-        }
-
-        .welcome-content {
-            flex: 1;
-            padding: 45px 40px;
-            position: relative;
-            background: var(--card-solid);
-        }
-
-        .welcome-close {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: transparent;
-            border: none;
-            font-size: 1.5em;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: var(--transition);
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .welcome-close:hover {
-            background: var(--surface-secondary);
-            color: var(--text-main);
-        }
-
-        .welcome-content h2 {
-            font-size: 1.8em;
-            line-height: 1.3;
-            color: var(--text-main);
-            margin-bottom: 12px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
-
-        .welcome-content p.subtitle {
-            font-size: 0.95em;
-            color: var(--text-secondary);
-            margin-bottom: 25px;
-            line-height: 1.6;
-        }
-
-        .welcome-benefits {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 30px;
-        }
-
-        .w-benefit-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: var(--surface-secondary);
-            padding: 12px 15px;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-        }
-
-        .w-benefit-icon {
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #fff;
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        }
-
-        .w-benefit-text {
-            font-size: 0.9em;
-            font-weight: 600;
-            color: var(--text-main);
-        }
-
-        .welcome-ctas {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .w-btn-primary {
-            background: var(--primary);
-            color: white;
-            padding: 14px;
-            border-radius: 12px;
-            text-align: center;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            font-size: 1em;
-            transition: var(--transition);
-            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
-            width: 100%;
-            display: block;
-        }
-
-        .w-btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
-        }
-
-        .w-btn-wa {
-            background: #10B981;
-            color: white;
-            padding: 14px;
-            border-radius: 12px;
-            text-align: center;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            font-size: 1em;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-        }
-
-        .w-btn-wa:hover {
-            background: #059669;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
-        }
-
-        .welcome-trust {
-            text-align: center;
-            font-size: 0.75em;
-            color: var(--text-muted);
-            margin-top: 20px;
-            font-weight: 600;
-        }
-
-        /* Floating Glass Cards inside Welcome Visual */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            transform: rotate(-2deg);
-            transition: transform 0.3s ease;
-        }
-
-        .glass-card:hover {
-            transform: rotate(0deg) scale(1.02);
-        }
-
-        .glass-icon {
-            width: 36px;
-            height: 36px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* NOTIFIKASI */
-        .toast-notification {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: var(--primary);
-            color: #fff;
-            padding: 12px 20px;
-            border-radius: 8px;
-            box-shadow: var(--shadow-hover);
-            z-index: 3000;
-            display: none;
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-weight: 600;
-            font-size: 0.9em;
-            pointer-events: auto;
-        }
-
         /* CART UI IN MODAL */
         .cart-item {
             display: flex;
@@ -3329,169 +3077,6 @@
                 overflow-wrap: break-word !important;
             }
 
-            /* --- WELCOME POPUP MOBILE (100% PROPORSIONAL DESKTOP SCALING) --- */
-            .welcome-wrapper {
-                /* 1. Kunci layout ke ukuran referensi desktop murni */
-                flex-direction: row !important;
-                width: 750px !important;
-                max-width: none !important;
-                height: auto !important;
-                margin: 0 auto;
-                border-radius: 24px !important;
-
-                /* 2. Skalakan turun secara proporsional sesuai lebar layar HP */
-                /* (100vw - 32px) memastikan ada margin 16px di kiri dan kanan */
-                transform: scale(calc((100vw - 32px) / 750)) !important;
-                transform-origin: center center !important;
-
-                /* 3. Cegah scrollbar yang tidak perlu */
-                overflow: hidden !important;
-            }
-
-            /* Skala Kolom Kiri (Warna Biru) */
-            .welcome-visual {
-                flex: 0 0 42% !important;
-                padding: 20px 10px !important;
-                display: flex !important;
-                flex-direction: column !important;
-                justify-content: center !important;
-                gap: 20px;
-            }
-
-            .welcome-visual h2 {
-                font-size: 1.4em !important;
-                margin-bottom: 2px !important;
-            }
-
-            .welcome-visual span {
-                font-size: 0.65em !important;
-                padding: 4px 8px !important;
-                margin-top: 5px !important;
-            }
-
-            .welcome-visual::before {
-                width: 100px;
-                height: 100px;
-                top: -20px;
-                right: -20px;
-            }
-
-            .welcome-visual::after {
-                width: 80px;
-                height: 80px;
-                bottom: -20px;
-                left: -20px;
-            }
-
-            /* Glass Cards Tetap Ditampilkan & Dikecilkan */
-            .glass-card {
-                display: flex !important;
-                padding: 8px !important;
-                margin-bottom: 8px !important;
-                border-radius: 8px !important;
-                gap: 6px !important;
-            }
-
-            .glass-icon {
-                width: 24px !important;
-                height: 24px !important;
-                font-size: 0.8em !important;
-                border-radius: 6px !important;
-            }
-
-            .glass-card div:last-child {
-                font-size: 0.7em !important;
-            }
-
-            .gc-1 {
-                transform: rotate(-2deg) !important;
-            }
-
-            .gc-2 {
-                transform: translateX(5px) rotate(2deg) !important;
-            }
-
-            .gc-3 {
-                transform: translateX(-5px) rotate(-1deg) !important;
-            }
-
-            /* Skala Kolom Kanan (Konten Putih) */
-            .welcome-content {
-                flex: 1 !important;
-                padding: 25px 15px !important;
-                display: flex !important;
-                flex-direction: column !important;
-                justify-content: center !important;
-            }
-
-            .welcome-close {
-                top: 10px !important;
-                right: 10px !important;
-                font-size: 1.2em !important;
-                width: 28px !important;
-                height: 28px !important;
-            }
-
-            .welcome-content h2 {
-                font-size: 1.15em !important;
-                margin-top: 15px !important;
-                margin-bottom: 8px !important;
-                line-height: 1.3 !important;
-            }
-
-            .welcome-content p.subtitle {
-                font-size: 0.75em !important;
-                margin-bottom: 15px !important;
-                line-height: 1.4 !important;
-            }
-
-            .welcome-benefits {
-                gap: 6px !important;
-                margin-bottom: 15px !important;
-            }
-
-            .w-benefit-item {
-                padding: 8px 10px !important;
-                border-radius: 8px !important;
-                gap: 8px !important;
-            }
-
-            .w-benefit-icon {
-                width: 24px !important;
-                height: 24px !important;
-                border-radius: 6px !important;
-            }
-
-            .w-benefit-icon svg {
-                width: 14px !important;
-                height: 14px !important;
-            }
-
-            .w-benefit-text {
-                font-size: 0.75em !important;
-            }
-
-            .welcome-ctas {
-                gap: 8px !important;
-            }
-
-            .w-btn-primary,
-            .w-btn-wa {
-                padding: 12px !important;
-                border-radius: 8px !important;
-                font-size: 0.8em !important;
-            }
-
-            .w-btn-wa svg {
-                width: 16px !important;
-                height: 16px !important;
-            }
-
-            .welcome-trust {
-                margin-top: 10px !important;
-                font-size: 0.6em !important;
-            }
-
             /* Layout Mobile Bawaan Lainnya */
             .info-layout {
                 grid-template-columns: 1fr;
@@ -3623,17 +3208,12 @@
             backdrop-filter: blur(20px) saturate(145%);
         }
 
-        .modal-content,
-        .welcome-wrapper {
+        .modal-content{
             background: linear-gradient(140deg, var(--glass-sheen), transparent 48%), var(--glass-modal);
             border-color: var(--glass-edge);
             box-shadow: var(--glass-shadow), 0 24px 64px rgba(0, 0, 0, .20);
             -webkit-backdrop-filter: blur(22px) saturate(140%);
             backdrop-filter: blur(22px) saturate(140%);
-        }
-
-        .welcome-content {
-            background: transparent;
         }
 
         #themeToggle {
@@ -3728,10 +3308,6 @@
             color: var(--text-main);
         }
 
-        [data-theme="dark"] :is(.form-control:focus, .help-search-container input:focus, .track-input-group input, .w-benefit-icon, .pay-card.active .pay-card-status) {
-            background: var(--card-solid);
-        }
-
         [data-theme="dark"] .form-control[disabled] {
             background: var(--surface-secondary);
             color: var(--text-muted);
@@ -3772,19 +3348,6 @@
             background: var(--card-solid) !important;
         }
 
-        [data-theme="dark"] :is(.btn-header, .btn-modal-primary, .w-btn-primary, .track-input-group button, .pill.active, .filter-pill.active, .pay-badge, .compact-social-btn:hover) {
-            background-color: #0b9967;
-            color: #fff;
-        }
-
-        [data-theme="dark"] :is(.btn-header, .btn-modal-primary, .w-btn-primary, .track-input-group button):hover {
-            background-color: #087b54;
-        }
-
-        [data-theme="dark"] .welcome-visual {
-            background: linear-gradient(135deg, #087b54, #0d6046);
-        }
-
         /* translate terpisah agar transform skala welcome mobile tetap utuh. */
         @keyframes jokiinPopupEnter {
             from {
@@ -3812,10 +3375,6 @@
             animation: jokiinOverlayEnter .2s ease-out;
         }
 
-        .modal-overlay:not(#orderDetailModal)> :is(.modal-content, .welcome-wrapper) {
-            animation: jokiinPopupEnter .38s cubic-bezier(.16, 1, .3, 1) both;
-        }
-
         @media(max-width:768px) {
             #themeToggle {
                 flex: 0 0 36px !important;
@@ -3825,16 +3384,9 @@
             }
         }
 
-        @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) {
-            :is(.service-card, .step-card, .info-container, .info-card, .help-cat-card, .tip-card, .faq-item, .checkout-card, .order-flow-wrapper, .filter-sort-bar, .search-box, .modal-content, .welcome-wrapper, header, footer) {
-                background: var(--card-solid);
-            }
-        }
-
         @media(prefers-reduced-motion:reduce) {
 
-            .modal-overlay:not(#orderDetailModal),
-            .modal-overlay:not(#orderDetailModal)> :is(.modal-content, .welcome-wrapper) {
+            .modal-overlay:not(#orderDetailModal){
                 animation: none;
             }
         }
@@ -4013,73 +3565,6 @@
         #globalFooter :is(a, button):focus-visible {
             outline: none !important;
             box-shadow: 0 0 0 2px var(--primary-light) !important;
-        }
-
-        /* Welcome popup has a distinct entrance and exit animation. */
-        @keyframes welcomeOverlayIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        @keyframes welcomeOverlayOut {
-            from {
-                opacity: 1;
-            }
-
-            to {
-                opacity: 0;
-            }
-        }
-
-        @keyframes welcomePanelIn {
-            from {
-                opacity: 0;
-                transform: translate3d(0, 30px, 0) scale(.965);
-            }
-
-            to {
-                opacity: 1;
-                transform: translate3d(0, 0, 0) scale(1);
-            }
-        }
-
-        @keyframes welcomePanelOut {
-            from {
-                opacity: 1;
-                transform: translate3d(0, 0, 0) scale(1);
-            }
-
-            to {
-                opacity: 0;
-                transform: translate3d(0, 20px, 0) scale(.98);
-            }
-        }
-
-        #welcomeModal .welcome-wrapper {
-            animation: none;
-            transform-origin: center;
-        }
-
-        #welcomeModal.welcome-opening {
-            animation: welcomeOverlayIn .34s ease-out both !important;
-        }
-
-        #welcomeModal.welcome-opening .welcome-wrapper {
-            animation: welcomePanelIn .46s cubic-bezier(.16, 1, .3, 1) both !important;
-        }
-
-        #welcomeModal.welcome-closing {
-            animation: welcomeOverlayOut .28s ease-in both !important;
-            pointer-events: none;
-        }
-
-        #welcomeModal.welcome-closing .welcome-wrapper {
-            animation: welcomePanelOut .28s cubic-bezier(.4, 0, 1, 1) both !important;
         }
 
         /* Thin themed scrollbar. Firefox + Chromium/WebKit. */
@@ -4412,96 +3897,6 @@
                 gap: 12px;
             }
 
-            /* Replace forced desktop scaling with a genuine portrait welcome layout. */
-            #welcomeModal {
-                align-items: center;
-                padding: 18px 14px;
-                overflow-y: auto;
-            }
-
-            #welcomeModal .welcome-wrapper {
-                flex-direction: column !important;
-                width: 100% !important;
-                max-width: 430px !important;
-                max-height: calc(100dvh - 36px);
-                margin: auto !important;
-                border-radius: 22px !important;
-                overflow-y: auto !important;
-            }
-
-            #welcomeModal .welcome-visual {
-                flex: none !important;
-                width: 100%;
-                min-height: auto;
-                padding: 24px 22px !important;
-                gap: 15px !important;
-            }
-
-            #welcomeModal .welcome-visual>div:last-child {
-                display: grid;
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-                gap: 8px;
-                margin-top: 0 !important;
-            }
-
-            #welcomeModal .glass-card {
-                min-width: 0;
-                margin: 0 !important;
-                padding: 9px 7px !important;
-                transform: none !important;
-                flex-direction: column;
-                text-align: center;
-            }
-
-            #welcomeModal .welcome-content {
-                padding: 30px 24px 26px !important;
-                justify-content: flex-start !important;
-            }
-
-            #welcomeModal .welcome-close {
-                top: 14px !important;
-                right: 14px !important;
-            }
-
-            #welcomeModal .welcome-content h2 {
-                font-size: 1.4rem !important;
-                margin: 0 34px 12px 0 !important;
-            }
-
-            #welcomeModal .welcome-content p.subtitle {
-                font-size: .9rem !important;
-                margin-bottom: 20px !important;
-            }
-
-            #welcomeModal .welcome-benefits {
-                gap: 10px !important;
-                margin-bottom: 22px !important;
-            }
-
-            #welcomeModal .w-benefit-item {
-                padding: 11px 12px !important;
-            }
-
-            #welcomeModal .w-benefit-text {
-                font-size: .85rem !important;
-            }
-
-            #welcomeModal .welcome-ctas {
-                flex-direction: column;
-                gap: 10px !important;
-            }
-
-            #welcomeModal .w-btn-primary,
-            #welcomeModal .w-btn-wa {
-                min-height: 46px;
-                font-size: .88rem !important;
-            }
-
-            #welcomeModal .welcome-trust {
-                margin-top: 16px !important;
-                font-size: .7rem !important;
-            }
-
             /* Compact horizontal WhatsApp cards. */
             footer .footer-admin-card,
             #globalFooter .footer-admin-card {
@@ -4552,14 +3947,6 @@
         }
 
         @media (max-width: 420px) {
-            #welcomeModal .welcome-visual>div:last-child {
-                grid-template-columns: 1fr;
-            }
-
-            #welcomeModal .glass-card {
-                flex-direction: row;
-                text-align: left;
-            }
 
             .recommendation-card {
                 flex-basis: 82%;
@@ -4572,44 +3959,6 @@
             #globalFooter .footer-list a {
                 font-size: .82rem;
             }
-        }
-
-        /* Welcome popup: tata letak yang sama di PC dan mobile; foto selalu utuh. */
-        #welcomeModal .welcome-wrapper {
-            width: min(900px, calc(100vw - 32px));
-            max-width: none;
-            aspect-ratio: 4 / 3;
-            max-height: calc(100dvh - 32px);
-            display: grid;
-            /* Popup 4:3; kolom maskot 9:17 (39,7% dari lebar popup). */
-            grid-template-columns: 39.7% 60.3%;
-            overflow: hidden;
-        }
-
-        #welcomeModal .welcome-visual {
-            aspect-ratio: 9 / 17;
-            height: 100%;
-            justify-self: center;
-            width: 100%;
-            min-height: 0;
-            padding: 0;
-            background: #087b54;
-            display: grid;
-            place-items: center;
-            overflow: hidden;
-        }
-
-        #welcomeModal .welcome-visual::before,
-        #welcomeModal .welcome-visual::after {
-            display: none;
-        }
-
-        #welcomeModal .welcome-mascot {
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            object-position: center;
         }
 
         /* Banner mengikuti tema yang dipilih, tanpa mengubah area teks. */
@@ -4628,12 +3977,6 @@
         /* Pengumuman adalah informasi prioritas dan tampil sebelum update. */
         #tab-informasi .info-main>.info-card:has(#announcementContainer) {
             order: -1;
-        }
-
-        #welcomeModal .welcome-content {
-            min-width: 0;
-            overflow-y: auto;
-            padding: clamp(22px, 4vw, 42px) clamp(20px, 4vw, 40px);
         }
 
         .tab-content.active {
@@ -4657,91 +4000,6 @@
             to {
                 opacity: 1;
                 transform: translateY(0) scale(1);
-            }
-        }
-
-        @media (max-width: 768px) {
-            #welcomeModal .welcome-wrapper {
-                display: grid !important;
-                grid-template-columns: 39.7% 60.3% !important;
-                width: min(900px, calc(100vw - 24px)) !important;
-                max-width: none !important;
-                aspect-ratio: 4 / 3 !important;
-                max-height: calc(100dvh - 24px) !important;
-                overflow: hidden !important;
-                border-radius: 18px !important;
-            }
-
-            #welcomeModal .welcome-visual {
-                aspect-ratio: 9 / 17 !important;
-                height: 100% !important;
-                justify-self: center !important;
-                width: 100% !important;
-                min-height: 0 !important;
-                padding: 0 !important;
-            }
-
-            #welcomeModal .welcome-content {
-                padding: 16px 14px !important;
-                overflow-y: auto !important;
-            }
-
-            #welcomeModal .welcome-content h2 {
-                font-size: clamp(.82rem, 4.4vw, 1.4rem) !important;
-                margin: 0 22px 7px 0 !important;
-            }
-
-            #welcomeModal .welcome-content p.subtitle {
-                font-size: clamp(.56rem, 2.8vw, .86rem) !important;
-                margin-bottom: 9px !important;
-            }
-
-            #welcomeModal .welcome-benefits {
-                gap: 5px !important;
-                margin-bottom: 9px !important;
-            }
-
-            #welcomeModal .w-benefit-item {
-                padding: 6px 7px !important;
-                gap: 6px !important;
-            }
-
-            #welcomeModal .w-benefit-icon {
-                width: 20px !important;
-                height: 20px !important;
-            }
-
-            #welcomeModal .w-benefit-icon svg {
-                width: 12px !important;
-                height: 12px !important;
-            }
-
-            #welcomeModal .w-benefit-text {
-                font-size: clamp(.52rem, 2.6vw, .78rem) !important;
-            }
-
-            #welcomeModal .welcome-ctas {
-                gap: 5px !important;
-            }
-
-            #welcomeModal .w-btn-primary,
-            #welcomeModal .w-btn-wa {
-                min-height: 28px !important;
-                padding: 6px !important;
-                font-size: clamp(.52rem, 2.7vw, .8rem) !important;
-            }
-
-            #welcomeModal .welcome-trust {
-                margin-top: 7px !important;
-                font-size: clamp(.44rem, 2.1vw, .65rem) !important;
-            }
-
-            #welcomeModal .welcome-close {
-                top: 6px !important;
-                right: 6px !important;
-                width: 20px !important;
-                height: 20px !important;
-                font-size: .9rem !important;
             }
         }
 
@@ -4875,11 +4133,6 @@
             .recommendation-track {
                 transition: none !important;
             }
-
-            #welcomeModal,
-            #welcomeModal .welcome-wrapper {
-                animation: none !important;
-            }
         }
 
         /* Batch UI additions - header/nav intentionally excluded. */
@@ -4953,9 +4206,6 @@
         /* Posisi tombol tutup popup konsisten di kanan atas. */
         .mobile-modal-close { display:grid; place-items:center; position:absolute; z-index:13; top:14px; right:14px; width:36px; height:36px; padding:0; border:1px solid var(--border-color); border-radius:50%; background:var(--card-solid); color:var(--text-main); cursor:pointer; }
         .modal-close-btn-left { left:auto !important; right:14px !important; top:14px !important; z-index:13; }
-        #welcomeModal .welcome-wrapper { position:relative; }
-        #welcomeModal .welcome-content { position:static; }
-        #welcomeModal .welcome-close { position:absolute; right:12px !important; left:auto !important; top:12px !important; z-index:30; width:34px !important; height:34px !important; font-size:1.1rem !important; background:var(--card-solid); border:1px solid var(--border-color); box-shadow:0 3px 12px rgba(0,0,0,.25); }
         @media (max-width: 760px) {
             .mobile-modal-close {
                 display: grid;
@@ -4976,10 +4226,8 @@
                 box-shadow: 0 4px 12px rgba(0,0,0,.16);
                 cursor: pointer;
             }
-            .modal-overlay > .modal-content,
-            .modal-overlay > .welcome-wrapper { position: relative; }
+            .modal-overlay > .modal-content{ position: relative; }
             .modal-close-btn-left { left: auto !important; right: 12px !important; top: 12px !important; z-index: 13; }
-            #welcomeModal .welcome-close,
             #profileModal .ssc-01__close-x,
             #guestTrackModal .track-modal-close { left: auto !important; right: 12px !important; top: 12px !important; z-index: 30; }
         }
@@ -5489,74 +4737,6 @@
         mungkin sedikit lambat dan akan diproses mulai pukul <b>05.00 WIB!</b>.
       </p>
       <button class="abp-ok">Oke, mengerti</button>
-    </div>
-
-    <!-- ============================================== -->
-    <!-- NEW WELCOME POPUP (REDESIGNED) -->
-    <!-- ============================================== -->
-    <div id="welcomeModal" class="modal-overlay" style="display: none;"
-        onclick="if(event.target === this) window.closeWelcomeModal()">
-        <div class="welcome-wrapper" onclick="event.stopPropagation()">
-            <!-- Sisi kiri memakai foto maskot penuh, tanpa pemotongan gambar. -->
-            <div class="welcome-visual">
-                <img class="welcome-mascot" src="assets/welcome-popup.png" alt="Sambutan JOKI.IN">
-            </div>
-
-            <!-- Sisi Kanan: Konten & CTA -->
-            <div class="welcome-content">
-                <button class="welcome-close" aria-label="Tutup" onclick="window.closeWelcomeModal()">✕</button>
-                <h2>Tugas Menumpuk?<br>Biar JOKI.IN yang Bantu.</h2>
-                <p class="subtitle">Temukan solusi untuk berbagai kebutuhan akademikmu dengan proses yang mudah, cepat,
-                    dan rapi.</p>
-
-                <div class="welcome-benefits">
-                    <div class="w-benefit-item">
-                        <div class="w-benefit-icon">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z">
-                                </path>
-                                <path d="m9 12 2 2 4-4"></path>
-                            </svg>
-                        </div>
-                        <div class="w-benefit-text">Proses super mudah</div>
-                    </div>
-                    <div class="w-benefit-item">
-                        <div class="w-benefit-icon">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
-                            </svg>
-                        </div>
-                        <div class="w-benefit-text">Respon cepat & ramah</div>
-                    </div>
-                    <div class="w-benefit-item">
-                        <div class="w-benefit-icon">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                            </svg>
-                        </div>
-                        <div class="w-benefit-text">Bebas konsultasi dulu</div>
-                    </div>
-                </div>
-
-                <div class="welcome-ctas">
-                    <button class="w-btn-primary" onclick="window.closeWelcomeModal()">Mulai Pesan Sekarang</button>
-                    <button class="w-btn-wa"
-                    onclick="window.openAdminModal('Halo Admin JOKI.IN, saya ingin konsultasi mengenai tugas saya.')">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path
-                                d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
-                            </path>
-                        </svg>
-                        Konsultasi via WhatsApp
-                    </button>
-                </div>
-                <p class="welcome-trust">Gratis konsultasi • Respon cepat • Aman & terpercaya</p>
-            </div>
-        </div>
     </div>
 
     <!-- MODAL DETAIL LAYANAN -->
@@ -7942,7 +7122,7 @@
         // Tambahkan X kiri atas ke popup yang sebelumnya hanya punya tombol "Tutup" di bawah.
         ['serviceDetailModal', 'ordersModal', 'orderDetailModal'].forEach((id) => {
             const modal = document.getElementById(id);
-            const panel = modal && Array.from(modal.children).find(el => el.classList.contains('modal-content') || el.classList.contains('welcome-wrapper'));
+            const panel = modal && Array.from(modal.children).find(el => el.classList.contains('modal-content'));
             if (!panel || panel.querySelector('.mobile-modal-close')) return;
             const button = document.createElement('button');
             button.type = 'button'; button.className = 'mobile-modal-close'; button.setAttribute('aria-label', 'Tutup');
@@ -7960,42 +7140,8 @@
             modalBackNavigation = false;
             if (openId && openId !== targetId) {
                 modalBackNavigation = true;
-                if (openId === 'welcomeModal') {
-                    window.closeWelcomeModal();
-                    window.setTimeout(() => { modalBackNavigation = false; }, 360);
-                } else {
-                    window.closeModal(openId);
-                    modalBackNavigation = false;
-                }
-            }
-        });
-
-        // Welcome modal uses closing animation before it is hidden.
-        let welcomeCloseTimer = null;
-        window.closeWelcomeModal = () => {
-            const modal = document.getElementById('welcomeModal');
-            if (!modal || modal.style.display === 'none' || modal.classList.contains('welcome-closing')) return;
-            try { sessionStorage.setItem('jokiin_welcome_popup_time', new Date().getTime()); } catch (_) { }
-            if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-                window.closeModal('welcomeModal');
-                return;
-            }
-            modal.classList.remove('welcome-opening');
-            modal.classList.add('welcome-closing');
-            welcomeCloseTimer = window.setTimeout(() => {
-                modal.classList.remove('welcome-closing');
-                window.closeModal('welcomeModal');
-                welcomeCloseTimer = null;
-            }, 300);
-        };
-
-        // Close Welcome Modal via ESC key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                const welcomeModal = document.getElementById('welcomeModal');
-                if (welcomeModal.style.display === 'flex') {
-                    window.closeWelcomeModal();
-                }
+                window.closeModal(openId);
+                modalBackNavigation = false;
             }
         });
 
@@ -8159,16 +7305,7 @@
             if (product?.id === 'artikel') return `${formatted} / lembar`;
             return product?.priceLabel?.startsWith('Mulai dari ') ? `Mulai dari ${formatted}` : formatted;
         }
-        function formatFileSize(bytes) { return bytes < 1024 * 1024 ? `${Math.ceil(bytes / 1024)} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`; }
         let selectedTaskFiles = [];
-        function validateTaskFiles(files) {
-            const accepted = []; let total = 0;
-            for (const file of files) {
-                if (!/\.(pdf|doc|docx|zip|jpg|jpeg|png)$/i.test(file.name) || file.size <= 0 || total + file.size > 50 * 1024 * 1024 || accepted.length >= 10) continue;
-                accepted.push(file); total += file.size;
-            }
-            return accepted;
-        }
         function bindCheckoutFileDropzone() {
             const zone = document.getElementById('checkoutFileDropzone'); const input = document.getElementById('chkTaskFiles');
             const list = document.getElementById('checkoutFileList'); const status = document.getElementById('checkoutFileStatus');
@@ -9705,8 +8842,6 @@ Teman tugas mahasiswa.`;
 
 
         const DEFAULT_REVIEW_PHOTO = 'https://jokiin.my.id/assets/review-avatars/default.jpg';
-        const reviewAvatarChecks = new Map();
-        window.checkReviewAvatar = async image => {};
         function reviewAvatar(photo) {
             const url = (/^https?:\/\//.test(photo || '') || /^\/assets\//.test(photo || '')) ? photo : DEFAULT_REVIEW_PHOTO;
             return `<img src="${escapeHTML(url)}" alt="" referrerpolicy="no-referrer" loading="lazy" draggable="false" onerror="this.onerror=null;this.src='${DEFAULT_REVIEW_PHOTO}';">`;
