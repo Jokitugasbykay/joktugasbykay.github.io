@@ -6325,6 +6325,13 @@
             </div>
         </div>
 
+        <!-- ============================================== -->
+        <!-- TAB BARU: PRODUK DIGITAL (ADMIN ONLY) -->
+        <!-- ============================================== -->
+        <div id="tab-produk-digital" class="tab-content">
+            <div id="digital-store-root"></div>
+        </div>
+
         <!-- === NEW FOOTER DESIGN === -->
         <footer id="globalFooter">
             <div class="footer-container">
@@ -6623,12 +6630,16 @@
                 document.getElementById('chkWA').value = '';
             }
             if (!user) {
+                document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
                 currentUser = null; updateHeaderAuth(); loadPromo(); await loadCart();
                 if (document.getElementById('testimoni-list-view').style.display === 'none') window.showProductReviews(currentReviewProductId);
                 return;
             }
             const fallbackName = String(user.user_metadata?.full_name || user.email?.split('@')[0] || 'Pengguna').slice(0, 120);
             currentUser = { uid: user.id, name: fallbackName, email: user.email || '', photo: '', phone: '', role: 'user', ...(previousId === nextId ? currentUser : {}) };
+            if (session?.access_token) {
+                document.cookie = 'sb-access-token=' + encodeURIComponent(session.access_token) + '; path=/; SameSite=Lax';
+            }
             updateHeaderAuth();
             loadPromo();
             if (previousId !== nextId) await mergeCartsOnLogin();
@@ -9567,6 +9578,9 @@ Teman tugas mahasiswa.`;
                 const slug = window.location.pathname.replace(/^\/testimonials\/?/, '').trim();
                 const resolvedId = resolveTestimonialSlug(slug);
                 window.showProductReviews(resolvedId, false);
+            }
+            if (isDigitalStoreRoute && window.handleDigitalStoreRoute) {
+                window.handleDigitalStoreRoute(pathname);
             } else {
                 window.showTestimoniList(false);
             }
@@ -9576,7 +9590,7 @@ Teman tugas mahasiswa.`;
         // NAVIGATION & SEARCH
         // ==========================================
         let lastActiveTab = 'beranda'; let currentTab = 'beranda';
-        const ROUTES = { beranda: '/', layanan: '/services', harga: '/prices', testimoni: '/testimonials', informasi: '/information', carapesan: '/how-to-order', bantuan: '/help', checkout: '/payment', 'checkout-spesial': '/checkout/spesial', 'order-success': '/payment/pending' };
+        const ROUTES = { beranda: '/', layanan: '/services', harga: '/prices', testimoni: '/testimonials', informasi: '/information', carapesan: '/how-to-order', bantuan: '/help', checkout: '/payment', 'checkout-spesial': '/checkout/spesial', 'order-success': '/payment/pending', 'produk-digital': '/produk-digital/home' };
         const TAB_TITLES = {
             beranda: 'JOKI.IN | Teman Tugas Mahasiswa',
             layanan: 'Layanan - JOKI.IN',
@@ -9587,7 +9601,8 @@ Teman tugas mahasiswa.`;
             bantuan: 'Pusat Bantuan - JOKI.IN',
             checkout: 'Pembayaran - JOKI.IN',
             'checkout-spesial': 'Checkout Penawaran Spesial - JOKI.IN',
-            'order-success': 'Status Pesanan - JOKI.IN'
+            'order-success': 'Status Pesanan - JOKI.IN',
+            'produk-digital': 'Toko Produk Digital - JOKI.IN'
         };
         const TAB_BY_ROUTE = Object.fromEntries(Object.entries(ROUTES).map(([tab, path]) => [path, tab]));
         document.addEventListener('dragstart', event => {
@@ -9648,7 +9663,7 @@ Teman tugas mahasiswa.`;
             else searchInput.placeholder = "Cari layanan, harga, atau pertanyaan...";
 
             // LOCKED CHECKOUT FLOW LOGIC
-            const isCheckoutFlow = (tabId === 'checkout' || tabId === 'checkout-spesial' || tabId === 'order-success');
+            const isCheckoutFlow = (tabId === 'checkout' || tabId === 'checkout-spesial' || tabId === 'order-success' || tabId === 'produk-digital');
             document.getElementById('nav-container').style.display = isCheckoutFlow ? 'none' : 'flex';
             document.getElementById('searchBoxContainer').style.display = isCheckoutFlow ? 'none' : 'flex';
             document.querySelector('header .header-actions').style.display = isCheckoutFlow ? 'none' : 'flex';
@@ -9668,7 +9683,15 @@ Teman tugas mahasiswa.`;
             document.getElementById('tab-' + tabId).classList.add('active');
             currentTab = tabId;
 
-            if (tabId === 'testimoni') {
+            if (tabId === 'produk-digital') {
+                document.title = 'Toko Produk Digital - JOKI.IN';
+                if (updateHistory && !window.location.pathname.startsWith('/produk-digital')) {
+                    history.pushState({ tabId }, '', '/produk-digital/home');
+                }
+                if (window.handleDigitalStoreRoute) {
+                    window.handleDigitalStoreRoute(window.location.pathname);
+                }
+            } else if (tabId === 'testimoni') {
                 if (window.location.pathname.startsWith('/testimonials/')) {
                     if (updateHistory) {
                         window.showTestimoniList(true);
@@ -9692,6 +9715,13 @@ Teman tugas mahasiswa.`;
 
         window.addEventListener('popstate', () => {
             const pathname = window.location.pathname;
+            if (pathname.startsWith('/produk-digital')) {
+                window.switchTab('produk-digital', false);
+                if (window.handleDigitalStoreRoute) {
+                    window.handleDigitalStoreRoute(pathname);
+                }
+                return;
+            }
             if (pathname.startsWith('/testimonials/')) {
                 const slug = pathname.replace(/^\/testimonials\/?/, '').trim();
                 const resolvedId = resolveTestimonialSlug(slug);
@@ -9842,6 +9872,10 @@ Teman tugas mahasiswa.`;
             if (fallbackPath && fallbackPath.startsWith('/')) history.replaceState(null, '', fallbackPath);
             const routeAliases = { '/howtoorder':'carapesan', '/informasi':'informasi' };
             const pathname = window.location.pathname;
+            if (pathname.startsWith('/produk-digital')) {
+                window.location.replace('/produk-digital/home/');
+                return;
+            }
             const isTestimonialsRoute = pathname.startsWith('/testimonials');
             const initialTab = isTestimonialsRoute ? 'testimoni' : (TAB_BY_ROUTE[pathname] || routeAliases[pathname] || 'beranda');
             // /payment/pending membutuhkan data pesanan sebelum tab ditampilkan. Tanpa ini,

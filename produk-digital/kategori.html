@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Kategori Produk - JOKI.IN Digital Store</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="/css/produk-digital/main.css">
+  <link rel="stylesheet" href="/css/produk-digital/layout.css">
+  <link rel="stylesheet" href="/css/produk-digital/product-card.css">
+  <link rel="stylesheet" href="/css/produk-digital/carousel.css">
+  <link rel="stylesheet" href="/css/produk-digital/responsive.css">
+</head>
+<body class="digital-store-page digital-store">
+  <div class="admin digital-store__admin-bar">
+    Mode ADMIN_ONLY : etalase privat khusus Admin Kayla
+  </div>
+
+  <header class="digital-store__header">
+    <div class="wrap nav digital-store__wrap digital-store__nav">
+      <a class="logo digital-store__logo" href="/produk-digital/home" aria-label="JOKI.IN Digital Store">
+        <i class="digital-store__logo-icon">J</i>JOKI.IN<small class="digital-store__logo-tag">Digital Store</small>
+      </a>
+      <a class="back digital-store__back-link" style="margin-left: auto;" href="/produk-digital/home">
+        Kembali ke Beranda Store
+      </a>
+    </div>
+    <nav class="cats digital-store__cats" aria-label="Kategori">
+      <div class="wrap digital-store__wrap" id="catnav"></div>
+    </nav>
+  </header>
+
+  <main class="wrap digital-store__wrap">
+    <div id="sections" style="margin-top: 24px;"></div>
+  </main>
+
+  <div class="toast digital-store__toast" id="toast" role="status"></div>
+
+  <script type="module">
+    import { store } from '/assets/produk-digital/js/state.js';
+    import { renderCategorySection, setupRowScrollObserver } from '/assets/produk-digital/js/catalog.js';
+
+    const pathParts = window.location.pathname.split('/');
+    const categorySlug = pathParts[pathParts.length - 1] || 'all';
+
+    store.setFilter(categorySlug);
+
+    function render() {
+      const catEl = document.getElementById('sections');
+      if (!catEl) return;
+      const { categories, products } = store.getState();
+      const currentCat = categories.find(c => c.id === categorySlug) || categories[0];
+      const items = products.filter(p => p.c === currentCat.id);
+      catEl.innerHTML = renderCategorySection(currentCat, items);
+      catEl.querySelectorAll('.row').forEach(setupRowScrollObserver);
+    }
+
+    render();
+  </script>
+</body>
+</html>

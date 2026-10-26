@@ -3,9 +3,20 @@
 <head><meta charset="utf-8"><title>JOKI.IN</title></head>
 <body>
 <script>
-  try { sessionStorage.setItem('jokiin_spa_fallback_path', location.pathname + location.search + location.hash); } catch (_) {}
-  try { localStorage.setItem('jokiin_spa_fallback_path', location.pathname + location.search + location.hash); } catch (_) {}
-  location.replace('/');
+  if (location.pathname === '/produk-digital' || location.pathname === '/produk-digital/' || location.pathname.startsWith('/produk-digital/')) {
+    var p = location.pathname;
+    if (p === '/produk-digital' || p === '/produk-digital/' || p === '/produk-digital/home') {
+      location.replace('/produk-digital/home/');
+    } else if (!p.endsWith('/') && !p.endsWith('.html')) {
+      location.replace(p + '/' + location.search + location.hash);
+    } else {
+      location.replace('/produk-digital/home/');
+    }
+  } else {
+    try { sessionStorage.setItem('jokiin_spa_fallback_path', location.pathname + location.search + location.hash); } catch (_) {}
+    try { localStorage.setItem('jokiin_spa_fallback_path', location.pathname + location.search + location.hash); } catch (_) {}
+    location.replace('/');
+  }
 </script>
 </body>
 </html>

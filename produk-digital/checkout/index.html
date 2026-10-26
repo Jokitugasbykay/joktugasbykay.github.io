@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Checkout - JOKI.IN Digital Store</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="/css/produk-digital/main.css">
+  <link rel="stylesheet" href="/css/produk-digital/layout.css">
+  <link rel="stylesheet" href="/css/produk-digital/product-card.css">
+  <link rel="stylesheet" href="/css/produk-digital/responsive.css">
+  <style>
+    .checkout-container {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 24px;
+      margin-top: 32px;
+      margin-bottom: 48px;
+    }
+    .checkout-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 24px;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 13.5px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .form-group input {
+      width: 100%;
+      height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0 14px;
+      background: var(--bg);
+      color: var(--ink);
+      font: inherit;
+    }
+    .form-group input:focus {
+      outline: 2px solid var(--blue2);
+      background: var(--card);
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    .summary-total {
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+      font-weight: 800;
+      font-size: 18px;
+      color: var(--blue);
+    }
+    @media (max-width: 768px) {
+      .checkout-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body class="digital-store-page digital-store">
+  <div class="admin digital-store__admin-bar">
+    Mode ADMIN_ONLY : etalase privat khusus Admin Kayla
+  </div>
+
+  <header class="digital-store__header">
+    <div class="wrap nav digital-store__wrap digital-store__nav">
+      <a class="logo digital-store__logo" href="/produk-digital/home" aria-label="JOKI.IN Digital Store">
+        <i class="digital-store__logo-icon">J</i>JOKI.IN<small class="digital-store__logo-tag">Digital Store</small>
+      </a>
+      <a class="back digital-store__back-link" style="margin-left: auto;" href="/produk-digital/home">
+        Kembali ke Etalase
+      </a>
+    </div>
+  </header>
+
+  <main class="wrap digital-store__wrap">
+    <div class="checkout-container">
+      <section class="checkout-card">
+        <h2 style="margin-top: 0; margin-bottom: 20px; font-size: 20px;">Informasi Pemesan</h2>
+        <form id="checkout-form" onsubmit="return false">
+          <div class="form-group">
+            <label for="cust-name">Nama Lengkap</label>
+            <input type="text" id="cust-name" required placeholder="Contoh: Kayla Fisika">
+          </div>
+          <div class="form-group">
+            <label for="cust-email">Email Penerima Akun/Aset</label>
+            <input type="email" id="cust-email" required placeholder="nama@email.com">
+          </div>
+          <div class="form-group">
+            <label for="cust-wa">Nomor WhatsApp</label>
+            <input type="tel" id="cust-wa" required placeholder="081234567890">
+          </div>
+          <button type="submit" class="btn" style="width: 100%; height: 46px; background: var(--blue); color: #fff; margin-top: 12px;" id="btn-submit-order">
+            Bayar Sekarang via Mayar
+          </button>
+        </form>
+      </section>
+
+      <aside class="checkout-card">
+        <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 17px;">Ringkasan Pesanan</h3>
+        <div id="checkout-item-summary">
+          <div class="summary-row">
+            <span id="sum-prod-name">Memuat produk...</span>
+            <span id="sum-prod-price">-</span>
+          </div>
+          <div class="summary-row">
+            <span>Jumlah</span>
+            <span id="sum-prod-qty">1 unit</span>
+          </div>
+          <div class="summary-row summary-total">
+            <span>Total Pembayaran</span>
+            <span id="sum-total-price">-</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div class="toast digital-store__toast" id="toast" role="status"></div>
+
+  <script type="module">
+    import { CheckoutManager } from '/assets/produk-digital/js/checkout-ui.js';
+    import { store } from '/assets/produk-digital/js/state.js';
+    import { formatRupiah, SAMPLE_PRODUCTS } from '/assets/produk-digital/js/config.js';
+    import { showToast } from '/assets/produk-digital/js/toast.js';
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const slug = urlParams.get('slug') || 'contoh-produk-a';
+
+    let product = SAMPLE_PRODUCTS.find(p => p.slug === slug || p.n === slug) || SAMPLE_PRODUCTS[0];
+
+    document.getElementById('sum-prod-name').textContent = product.n;
+    document.getElementById('sum-prod-price').textContent = formatRupiah(product.pr);
+    document.getElementById('sum-total-price').textContent = formatRupiah(product.pr);
+
+    const form = document.getElementById('checkout-form');
+    const submitBtn = document.getElementById('btn-submit-order');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Memproses ke Gateway...';
+
+      const formData = {
+        customerName: document.getElementById('cust-name').value,
+        customerEmail: document.getElementById('cust-email').value,
+        customerWa: document.getElementById('cust-wa').value,
+        quantity: 1,
+      };
+
+      const result = await CheckoutManager.submitOrder(product, formData);
+      if (result.success && result.redirectUrl) {
+        showToast('Pesanan berhasil dibuat, mengalihkan ke pembayaran...');
+        window.location.href = result.redirectUrl;
+      } else {
+        showToast(result.error || 'Gagal memproses pesanan');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Bayar Sekarang via Mayar';
+      }
+    });
+  </script>
+</body>
+</html>

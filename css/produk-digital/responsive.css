@@ -1,0 +1,88 @@
+/* JOKI.IN Digital Store - Responsive & Accessibility Stylesheet */
+
+@media (max-width: 860px) {
+  .digital-store .slide,
+  .digital-store__slide {
+    grid-template-columns: 1fr;
+    padding: 26px 22px 52px;
+    min-height: 0;
+  }
+
+  .digital-store .art,
+  .digital-store__art {
+    display: none;
+  }
+
+  .digital-store .hc,
+  .digital-store__hero-dots {
+    left: 22px;
+  }
+
+  .digital-store .back span,
+  .digital-store__back-link span {
+    display: none;
+  }
+
+  .digital-store .logo small,
+  .digital-store__logo-tag {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .digital-store .wrap,
+  .digital-store__wrap {
+    padding: 0 14px;
+  }
+
+  .digital-store .nav,
+  .digital-store__nav {
+    gap: 8px;
+    height: 58px;
+  }
+
+  .digital-store .card,
+  .digital-store__card {
+    flex-basis: 168px;
+  }
+
+  .digital-store .cn,
+  .digital-store__nav-controls {
+    display: none;
+  }
+
+  .digital-store .b2,
+  .digital-store__slide-btn-secondary {
+    margin: 8px 0 0;
+  }
+
+  .digital-store .slide .btn,
+  .digital-store__slide .btn {
+    width: 100%;
+  }
+
+  .digital-store .hn,
+  .digital-store__hero-arrows {
+    display: none;
+  }
+
+  .digital-store .thumb,
+  .digital-store__thumb {
+    font-size: 24px;
+  }
+
+  .digital-store .price,
+  .digital-store__price {
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .digital-store *,
+  .digital-store *::before,
+  .digital-store *::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Detail Produk - JOKI.IN Digital Store</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="/css/produk-digital/main.css">
+  <link rel="stylesheet" href="/css/produk-digital/layout.css">
+  <link rel="stylesheet" href="/css/produk-digital/product-card.css">
+  <link rel="stylesheet" href="/css/produk-digital/responsive.css">
+  <style>
+    .product-view-layout {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 32px;
+      margin: 36px 0;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 32px;
+    }
+    .product-view-thumb {
+      aspect-ratio: 16 / 11;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--blue2), var(--ind));
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 54px;
+      font-weight: 800;
+    }
+    @media (max-width: 768px) {
+      .product-view-layout {
+        grid-template-columns: 1fr;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body class="digital-store-page digital-store">
+  <div class="admin digital-store__admin-bar">
+    Mode ADMIN_ONLY : etalase privat khusus Admin Kayla
+  </div>
+
+  <header class="digital-store__header">
+    <div class="wrap nav digital-store__wrap digital-store__nav">
+      <a class="logo digital-store__logo" href="/produk-digital/home" aria-label="JOKI.IN Digital Store">
+        <i class="digital-store__logo-icon">J</i>JOKI.IN<small class="digital-store__logo-tag">Digital Store</small>
+      </a>
+      <a class="back digital-store__back-link" style="margin-left: auto;" href="/produk-digital/home">
+        Kembali ke Etalase
+      </a>
+    </div>
+  </header>
+
+  <main class="wrap digital-store__wrap">
+    <div class="product-view-layout">
+      <div class="product-view-thumb" id="p-thumb">P</div>
+      <div class="product-view-info">
+        <div class="prov" id="p-prov">Penyedia</div>
+        <h1 id="p-title" style="margin: 6px 0 12px; font-size: 26px; font-weight: 800;">Nama Produk</h1>
+        <p id="p-desc" style="color: var(--mut); line-height: 1.6; font-size: 15px;">Deskripsi produk digital.</p>
+        <div class="price-row" style="margin: 18px 0;">
+          <span class="price" id="p-price" style="font-size: 24px;">Rp 0</span>
+          <span class="old" id="p-old" style="font-size: 16px;"></span>
+        </div>
+        <div class="stk" id="p-stk" style="margin-bottom: 24px;">Tersedia</div>
+        <button type="button" class="btn" id="btn-buy" style="background: var(--blue); color: #fff; height: 46px; width: 100%; max-width: 320px;">
+          Beli Sekarang
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast digital-store__toast" id="toast" role="status"></div>
+
+  <script type="module">
+    import { formatRupiah, SAMPLE_PRODUCTS } from '/assets/produk-digital/js/config.js';
+
+    const pathParts = window.location.pathname.split('/');
+    const slug = pathParts[pathParts.length - 1] || 'contoh-produk-a';
+
+    const p = SAMPLE_PRODUCTS.find(item => item.slug === slug || item.n === slug) || SAMPLE_PRODUCTS[0];
+
+    document.getElementById('p-title').textContent = p.n;
+    document.getElementById('p-prov').textContent = p.pv;
+    document.getElementById('p-desc').textContent = p.ds;
+    document.getElementById('p-price').textContent = formatRupiah(p.pr);
+    if (p.old) {
+      document.getElementById('p-old').textContent = formatRupiah(p.old);
+    }
+    document.getElementById('p-thumb').textContent = p.n.replace(/^Contoh\\s+/, '').charAt(0) || 'P';
+
+    document.getElementById('btn-buy').onclick = () => {
+      window.location.href = `/produk-digital/checkout?slug=${encodeURIComponent(p.slug || p.n)}`;
+    };
+  </script>
+</body>
+</html>

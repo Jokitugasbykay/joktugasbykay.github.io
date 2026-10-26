@@ -387,9 +387,11 @@ async function createPayment(request, env) {
 const ORDER_ID_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 
 function generateCryptoOrderId(tipe = 'REGULER') {
-  const isSpecial = String(tipe || '').toUpperCase() === 'SPESIAL';
-  const prefix = isSpecial ? 'SPCL' : 'NUG';
-  const targetLen = isSpecial ? 23 : 26;
+  const normTipe = String(tipe || '').toUpperCase();
+  const isSpecial = normTipe === 'SPESIAL';
+  const isDigital = normTipe === 'DIGITAL';
+  const prefix = isDigital ? 'DGT' : (isSpecial ? 'SPCL' : 'NUG');
+  const targetLen = isDigital ? 24 : (isSpecial ? 23 : 26);
   let suffix = '';
   while (suffix.length < targetLen) {
     const bytes = crypto.getRandomValues(new Uint8Array(64));
@@ -635,11 +637,293 @@ async function handleSpecialCheckoutWithMayar(request, env, url) {
   return json(data, edgeRes.status);
 }
 
+
+const ADMIN_KAYLA_ID = '92e7a1cb-2136-496a-913b-00cd402c04f5';
+
+function getAuthTokenFromRequest(request) {
+  const authHeader = request.headers.get('authorization') || '';
+  const match = authHeader.match(/^Bearer\s+([^\s]+)$/i);
+  if (match) return match[1];
+
+  const cookie = request.headers.get('cookie') || '';
+  const cookieMatch = cookie.match(/(?:^|;\s*)(?:sb-access-token|sb-[a-z0-9]+-auth-token)=([^;]+)/i);
+  if (cookieMatch) {
+    try {
+      const decoded = decodeURIComponent(cookieMatch[1]);
+      if (decoded.startsWith('[') || decoded.startsWith('{')) {
+        const parsed = JSON.parse(decoded);
+        return parsed.access_token || parsed[0] || decoded;
+      }
+      return decoded;
+    } catch (_) {
+      return decodeURIComponent(cookieMatch[1]);
+    }
+  }
+  return null;
+}
+
+async function verifyAdminKayla(request, env) {
+  const token = getAuthTokenFromRequest(request);
+  if (!token) return { ok: false, reason: 'unauthenticated' };
+
+  try {
+    const res = await fetch(`${env.SUPABASE_URL.replace(/\/$/, '')}/auth/v1/user`, {
+      headers: {
+        apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+        authorization: `Bearer ${token}`
+      }
+    });
+    if (!res.ok) return { ok: false, reason: 'unauthenticated' };
+    const user = await res.json();
+    if (user?.id === ADMIN_KAYLA_ID) {
+      return { ok: true, user };
+    }
+    return { ok: false, reason: 'forbidden', userId: user?.id };
+  } catch (err) {
+    return { ok: false, reason: 'error', error: err.message };
+  }
+}
+
+const DIGITAL_LOCKED_HTML = `<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>403 Akses Ditolak - JOKI.IN</title>
+<style>
+body { background: #0d1117; color: #f0f6fc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; text-align: center; }
+.card { background: #161b22; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 36px 28px; max-width: 440px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.badge { display: inline-block; padding: 4px 14px; border-radius: 999px; background: rgba(239,68,68,0.15); color: #ef4444; font-size: 12px; font-weight: 700; margin-bottom: 16px; letter-spacing: 0.5px; border: 1px solid rgba(239,68,68,0.3); }
+h1 { font-size: 20px; font-weight: 700; margin-bottom: 12px; }
+p { font-size: 14px; color: #8b949e; line-height: 1.6; margin-bottom: 24px; }
+a { display: inline-block; padding: 10px 22px; border-radius: 8px; background: #10b981; color: #fff; text-decoration: none; font-weight: 600; font-size: 14px; transition: background 0.2s; }
+a:hover { background: #059669; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="badge">AKSES TERBATAS</div>
+  <h1>Khusus Admin Kayla</h1>
+  <p>Modul Toko Produk Digital sedang dalam masa pengembangan dan pengujian internal terbatas. Akses publik akan dibuka setelah pengujian selesai.</p>
+  <a href="/">Kembali ke Beranda</a>
+</div>
+</body>
+</html>`;
+
+async function handleDigitalStoreApi(request, env, url) {
+  const auth = await verifyAdminKayla(request, env);
+  if (!auth.ok) {
+    if (auth.reason === 'forbidden') {
+      return json({ error: 'Akses ditolak. Modul ini dalam masa pengembangan terbatas khusus Admin Kayla.', code: 'FORBIDDEN' }, 403);
+    }
+    return json({ error: 'Login admin diperlukan.', code: 'UNAUTHORIZED' }, 401);
+  }
+
+  // GET /api/digital-store/auth-verify
+  if (url.pathname === '/api/digital-store/auth-verify' && request.method === 'GET') {
+    return json({ ok: true, authorized: true, user: { id: ADMIN_KAYLA_ID, email: auth.user.email, name: 'Kayla' } });
+  }
+
+  // GET /api/digital-store/products
+  if (url.pathname === '/api/digital-store/products' && request.method === 'GET') {
+    const categoryFilter = url.searchParams.get('kategori');
+    let q = 'products?is_active=eq.true&order=created_at.desc&limit=100';
+    if (categoryFilter && categoryFilter !== 'semua') {
+      q += `&kategori=eq.${encodeURIComponent(categoryFilter)}`;
+    }
+    const [products, banners] = await Promise.all([
+      supabase(env, q).catch(() => []),
+      supabase(env, 'promo_banners?is_active=eq.true&order=urutan.asc&limit=10').catch(() => [])
+    ]);
+
+    const categories = [
+      { id: 'semua', slug: 'semua', name: 'Semua Produk', icon: 'grid' },
+      { id: 'ai', slug: 'ai-produktivitas', name: 'Akun AI & Produktivitas', icon: 'sparkles' },
+      { id: 'template', slug: 'template-desain', name: 'Template & Desain', icon: 'layout' },
+      { id: 'tools', slug: 'tools-akademik', name: 'Tools Akademik', icon: 'tool' },
+      { id: 'ecourse', slug: 'ecourse-panduan', name: 'E-Course & Panduan', icon: 'book' }
+    ];
+
+    return json({ ok: true, products: products || [], banners: banners || [], categories });
+  }
+
+  // GET /api/digital-store/products/:slug
+  const prodMatch = url.pathname.match(/^\/api\/digital-store\/products\/([^\/]+)$/);
+  if (prodMatch && request.method === 'GET') {
+    const slug = prodMatch[1];
+    const rows = await supabase(env, `products?slug=eq.${encodeURIComponent(slug)}&limit=1`);
+    if (!rows || !rows.length) return json({ error: 'Produk tidak ditemukan.' }, 404);
+    return json({ ok: true, product: rows[0] });
+  }
+
+  // POST /api/digital-store/checkout
+  if (url.pathname === '/api/digital-store/checkout' && request.method === 'POST') {
+    const body = await readJSON(request);
+    const slug = clean(body?.slug, 80);
+    const qty = Math.max(1, Math.min(10, Number(body?.qty) || 1));
+    const customer = body?.customer || {};
+    const customerName = clean(customer?.name || 'Admin Kayla', 100);
+    const customerEmail = clean(customer?.email || 'kaylafisika24@gmail.com', 254);
+    const customerWa = clean(customer?.whatsapp || '', 24);
+
+    if (!slug) return json({ error: 'Produk tidak valid.' }, 400);
+    const rows = await supabase(env, `products?slug=eq.${encodeURIComponent(slug)}&limit=1`);
+    if (!rows || !rows.length) return json({ error: 'Produk tidak ditemukan.' }, 404);
+    const prod = rows[0];
+
+    const basePrice = Number(prod.harga_dasar) || 0;
+    const discountPercent = Math.max(0, Math.min(100, Number(prod.diskon_persen) || 0));
+    const unitPrice = Math.max(1000, Math.round(basePrice * (1 - discountPercent / 100)));
+    const total = unitPrice * qty;
+
+    if (prod.stok !== null && prod.stok !== undefined && Number(prod.stok) < qty) {
+      return json({ error: 'Stok produk tidak mencukupi.' }, 409);
+    }
+
+    const orderCode = generateCryptoOrderId('DIGITAL');
+    const lineItem = {
+      product_id: prod.id,
+      slug: prod.slug,
+      name: prod.nama,
+      quantity: qty,
+      unit_price: unitPrice,
+      total_price: total
+    };
+
+    const orderData = {
+      order_code: orderCode,
+      tipe: 'DIGITAL',
+      total,
+      total_price: total,
+      user_id: ADMIN_KAYLA_ID,
+      nama: customerName,
+      gmail: customerEmail,
+      whatsapp: customerWa,
+      payment_status: 'PENDING',
+      status: 'pending',
+      customer: { name: customerName, email: customerEmail, whatsapp: customerWa },
+      items: [lineItem],
+      task: { notes: `Pemesanan Produk Digital: ${prod.nama} (${qty}x)` },
+      promo: ''
+    };
+
+    await supabase(env, 'payment_orders', { method: 'POST', body: JSON.stringify(orderData) });
+    await supabase(env, 'order_items', {
+      method: 'POST',
+      body: JSON.stringify([{
+        order_id: orderCode,
+        produk: prod.nama,
+        product_slug: prod.slug,
+        qty,
+        harga_satuan: unitPrice,
+        subtotal: total
+      }])
+    }).catch(() => {});
+
+    let paymentUrl = null;
+    let transactionId = null;
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+    if (env.MAYAR_API_KEY && total > 0) {
+      try {
+        const originUrl = request.headers.get('origin') || 'https://jokiin.my.id';
+        const redirectUrl = `${originUrl}/produk-digital/pesanan/${encodeURIComponent(orderCode)}`;
+        const payment = await mayar(env, 'POST', 'payments/create', {
+          name: customerName,
+          amount: total,
+          email: customerEmail,
+          mobile: customerWa,
+          redirectUrl,
+          description: `JOKI.IN Digital Store ${orderCode} - ${prod.nama}`,
+          expiredAt: expiresAt
+        });
+        const mData = payment.data?.data || {};
+        paymentUrl = mData.link || null;
+        transactionId = mData.transactionId || mData.transaction_id || mData.id || null;
+
+        if (paymentUrl && transactionId) {
+          await supabase(env, `payment_orders?order_code=eq.${encodeURIComponent(orderCode)}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ payment_url: paymentUrl, mayar_transaction_id: transactionId, expires_at: expiresAt })
+          }).catch(() => {});
+        }
+      } catch (err) {
+        console.error('Mayar payment creation error for digital order:', err);
+      }
+    }
+
+    return json({
+      ok: true,
+      order_code: orderCode,
+      total,
+      payment_url: paymentUrl,
+      transaction_id: transactionId,
+      expires_at: expiresAt
+    }, 201);
+  }
+
+  // GET /api/digital-store/orders/:orderCode
+  const orderMatch = url.pathname.match(/^\/api\/digital-store\/orders\/([^\/]+)$/);
+  if (orderMatch && request.method === 'GET') {
+    const code = orderMatch[1];
+    const rows = await supabase(env, `payment_orders?order_code=eq.${encodeURIComponent(code)}&limit=1`);
+    if (!rows || !rows.length) return json({ error: 'Pesanan tidak ditemukan.' }, 404);
+    const order = await reconcilePayment(env, rows[0]);
+    return json({ ok: true, order });
+  }
+
+  return json({ error: 'Endpoint tidak ditemukan.' }, 404);
+}
+
 export default { async fetch(request, env) {
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: JSON_HEADERS });
   const url = new URL(request.url);
   try {
     if (url.pathname === '/api/health') return json({ ok: true, worker: 'jokiin-payment-api' });
+
+    // Digital Store API Gate (Admin Kayla only)
+    if (url.pathname.startsWith('/api/digital-store/')) {
+      return await handleDigitalStoreApi(request, env, url);
+    }
+
+    // Digital Store Web Route Gate (Admin Kayla only)
+    if (url.pathname === '/produk-digital' || url.pathname.startsWith('/produk-digital/')) {
+      const auth = await verifyAdminKayla(request, env);
+      if (!auth.ok) {
+        if (auth.reason === 'forbidden') {
+          return new Response(DIGITAL_LOCKED_HTML, {
+            status: 403,
+            headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }
+          });
+        }
+        const accept = request.headers.get('accept') || '';
+        if (accept.includes('text/html') || request.method === 'GET') {
+          return new Response(null, {
+            status: 302,
+            headers: {
+              'location': `/login?redirect=${encodeURIComponent(url.pathname + url.search)}`,
+              'cache-control': 'no-store'
+            }
+          });
+        }
+        return json({ error: 'Login admin diperlukan.' }, 401);
+      }
+      if (env.ASSETS) {
+        let targetFile = '/produk-digital/home.html';
+        if (url.pathname === '/produk-digital/checkout' || url.pathname.startsWith('/produk-digital/checkout/')) {
+          targetFile = '/produk-digital/checkout.html';
+        } else if (url.pathname.startsWith('/produk-digital/produk/')) {
+          targetFile = '/produk-digital/produk.html';
+        } else if (url.pathname.startsWith('/produk-digital/pesanan/')) {
+          targetFile = '/produk-digital/pesanan.html';
+        } else if (url.pathname.startsWith('/produk-digital/kategori/')) {
+          targetFile = '/produk-digital/kategori.html';
+        } else if (url.pathname.endsWith('.html')) {
+          targetFile = url.pathname;
+        }
+        return env.ASSETS.fetch(new Request(new URL(targetFile, request.url), request));
+      }
+    }
     if (url.pathname === '/api/checkout/spesial' && request.method === 'POST') {
       return await handleSpecialCheckoutWithMayar(request, env, url);
     }

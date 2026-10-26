@@ -1,0 +1,188 @@
+/* JOKI.IN Digital Store - Layout Stylesheet */
+
+.digital-store .wrap,
+.digital-store__wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Category Tab Navigation */
+.digital-store .cats,
+.digital-store__cats {
+  border-top: 1px solid var(--line);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.digital-store .cats::-webkit-scrollbar,
+.digital-store__cats::-webkit-scrollbar {
+  display: none;
+}
+
+.digital-store .cats .wrap,
+.digital-store__cats .digital-store__wrap {
+  display: flex;
+  gap: 4px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.digital-store .cats button,
+.digital-store__cat-pill {
+  border: 0;
+  background: none;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--mut);
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.digital-store .cats button:hover,
+.digital-store__cat-pill:hover {
+  background: var(--tint);
+}
+
+.digital-store .cats button[aria-current="true"],
+.digital-store__cat-pill[aria-current="true"] {
+  background: var(--tint);
+  color: var(--blue);
+}
+
+/* Section Header */
+.digital-store section.cat,
+.digital-store__section {
+  margin-top: 34px;
+}
+
+.digital-store .sh,
+.digital-store__section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.digital-store .sh::before,
+.digital-store__section-header::before {
+  content: "";
+  width: 5px;
+  height: 26px;
+  border-radius: 3px;
+  background: linear-gradient(var(--blue2), var(--ind));
+}
+
+.digital-store .sh h2,
+.digital-store__section-title {
+  margin: 0;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+
+.digital-store .sh p,
+.digital-store__section-desc {
+  margin: 0;
+  color: var(--mut);
+  font-size: 13px;
+}
+
+.digital-store .sh .sp,
+.digital-store__section-spacer {
+  flex: 1;
+  min-width: 0;
+}
+
+.digital-store .sh a,
+.digital-store__view-all-link {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--blue);
+  white-space: nowrap;
+}
+
+/* Row Scroll Buttons */
+.digital-store .cn,
+.digital-store__nav-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.digital-store .cn button,
+.digital-store__nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  display: grid;
+  place-items: center;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.digital-store .cn button:hover:not(:disabled),
+.digital-store__nav-btn:hover:not(:disabled) {
+  background: var(--tint);
+}
+
+.digital-store .cn button:disabled,
+.digital-store__nav-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* Empty & Search Result States */
+.digital-store .state,
+.digital-store__state {
+  text-align: center;
+  padding: 48px 16px;
+  background: var(--card);
+  border: 1px dashed var(--line);
+  border-radius: 14px;
+  margin-top: 24px;
+}
+
+.digital-store .state h3,
+.digital-store__state-title {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.digital-store .state p,
+.digital-store__state-desc {
+  margin: 0 0 14px;
+  color: var(--mut);
+  font-size: 14px;
+}
+
+.digital-store .empty,
+.digital-store__empty {
+  color: var(--mut);
+  font-size: 13.5px;
+  padding: 18px;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  background: var(--card);
+}
+
+/* Skeleton Loading */
+.digital-store .sk,
+.digital-store__skeleton {
+  height: 300px;
+  flex: 0 0 212px;
+  border-radius: 14px;
+  background: linear-gradient(90deg, var(--line), var(--tint), var(--line));
+  background-size: 200% 100%;
+  animation: digitalStoreShimmer 1.2s infinite linear;
+}
+
+@keyframes digitalStoreShimmer {
+  to {
+    background-position: -200% 0;
+  }
+}

@@ -1,0 +1,210 @@
+/* JOKI.IN Digital Store - Carousel Stylesheet */
+
+.digital-store .hero,
+.digital-store__hero {
+  margin-top: 20px;
+  position: relative;
+}
+
+.digital-store .slides,
+.digital-store__slides {
+  overflow: hidden;
+  border-radius: 18px;
+}
+
+.digital-store .track,
+.digital-store__track {
+  display: flex;
+  transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.digital-store .slide,
+.digital-store__slide {
+  min-width: 100%;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  align-items: center;
+  gap: 20px;
+  padding: 36px 48px;
+  min-height: 280px;
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Slide Gradients */
+.digital-store .slide.s0,
+.digital-store__slide--s0 {
+  background: linear-gradient(120deg, #1238b8, #4a3cf0);
+}
+
+.digital-store .slide.s1,
+.digital-store__slide--s1 {
+  background: linear-gradient(120deg, #0d2a78, #1d6fd6);
+}
+
+.digital-store .slide.s2,
+.digital-store__slide--s2 {
+  background: linear-gradient(120deg, #2b2a8f, #6a3de0);
+}
+
+.digital-store .tag,
+.digital-store__tag {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  padding: 2px 9px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.digital-store .slide h2,
+.digital-store__slide-title {
+  font-size: clamp(24px, 3.4vw, 38px);
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  margin: 0 0 10px;
+  max-width: 15em;
+  font-weight: 800;
+}
+
+.digital-store .slide p,
+.digital-store__slide-desc {
+  margin: 0 0 20px;
+  opacity: 0.88;
+  max-width: 34em;
+  font-size: 14.5px;
+}
+
+/* Slide Action Buttons */
+.digital-store .b1,
+.digital-store__slide-btn-primary {
+  background: #ffffff;
+  color: #1238b8;
+}
+
+.digital-store .b1:hover,
+.digital-store__slide-btn-primary:hover {
+  background: #eaf0ff;
+}
+
+.digital-store .b2,
+.digital-store__slide-btn-secondary {
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #ffffff;
+  margin-left: 8px;
+}
+
+.digital-store .b2:hover,
+.digital-store__slide-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Floating Artwork Decorations */
+.digital-store .art,
+.digital-store__art {
+  position: relative;
+  height: 200px;
+  user-select: none;
+}
+
+.digital-store .art span,
+.digital-store__art span {
+  position: absolute;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 12px 30px rgba(0, 0, 20, 0.25);
+}
+
+.digital-store .art span:nth-child(1),
+.digital-store__art span:nth-child(1) {
+  width: 130px;
+  height: 130px;
+  left: 6%;
+  top: 4%;
+  font-size: 44px;
+  transform: rotate(-6deg);
+}
+
+.digital-store .art span:nth-child(2),
+.digital-store__art span:nth-child(2) {
+  width: 100px;
+  height: 100px;
+  right: 8%;
+  top: 0;
+  font-size: 32px;
+  transform: rotate(8deg);
+}
+
+.digital-store .art span:nth-child(3),
+.digital-store__art span:nth-child(3) {
+  width: 112px;
+  height: 112px;
+  left: 38%;
+  bottom: 0;
+  font-size: 36px;
+  background: rgba(255, 255, 255, 0.24);
+}
+
+/* Dots Pagination Indicators */
+.digital-store .hc,
+.digital-store__hero-dots {
+  position: absolute;
+  bottom: 14px;
+  left: 48px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.digital-store .hc button.dot,
+.digital-store__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 5px;
+  border: 0;
+  background: rgba(255, 255, 255, 0.45);
+  padding: 0;
+  cursor: pointer;
+  transition: width 0.2s ease, background 0.2s ease;
+}
+
+.digital-store .hc button.dot[aria-current="true"],
+.digital-store__dot[aria-current="true"] {
+  width: 24px;
+  background: #ffffff;
+}
+
+/* Hero Next/Prev Navigation */
+.digital-store .hn,
+.digital-store__hero-arrows {
+  position: absolute;
+  right: 14px;
+  bottom: 12px;
+  display: flex;
+  gap: 6px;
+}
+
+.digital-store .hn button,
+.digital-store__hero-arrow-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  transition: background 0.15s ease;
+}
+
+.digital-store .hn button:hover,
+.digital-store__hero-arrow-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}

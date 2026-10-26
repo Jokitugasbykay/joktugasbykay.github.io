@@ -8,3 +8,5 @@ node_modules/
 tests/output/
 tests/*.png
 .wrangler/
+
+frontend-next/

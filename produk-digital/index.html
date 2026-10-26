@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>JOKI.IN Digital Store - Etalase Produk Digital</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="/css/produk-digital/main.css">
+  <link rel="stylesheet" href="/css/produk-digital/layout.css">
+  <link rel="stylesheet" href="/css/produk-digital/product-card.css">
+  <link rel="stylesheet" href="/css/produk-digital/carousel.css">
+  <link rel="stylesheet" href="/css/produk-digital/responsive.css">
+</head>
+<body class="digital-store-page digital-store">
+  <div class="admin digital-store__admin-bar">
+    Mode ADMIN_ONLY : etalase privat khusus Admin Kayla : data katalog dan gateway pembayaran terisolasi
+  </div>
+
+  <header class="digital-store__header">
+    <div class="wrap nav digital-store__wrap digital-store__nav">
+      <a class="logo digital-store__logo" href="/produk-digital/home" aria-label="JOKI.IN Digital Store">
+        <i class="digital-store__logo-icon">J</i>JOKI.IN<small class="digital-store__logo-tag">Digital Store</small>
+      </a>
+      <form class="search digital-store__search" id="sf" role="search" onsubmit="return false">
+        <input id="q" class="digital-store__search-input" type="search" placeholder="Cari produk digital" aria-label="Cari produk digital" autocomplete="off">
+        <button type="button" id="clr" class="digital-store__search-clear" aria-label="Hapus pencarian">x</button>
+      </form>
+      <button class="ic digital-store__action-btn" id="cart" type="button" aria-label="Keranjang">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 4h2l2.4 11h10.2L20 7H6.2"/>
+          <circle cx="9" cy="19.5" r="1.5"/>
+          <circle cx="17" cy="19.5" r="1.5"/>
+        </svg>
+        <b id="cc" class="digital-store__badge">0</b>
+      </button>
+      <button class="ic digital-store__action-btn" id="acc" type="button" aria-label="Akun admin">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="8" r="4"/>
+          <path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>
+        </svg>
+      </button>
+      <a class="back digital-store__back-link" href="/"><span>Kembali ke </span>JOKI.IN</a>
+    </div>
+    <nav class="cats digital-store__cats" aria-label="Kategori">
+      <div class="wrap digital-store__wrap" id="catnav"></div>
+    </nav>
+  </header>
+
+  <main class="wrap digital-store__wrap">
+    <div class="hero digital-store__hero" aria-roledescription="carousel" aria-label="Promo">
+      <div class="slides digital-store__slides">
+        <div class="track digital-store__track" id="track"></div>
+      </div>
+      <div class="hc digital-store__hero-dots" id="dots"></div>
+      <div class="hn digital-store__hero-arrows">
+        <button type="button" id="hp" class="digital-store__hero-arrow-btn" aria-label="Slide sebelumnya">‹</button>
+        <button type="button" id="hx" class="digital-store__hero-arrow-btn" aria-label="Slide berikutnya">›</button>
+      </div>
+    </div>
+
+    <div id="sections"></div>
+
+    <div id="nores" class="state digital-store__state" hidden>
+      <h3 class="digital-store__state-title">Produk tidak ditemukan</h3>
+      <p id="nrt" class="digital-store__state-desc"></p>
+      <button type="button" class="btn" id="nrb">Hapus pencarian</button>
+    </div>
+  </main>
+
+  <footer class="digital-store__footer">
+    <div class="wrap digital-store__wrap">
+      <div class="fg digital-store__footer-grid">
+        <div>
+          <a class="logo digital-store__logo" href="/produk-digital/home">
+            <i class="digital-store__logo-icon">J</i>JOKI.IN<small class="digital-store__logo-tag">Digital Store</small>
+          </a>
+        </div>
+        <div class="fl digital-store__footer-links">
+          <a href="/">Layanan JOKI.IN</a>
+          <a href="/produk-digital/home">Semua produk</a>
+          <a href="/help">Bantuan</a>
+          <a href="/information">Syarat &amp; ketentuan</a>
+          <a href="/information">Kebijakan privasi</a>
+        </div>
+      </div>
+      <div class="copy digital-store__copy">
+        (c) 2026 JOKI.IN Digital Store. Dilindungi hak cipta.
+      </div>
+    </div>
+  </footer>
+
+  <div class="toast digital-store__toast" id="toast" role="status"></div>
+
+  <script type="module" src="/assets/produk-digital/js/main.js"></script>
+</body>
+</html>

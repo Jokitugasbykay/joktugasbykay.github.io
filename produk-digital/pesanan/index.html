@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Status Pesanan - JOKI.IN Digital Store</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="/css/produk-digital/main.css">
+  <link rel="stylesheet" href="/css/produk-digital/layout.css">
+  <link rel="stylesheet" href="/css/produk-digital/responsive.css">
+  <style>
+    .order-box {
+      max-width: 600px;
+      margin: 40px auto;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 32px;
+      text-align: center;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+    .status-badge.paid {
+      background: #e6f7ef;
+      color: var(--ok);
+    }
+    .status-badge.pending {
+      background: #fff8e6;
+      color: #b58500;
+    }
+    .order-details {
+      margin: 24px 0;
+      text-align: left;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 16px 0;
+    }
+    .order-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body class="digital-store-page digital-store">
+  <div class="admin digital-store__admin-bar">
+    Mode ADMIN_ONLY : etalase privat khusus Admin Kayla
+  </div>
+
+  <header class="digital-store__header">
+    <div class="wrap nav digital-store__wrap digital-store__nav">
+      <a class="logo digital-store__logo" href="/produk-digital/home" aria-label="JOKI.IN Digital Store">
+        <i class="digital-store__logo-icon">J</i>JOKI.IN<small class="digital-store__logo-tag">Digital Store</small>
+      </a>
+      <a class="back digital-store__back-link" style="margin-left: auto;" href="/produk-digital/home">
+        Kembali ke Etalase
+      </a>
+    </div>
+  </header>
+
+  <main class="wrap digital-store__wrap">
+    <div class="order-box">
+      <div id="order-status-badge" class="status-badge pending">Memeriksa Status...</div>
+      <h2 id="order-code-title" style="margin: 0 0 8px; font-size: 22px;">Pesanan Produk Digital</h2>
+      <p id="order-subtitle" style="color: var(--mut); margin: 0 0 20px; font-size: 14px;">Detail transaksi pesanan Anda</p>
+
+      <div class="order-details" id="order-details-container">
+        <div class="order-row">
+          <span>Kode Order:</span>
+          <strong id="det-code">-</strong>
+        </div>
+        <div class="order-row">
+          <span>Customer:</span>
+          <strong id="det-cust">-</strong>
+        </div>
+        <div class="order-row">
+          <span>Total Pembayaran:</span>
+          <strong id="det-total">-</strong>
+        </div>
+      </div>
+
+      <a href="/produk-digital/home" class="btn" style="background: var(--blue); color: #fff; width: 100%;">
+        Kembali ke Beranda Store
+      </a>
+    </div>
+  </main>
+
+  <div class="toast digital-store__toast" id="toast" role="status"></div>
+
+  <script type="module">
+    import { fetchOrderDetails } from '/assets/produk-digital/js/order-status.js';
+    import { formatRupiah } from '/assets/produk-digital/js/config.js';
+
+    const pathParts = window.location.pathname.split('/');
+    const code = pathParts[pathParts.length - 1] || 'DEMO-ORDER';
+
+    document.getElementById('det-code').textContent = code;
+
+    async function load() {
+      const data = await fetchOrderDetails(code);
+      if (data) {
+        document.getElementById('det-cust').textContent = data.customer_name || 'Admin Kayla';
+        document.getElementById('det-total').textContent = formatRupiah(data.total_amount || 0);
+
+        const badge = document.getElementById('order-status-badge');
+        const st = (data.payment_status || 'PENDING').toUpperCase();
+        badge.textContent = st === 'PAID' ? 'Pembayaran Berhasil' : 'Menunggu Pembayaran';
+        badge.className = `status-badge ${st === 'PAID' ? 'paid' : 'pending'}`;
+      } else {
+        document.getElementById('det-cust').textContent = 'Admin Kayla (Data Lokal)';
+        document.getElementById('det-total').textContent = 'Rp 35.000';
+        const badge = document.getElementById('order-status-badge');
+        badge.textContent = 'Menunggu Konfirmasi';
+      }
+    }
+
+    load();
+  </script>
+</body>
+</html>
