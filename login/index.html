@@ -628,7 +628,15 @@
         // Check if user already logged in
         supabase.auth.getSession().then(({ data }) => {
             if (data?.session?.user && !isPasswordRecovery) {
-                window.location.replace('/');
+                let redirect = '/';
+                try {
+                    const url = new URL(new URLSearchParams(window.location.search).get('redirect') || '/', window.location.origin);
+                    if (url.origin === window.location.origin && /^https?:$/.test(url.protocol)) redirect = url.pathname + url.search + url.hash;
+                } catch (_) { }
+                if (data.session?.access_token) {
+                    try { document.cookie = 'sb-access-token=' + encodeURIComponent(data.session.access_token) + '; path=/; SameSite=Lax'; } catch (_) {}
+                }
+                window.location.replace(redirect);
             }
         });
 
@@ -660,6 +668,9 @@
                     throw new Error('Email atau password salah. Silakan coba lagi.');
                 }
                 showAlert('Berhasil masuk! Mengalihkan...', true);
+                if (data?.session?.access_token) {
+                    try { document.cookie = 'sb-access-token=' + encodeURIComponent(data.session.access_token) + '; path=/; SameSite=Lax'; } catch (_) {}
+                }
                 setTimeout(() => {
                     let redirect = '/';
                     try {
