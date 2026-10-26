@@ -17,6 +17,9 @@ const context = (extra) =>
     TextEncoder,
     TextDecoder,
     Uint8Array,
+    atob: globalThis.atob,
+    btoa: globalThis.btoa,
+    Buffer,
     crypto: globalThis.crypto,
     console,
     ...extra,
@@ -210,4 +213,53 @@ test('Existing JOKI.IN routes remain completely accessible and unaffected', asyn
   // Services page
   const resServices = await w.run(new Request('https://jokiin.my.id/services'));
   assert.equal(resServices.status, 200);
+});
+
+test('Digital Store Gate: JWT token with Admin Kayla ID/email verifies directly without throwing redirect loop', async () => {
+  const w = setupWorkerMock();
+  const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+  const payload = Buffer.from(JSON.stringify({ sub: ADMIN_KAYLA_ID, email: 'kaylafisika24@gmail.com', exp: Math.floor(Date.now() / 1000) + 3600 })).toString('base64url');
+  const jwt = header + '.' + payload + '.mockSignature';
+
+  const req = new Request('https://jokiin.my.id/produk-digital/home', {
+    headers: {
+      accept: 'text/html',
+      cookie: 'sb-access-token=' + jwt,
+    },
+  });
+  const res = await w.run(req);
+  assert.equal(res.status, 200);
+});
+
+test('Digital Store Gate: env.ASSETS internal redirect handling resolves to 200 OK', async () => {
+  const w = setupWorkerMock();
+  const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+  const payload = Buffer.from(JSON.stringify({ sub: ADMIN_KAYLA_ID, email: 'kaylafisika24@gmail.com', exp: Math.floor(Date.now() / 1000) + 3600 })).toString('base64url');
+  const jwt = header + '.' + payload + '.mockSignature';
+
+  let assetFetchCount = 0;
+  const customEnv = {
+    ASSETS: {
+      fetch: async (req) => {
+        assetFetchCount++;
+        const u = new URL(req.url);
+        if (u.pathname === '/produk-digital/home/') {
+          return new Response('<html>ok</html>', { status: 200, headers: { 'content-type': 'text/html' } });
+        }
+        if (u.pathname.endsWith('.html')) {
+          return new Response(null, { status: 307, headers: { location: '/produk-digital/home/' } });
+        }
+        return new Response('<html>ok</html>', { status: 200, headers: { 'content-type': 'text/html' } });
+      }
+    }
+  };
+
+  const req = new Request('https://jokiin.my.id/produk-digital/home', {
+    headers: {
+      accept: 'text/html',
+      cookie: 'sb-access-token=' + jwt,
+    },
+  });
+  const res = await w.run(req, customEnv);
+  assert.equal(res.status, 200);
 });

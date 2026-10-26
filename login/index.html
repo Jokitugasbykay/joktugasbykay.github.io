@@ -633,8 +633,22 @@
                     const url = new URL(new URLSearchParams(window.location.search).get('redirect') || '/', window.location.origin);
                     if (url.origin === window.location.origin && /^https?:$/.test(url.protocol)) redirect = url.pathname + url.search + url.hash;
                 } catch (_) { }
+
+                const loopKey = 'jokiin_auth_redirect_count';
+                const loopCount = parseInt(sessionStorage.getItem(loopKey) || '0', 10);
+                if (redirect.startsWith('/produk-digital') && loopCount >= 2) {
+                    sessionStorage.removeItem(loopKey);
+                    console.warn('Redirect loop prevented.');
+                    showAlert('Akses sedang diverifikasi atau dibatasi khusus Admin Kayla. Jika Anda Admin, silakan masukkan password untuk login ulang.');
+                    return;
+                }
+                sessionStorage.setItem(loopKey, String(loopCount + 1));
+
                 if (data.session?.access_token) {
-                    try { document.cookie = 'sb-access-token=' + encodeURIComponent(data.session.access_token) + '; path=/; SameSite=Lax'; } catch (_) {}
+                    try {
+                        const secureFlag = window.location.protocol === 'https:' ? '; Secure' : '';
+                        document.cookie = 'sb-access-token=' + encodeURIComponent(data.session.access_token) + '; path=/; SameSite=Lax' + secureFlag;
+                    } catch (_) {}
                 }
                 window.location.replace(redirect);
             }
@@ -669,8 +683,12 @@
                 }
                 showAlert('Berhasil masuk! Mengalihkan...', true);
                 if (data?.session?.access_token) {
-                    try { document.cookie = 'sb-access-token=' + encodeURIComponent(data.session.access_token) + '; path=/; SameSite=Lax'; } catch (_) {}
+                    try {
+                        const secureFlag = window.location.protocol === 'https:' ? '; Secure' : '';
+                        document.cookie = 'sb-access-token=' + encodeURIComponent(data.session.access_token) + '; path=/; SameSite=Lax' + secureFlag;
+                    } catch (_) {}
                 }
+                try { sessionStorage.removeItem('jokiin_auth_redirect_count'); } catch (_) {}
                 setTimeout(() => {
                     let redirect = '/';
                     try {
