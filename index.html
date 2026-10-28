@@ -9578,9 +9578,6 @@ Teman tugas mahasiswa.`;
                 const slug = window.location.pathname.replace(/^\/testimonials\/?/, '').trim();
                 const resolvedId = resolveTestimonialSlug(slug);
                 window.showProductReviews(resolvedId, false);
-            }
-            if (isDigitalStoreRoute && window.handleDigitalStoreRoute) {
-                window.handleDigitalStoreRoute(pathname);
             } else {
                 window.showTestimoniList(false);
             }
