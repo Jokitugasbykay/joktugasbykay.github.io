@@ -1002,7 +1002,7 @@ export default { async fetch(request, env) {
     if (/\.(?:php|sql|sqlite|env)$/i.test(url.pathname) || /^\/(?:database|storage|api)\//i.test(url.pathname)) return json({ error: 'Not found' }, 404);
     if (env.ASSETS) {
       const asset = await env.ASSETS.fetch(request);
-      if (asset.status !== 404) return asset;
+      if (asset.status !== 404 || url.pathname.startsWith('/_next/static/')) return asset;
       return env.ASSETS.fetch(new Request(new URL('/', request.url), request));
     }
     return json({ error: 'Not found' }, 404);
