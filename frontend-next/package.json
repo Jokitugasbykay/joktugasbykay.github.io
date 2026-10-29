@@ -1,0 +1,25 @@
+{
+  "name": "jokiin-information-pilot",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "npm@12.2.1",
+  "engines": { "node": "26.13.0", "npm": "12.2.1" },
+  "scripts": {
+    "type-check": "next typegen && tsc --noEmit --incremental false",
+    "build": "next build",
+    "test": "node --test tests/*.test.cjs",
+    "export:information": "node scripts/export-information.cjs",
+    "audit:lock": "node scripts/audit-lock.cjs"
+  },
+  "dependencies": {
+    "next": "16.4.3",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "typescript": "7.0.2"
+  }
+}

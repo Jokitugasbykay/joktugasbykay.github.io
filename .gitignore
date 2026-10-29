@@ -9,4 +9,9 @@ tests/output/
 tests/*.png
 .wrangler/
 
-frontend-next/
+frontend-next/.toolchain/
+frontend-next/.next/
+frontend-next/out/
+frontend-next/.verification/
+frontend-next/*.tsbuildinfo
+frontend-next/next-env.d.ts
