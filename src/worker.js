@@ -640,29 +640,10 @@ async function handleSpecialCheckoutWithMayar(request, env, url) {
 
 const ADMIN_KAYLA_ID = '92e7a1cb-2136-496a-913b-00cd402c04f5';
 
-function decodeJwtPayload(token) {
-  try {
-    const parts = String(token || '').split('.');
-    if (parts.length !== 3) return null;
-    const base64Url = parts[1];
-    let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    while (base64.length % 4) {
-      base64 += '=';
-    }
-    const jsonStr = typeof atob === 'function'
-      ? atob(base64)
-      : (typeof Buffer !== 'undefined' ? Buffer.from(base64, 'base64').toString('utf8') : null);
-    if (!jsonStr) return null;
-    return JSON.parse(jsonStr);
-  } catch (_) {
-    return null;
-  }
-}
-
 function getAuthTokenFromRequest(request) {
   const authHeader = request.headers.get('authorization') || '';
   const match = authHeader.match(/^Bearer\s+([^\s]+)$/i);
-  if (match) return match[1];
+  if (request.headers.has('authorization')) return match ? match[1] : null;
 
   const cookie = request.headers.get('cookie') || '';
   const cookieMatch = cookie.match(/(?:^|;\s*)(?:sb-access-token|sb-[a-z0-9]+-auth-token)=([^;]+)/i);
@@ -675,7 +656,7 @@ function getAuthTokenFromRequest(request) {
       }
       return decoded;
     } catch (_) {
-      return decodeURIComponent(cookieMatch[1]);
+      return null;
     }
   }
   return null;
@@ -683,47 +664,38 @@ function getAuthTokenFromRequest(request) {
 
 async function verifyAdminKayla(request, env) {
   const token = getAuthTokenFromRequest(request);
-  if (!token) return { ok: false, reason: 'unauthenticated' };
+  if (typeof token !== 'string' || !token.trim()) return { ok: false, reason: 'unauthenticated' };
 
-  // Fast-path: Decode JWT payload directly
-  const payload = decodeJwtPayload(token);
-  if (payload) {
-    const isExpired = payload.exp && payload.exp * 1000 < Date.now();
-    if (isExpired) return { ok: false, reason: 'unauthenticated' };
-    if (payload.sub === ADMIN_KAYLA_ID || payload.email === 'kaylafisika24@gmail.com') {
-      return { ok: true, user: { id: ADMIN_KAYLA_ID, email: payload.email || 'kaylafisika24@gmail.com' } };
-    }
-    if (payload.sub && payload.sub !== ADMIN_KAYLA_ID) {
-      return { ok: false, reason: 'forbidden', userId: payload.sub };
-    }
-  }
-
-  // Supabase Auth verification with API key fallback
+  const controller = new AbortController();
+  let timeout;
   try {
-    const apikey = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_ANON_KEY || 'sb_publishable_WuihnHZo0ZJbVGCMe1sWJg_QVdRKw4z';
-    const baseUrl = (env.SUPABASE_URL || 'https://xdbnwjvxqtpkoaigedsk.supabase.co').replace(/\/+$/, '');
-    const res = await fetch(`${baseUrl}/auth/v1/user`, {
-      headers: {
-        apikey,
-        authorization: `Bearer ${token}`
-      }
-    });
-    if (!res.ok) {
-      if (payload && (payload.sub === ADMIN_KAYLA_ID || payload.email === 'kaylafisika24@gmail.com')) {
-        return { ok: true, user: { id: ADMIN_KAYLA_ID, email: 'kaylafisika24@gmail.com' } };
-      }
-      return { ok: false, reason: 'unauthenticated' };
-    }
-    const user = await res.json();
-    if (user?.id === ADMIN_KAYLA_ID || user?.email === 'kaylafisika24@gmail.com') {
-      return { ok: true, user };
-    }
-    return { ok: false, reason: 'forbidden', userId: user?.id };
-  } catch (err) {
-    if (payload && (payload.sub === ADMIN_KAYLA_ID || payload.email === 'kaylafisika24@gmail.com')) {
-      return { ok: true, user: { id: ADMIN_KAYLA_ID, email: 'kaylafisika24@gmail.com' } };
-    }
-    return { ok: false, reason: 'error', error: err.message };
+    const apikey = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_ANON_KEY;
+    if (!apikey || !env.SUPABASE_URL) return { ok: false, reason: 'error' };
+    const user = await Promise.race([
+      (async () => {
+        const res = await fetch(`${env.SUPABASE_URL.replace(/\/+$/, '')}/auth/v1/user`, {
+          headers: { apikey, authorization: `Bearer ${token}` },
+          redirect: 'manual',
+          signal: controller.signal
+        });
+        if (!res.ok) return null;
+        return await res.json();
+      })(),
+      new Promise((_, reject) => {
+        timeout = setTimeout(() => {
+          controller.abort();
+          reject(new Error('Auth verification timed out'));
+        }, 5000);
+      })
+    ]);
+    if (!user || typeof user.id !== 'string' || !user.id) return { ok: false, reason: 'unauthenticated' };
+    if (user.id !== ADMIN_KAYLA_ID) return { ok: false, reason: 'forbidden', userId: user.id };
+    return { ok: true, user };
+  } catch (_) {
+    return { ok: false, reason: 'error' };
+  } finally {
+    clearTimeout(timeout);
+    controller.abort();
   }
 }
 
