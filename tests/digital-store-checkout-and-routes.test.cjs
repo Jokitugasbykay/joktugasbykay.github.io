@@ -18,6 +18,7 @@ const context = (extra) =>
     Uint8Array,
     crypto: globalThis.crypto,
     console,
+    AbortController, setTimeout, clearTimeout,
     ...extra,
   });
 
