@@ -1,0 +1,7 @@
+:HL["/_next/static/chunks/31zg_kdr80cl1.css","style"]
+:HL["https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap","style"]
+:HL["/assets/icon/instagram-logo.webp","image"]
+:HL["/assets/icon/tiktok icon.png","image"]
+2:[["children",{"s":"__PAGE__","h":160}]]
+1:[["children",{"s":"information","h":96,"c":"$Q2"}]]
+0:{"b":"PYGaKtUJwCMf1Euo-TnjU","t":{"t":{"s":"","h":80,"c":"$Q1"}}}

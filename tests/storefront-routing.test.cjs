@@ -73,7 +73,7 @@ test('initializeApp reaches the existing digital page redirect after rendering',
 function worker() {
   const assetPaths = [], authReads = [];
   const context = vm.createContext({ Request, Response, Headers, URL, TextEncoder, TextDecoder,
-    Uint8Array, crypto: globalThis.crypto, console,
+    Uint8Array, crypto: globalThis.crypto, console, AbortController, setTimeout, clearTimeout,
     fetch: async url => {
       assert.equal(new URL(url).pathname, '/auth/v1/user');
       authReads.push('/auth/v1/user');

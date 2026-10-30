@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const { stripTypeScriptTypes } = require('node:module');
+const compileTypeScript = require('./compile-typescript.cjs');
 const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const code = 'NUG' + 'ABCDEFGHJKMNPQRSTVWXYZ2345';
@@ -19,7 +19,7 @@ function edge(role) {
     if(u.pathname.endsWith('/orders')) return response([row]);
     throw Error('Unexpected external request');
   }});
-  vm.runInContext(stripTypeScriptTypes(fs.readFileSync(path.join(root,'supabase/functions/jokiin-api/index.ts'),'utf8'),{mode:'transform'}),ctx);
+  vm.runInContext(compileTypeScript(fs.readFileSync(path.join(root,'supabase/functions/jokiin-api/index.ts'),'utf8')),ctx);
   return handler;
 }
 for(const role of ['guest','other','owner','admin']) test(`tracking privacy: ${role}`,async()=>{
@@ -76,4 +76,37 @@ test('server-only assets cannot be served',async()=>{
     const w=worker();const res=await w.run(new Request('https://worker.example'+route),{ASSETS:{fetch:()=>response('asset')}});
     assert.equal(res.status,404,route);
   }
+});
+
+
+test('TypeScript harness preserves the real ApiError parameter property', () => {
+  const source = fs.readFileSync(path.join(root, 'supabase/functions/jokiin-api/index.ts'), 'utf8');
+  const ctx = context({Deno:{env:{get:()=> 'test-only'},serve:()=>{}}});
+  vm.runInContext(compileTypeScript(source), ctx);
+  assert.equal(vm.runInContext("new ApiError(429, 'limited').status", ctx), 429);
+  assert.equal(vm.runInContext("new ApiError(429, 'limited').message", ctx), 'limited');
+  assert.equal(vm.runInContext("new ApiError(429, 'limited') instanceof Error", ctx), true);
+});
+
+test('TypeScript harness rejects malformed syntax', () => {
+  assert.throws(() => compileTypeScript('const invalid: = ;'), /TypeScript test compilation failed[\s\S]*TS\d+/);
+});
+
+for (const failure of ['exit', 'spawn', 'missing', 'blank']) test('TypeScript harness rejects ' + failure + ' compiler output', t => {
+  let directory;
+  t.mock.method(require('node:child_process'), 'spawnSync', (executable, args, options) => {
+    assert.equal(executable, process.execPath);
+    directory = options.cwd;
+    const output = args[args.indexOf('--outDir') + 1];
+    if (failure === 'spawn') return {status:null, error:new Error('compiler could not start')};
+    if (failure !== 'missing') {
+      fs.mkdirSync(output);
+      fs.writeFileSync(path.join(output, 'input.js'), failure === 'blank' ? ' \r\n' : 'throw Error("must never execute");');
+    }
+    return {status:failure === 'exit' ? 2 : 0, stdout:'synthetic diagnostic', stderr:''};
+  });
+  const expected = failure === 'missing' ? /no JavaScript output/ : failure === 'blank' ? /blank JavaScript output/
+    : failure === 'spawn' ? /compiler could not start/ : /compilation failed \(exit 2[\s\S]*synthetic diagnostic/;
+  assert.throws(() => compileTypeScript('const valid: number = 1;'), expected);
+  assert.equal(fs.existsSync(directory), false, 'Temporary compiler files must be removed on failure');
 });
