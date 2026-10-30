@@ -104,7 +104,7 @@ test('Worker accepts 101 regular units but rejects invalid quantities and specia
 });
 
 test('Edge checkout forwards 101 regular units and rejects noninteger quantities', async () => {
-  const {stripTypeScriptTypes} = require('node:module');
+  const compileTypeScript = require('./compile-typescript.cjs');
   let handler, submitted;
   const ctx = vm.createContext({Request, Response, Headers, URL, TextEncoder, TextDecoder, Uint8Array, crypto, console,
     Deno:{env:{get:name=>name==='SUPABASE_URL'?'https://db.example':'test-key'},serve:fn=>{handler=fn;}},
@@ -115,7 +115,7 @@ test('Edge checkout forwards 101 regular units and rejects noninteger quantities
       throw Error('Unexpected request: ' + endpoint);
     }
   });
-  vm.runInContext(stripTypeScriptTypes(fs.readFileSync(path.join(__dirname, '../supabase/functions/jokiin-api/index.ts'), 'utf8'), {mode:'transform'}), ctx);
+  vm.runInContext(compileTypeScript(fs.readFileSync(path.join(__dirname, '../supabase/functions/jokiin-api/index.ts'), 'utf8')), ctx);
   async function checkout(quantity) {
     submitted=null;
     return handler(new Request('https://edge.example', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
