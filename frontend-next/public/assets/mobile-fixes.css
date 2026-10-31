@@ -1,0 +1,12 @@
+#orderDetailModal { z-index:3000; padding:12px; box-sizing:border-box; }
+#orderDetailModal .modal-content { position:relative; animation:none; width:min(600px,100%); max-height:calc(100dvh - 24px); overflow-y:auto; overscroll-behavior:contain; }
+#orderDetailModal .modal-footer { flex-shrink:0; }
+#orderDetailModal :is(#detOrderId,#detService,#detTaskNotes) { overflow-wrap:anywhere; }
+#invoiceModal .modal-content { width:min(860px,calc(100% - 24px))!important; padding:0!important; }
+#invoiceModal .modal-footer { padding:16px; position:sticky; bottom:0; border-top:1px solid #d5e3dc; }
+@media(max-width:760px) {
+  #orderDetailModal { align-items:center; }
+  #orderDetailModal .modal-content { margin:0; border-radius:8px; padding:24px 18px calc(20px + env(safe-area-inset-bottom)); max-height:calc(100dvh - 24px); }
+  #orderDetailModal .order-info-row { gap:12px; }
+  #orderDetailModal .order-info-val { min-width:0; max-width:65%; }
+}

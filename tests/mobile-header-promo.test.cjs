@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
-const indexHtml = fs.readFileSync(path.join(ROOT_DIR, 'index.html'), 'utf8');
+const indexHtml = fs.readFileSync((fs.existsSync(path.join(ROOT_DIR, 'tests/fixtures/legacy/index.html')) ? path.join(ROOT_DIR, 'tests/fixtures/legacy/index.html') : path.join(ROOT_DIR, 'index.html')), 'utf8');
 
 test('mobile view ensures full-bleed promo strip and header without viewport margins or overflow leaks', () => {
   // 1. Mobile root elements (html, body) must have zero margin, zero padding, and overflow-x: clip

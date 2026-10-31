@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 export default function HeaderNav() {
+  const pathname = usePathname();
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   useEffect(() => {
@@ -15,6 +17,11 @@ export default function HeaderNav() {
     setTheme(initial);
     document.documentElement.setAttribute('data-theme', initial);
   }, []);
+
+  // When on root storefront (/), official storefront Navbar is used instead
+  if (pathname === '/') {
+    return null;
+  }
 
   const toggleTheme = () => {
     const nextTheme = theme === 'light' ? 'dark' : 'light';

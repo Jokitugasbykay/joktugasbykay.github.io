@@ -39,13 +39,21 @@ export default function OrderModal({ product, onClose }: OrderModalProps) {
       return;
     }
 
+    const rawWa = cleanWa.replace(/\D/g, '');
+    let normalizedWa = rawWa;
+    if (normalizedWa.startsWith('0')) normalizedWa = '62' + normalizedWa.slice(1);
+    if (!/^(?:62|60)[0-9]{8,14}$/.test(normalizedWa)) {
+      setErrorMsg('Nomor WhatsApp tidak valid. Masukkan nomor WhatsApp aktif (contoh: 081234567890).');
+      return;
+    }
+
     setLoading(true);
     try {
       const orderPayload = {
         customer: {
           name: cleanName,
           email: cleanEmail,
-          whatsapp: cleanWa,
+          whatsapp: normalizedWa,
           nim: nim.trim()
         },
         task: {

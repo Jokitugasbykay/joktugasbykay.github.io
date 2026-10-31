@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
 const path = require('node:path');
-const html = fs.readFileSync(process.argv[2] || path.join(__dirname, '../index.html'), 'utf8');
+const html = fs.readFileSync(process.argv[2] || (fs.existsSync(path.join(__dirname, 'fixtures/legacy/index.html')) ? path.join(__dirname, 'fixtures/legacy/index.html') : path.join(__dirname, '../index.html')), 'utf8');
 const promo = html.slice(html.indexOf('let promoTimer = null;'), html.indexOf('async function loadPromo()'));
 const close = html.match(/document\.getElementById\('promoClose'\)\?\.addEventListener\('click', \(\) => \{[\s\S]*?\n        \}\);/)[0];
 let now = 100000000;

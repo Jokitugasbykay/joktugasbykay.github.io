@@ -10,10 +10,10 @@ test('storefront root route is statically exported with catalog and hero', () =>
   const rootHtmlPath = path.join(outDir, 'index.html');
   assert(fs.existsSync(rootHtmlPath), 'index.html must exist in out/');
   const content = fs.readFileSync(rootHtmlPath, 'utf8');
-  assert.match(content, /JOKI\.IN, Teman Tugas Mahasiswa/, 'Must include hero title');
-  assert.match(content, /Katalog Layanan Akademik/, 'Must include catalog heading');
-  assert.match(content, /4 Langkah Mudah Pesan Tugas/, 'Must include steps heading');
-  assert.match(content, /Apa Kata Mahasiswa\?/, 'Must include testimonials heading');
+  assert.match(content, /Tugas Kamu/, 'Must include hero title');
+  assert.match(content, /Serahkan ke/, 'Must include hero brand lead');
+  assert.match(content, /Rekomendasi Produk/, 'Must include recommendations heading');
+  assert.match(content, /Apa Kata Mahasiswa/, 'Must include testimonials heading');
 });
 
 test('admin route is statically exported with expected markup and controls', () => {

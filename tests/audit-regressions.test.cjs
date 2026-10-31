@@ -5,7 +5,12 @@ const path = require('node:path');
 const vm = require('node:vm');
 const { spawnSync } = require('node:child_process');
 const root = path.resolve(__dirname, '..');
-const login = fs.readFileSync(path.join(root, 'login/index.html'), 'utf8');
+const loginPath = fs.existsSync(path.join(root, 'tests/fixtures/legacy/login/index.html'))
+  ? path.join(root, 'tests/fixtures/legacy/login/index.html')
+  : fs.existsSync(path.join(root, 'legacy/login/index.html'))
+    ? path.join(root, 'legacy/login/index.html')
+    : path.join(root, 'login/index.html');
+const login = fs.readFileSync(loginPath, 'utf8');
 
 test('login permits local redirects, rejects external and executable URLs', async () => {
   const start = login.indexOf('window.submitLogin =');
@@ -32,7 +37,12 @@ test('all page inline scripts and local JavaScript parse', () => {
 });
 
 test('payment pending page does not display pesanan reguler or pesanan spesial badge', () => {
-  const indexHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const legacyPath = fs.existsSync(path.join(root, 'tests/fixtures/legacy/index.html'))
+    ? path.join(root, 'tests/fixtures/legacy/index.html')
+    : fs.existsSync(path.join(root, 'legacy/index.html'))
+      ? path.join(root, 'legacy/index.html')
+      : path.join(root, 'index.html');
+  const indexHtml = fs.readFileSync(legacyPath, 'utf8');
   // 1. In HTML markup for tab-order-success, succOrderTypeBadge span should not exist
   assert.ok(!indexHtml.includes('id="succOrderTypeBadge"'), 'succOrderTypeBadge span should be removed from tab-order-success');
   // 2. In renderOrderSuccess implementation, PESANAN REGULER string should not be rendered
@@ -44,7 +54,12 @@ test('payment pending page does not display pesanan reguler or pesanan spesial b
 });
 
 test('desktop mode on mobile displays proper desktop header without stretched or 62px buttons', () => {
-  const indexHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const legacyPath = fs.existsSync(path.join(root, 'tests/fixtures/legacy/index.html'))
+    ? path.join(root, 'tests/fixtures/legacy/index.html')
+    : fs.existsSync(path.join(root, 'legacy/index.html'))
+      ? path.join(root, 'legacy/index.html')
+      : path.join(root, 'index.html');
+  const indexHtml = fs.readFileSync(legacyPath, 'utf8');
   const desktopCss = fs.readFileSync(path.join(root, 'assets/desktop-storefront.css'), 'utf8');
 
   // 1. desktop-storefront.css must not lock desktop rules behind hover:hover pointer:fine

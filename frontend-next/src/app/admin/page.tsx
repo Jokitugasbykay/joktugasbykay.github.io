@@ -141,35 +141,36 @@ export default function AdminOrdersPage() {
           <p className={styles.panelDesc}>
             Tempel link folder utama sekali saja. Sistem akan membuat dan memakai subfolder tanggal hari ini secara otomatis. Gunakan akun admin JOKI.IN yang memiliki akses ke Supabase.
           </p>
-          <div className={styles.bar}>
-            <input
-              type="password"
-              className={styles.inputField}
-              autoComplete="off"
-              placeholder="Token sesi admin Supabase"
-              aria-label="Token sesi admin Supabase"
-              value={adminSession}
-              onChange={(e) => setAdminSession(e.target.value)}
-            />
-          </div>
-          <div className={styles.bar}>
-            <input
-              type="url"
-              className={styles.inputField}
-              placeholder="https://drive.google.com/drive/folders/..."
-              aria-label="URL Folder Google Drive"
-              value={folderUrl}
-              onChange={(e) => setFolderUrl(e.target.value)}
-            />
-            <button
-              type="button"
-              className={styles.actionBtn}
-              onClick={handleSaveFolder}
-              disabled={folderLoading}
-            >
-              {folderLoading ? 'Menyimpan…' : 'Simpan folder'}
-            </button>
-          </div>
+          <form onSubmit={(e) => { e.preventDefault(); handleSaveFolder(); }}>
+            <div className={styles.bar}>
+              <input
+                type="password"
+                className={styles.inputField}
+                autoComplete="off"
+                placeholder="Token sesi admin Supabase"
+                aria-label="Token sesi admin Supabase"
+                value={adminSession}
+                onChange={(e) => setAdminSession(e.target.value)}
+              />
+            </div>
+            <div className={styles.bar}>
+              <input
+                type="url"
+                className={styles.inputField}
+                placeholder="https://drive.google.com/drive/folders/..."
+                aria-label="URL Folder Google Drive"
+                value={folderUrl}
+                onChange={(e) => setFolderUrl(e.target.value)}
+              />
+              <button
+                type="submit"
+                className={styles.actionBtn}
+                disabled={folderLoading}
+              >
+                {folderLoading ? 'Menyimpan...' : 'Simpan folder'}
+              </button>
+            </div>
+          </form>
           {folderMessage && <p role="status" className={styles.msg}>{folderMessage}</p>}
         </section>
       )}
@@ -177,7 +178,7 @@ export default function AdminOrdersPage() {
       {activeTab === 'orders' && (
         <section aria-labelledby="ordersTitle">
           <h2 id="ordersTitle" className="sr-only" style={{ display: 'none' }}>Daftar Pesanan</h2>
-          <div className={styles.bar}>
+          <form className={styles.bar} onSubmit={(e) => { e.preventDefault(); handleLoadOrders(); }}>
             <input
               type="password"
               className={styles.inputField}
@@ -186,7 +187,6 @@ export default function AdminOrdersPage() {
               aria-label="Token admin"
               value={token}
               onChange={(e) => setToken(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') handleLoadOrders(); }}
             />
             <select
               className={styles.selectField}
@@ -200,14 +200,13 @@ export default function AdminOrdersPage() {
               <option value="all">Semua</option>
             </select>
             <button
-              type="button"
+              type="submit"
               className={styles.actionBtn}
-              onClick={handleLoadOrders}
               disabled={loading}
             >
-              {loading ? 'Memuat…' : 'Muat'}
+              {loading ? 'Memuat...' : 'Muat'}
             </button>
-          </div>
+          </form>
 
           <div role="status" className={`${styles.msg} ${isError ? styles.msgErr : ''}`}>
             {message}

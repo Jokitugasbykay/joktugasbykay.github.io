@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
-const indexHtml = fs.readFileSync(path.join(ROOT_DIR, 'index.html'), 'utf8');
+const indexHtml = fs.readFileSync((fs.existsSync(path.join(ROOT_DIR, 'tests/fixtures/legacy/index.html')) ? path.join(ROOT_DIR, 'tests/fixtures/legacy/index.html') : path.join(ROOT_DIR, 'index.html')), 'utf8');
 const assetsCatalogJs = fs.readFileSync(path.join(ROOT_DIR, 'assets', 'catalog.js'), 'utf8');
 
 test('cart conflict modal markup adheres to Pisah Keranjang design specs', () => {

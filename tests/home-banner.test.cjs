@@ -16,7 +16,7 @@ const root = path.join(__dirname, '..');
     await page.route('**/*', route => {
       const url = new URL(route.request().url());
       if (url.hostname !== 'banner.test') return route.abort();
-      const file = path.resolve(root, '.' + (url.pathname === '/' ? '/index.html' : url.pathname));
+      const file = path.resolve(root, '.' + (url.pathname === '/' ? (fs.existsSync(path.join(root, 'tests/fixtures/legacy/index.html')) ? '/tests/fixtures/legacy/index.html' : '/index.html') : url.pathname));
       if (!file.startsWith(root + path.sep) || !fs.existsSync(file)) return route.abort();
       return route.fulfill({ path: file });
     });

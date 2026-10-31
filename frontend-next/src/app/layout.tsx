@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import HeaderNav from '../components/HeaderNav';
-import Footer from '../components/Footer';
+import './legacy-storefront.css';
 
 export const metadata: Metadata = {
-  title: 'Pusat Informasi - JOKI.IN',
-  description: 'Pusat informasi resmi, pembaruan sistem, ketentuan layanan, dan status operasional JOKI.IN.',
+  title: {
+    default: 'JOKI.IN | Teman Tugas Mahasiswa',
+    template: '%s | JOKI.IN',
+  },
+  description: 'Jasa joki tugas kuliah, skripsi, makalah, coding, kalkulus, dan desain PPT terpercaya dengan garansi revisi.',
 };
 
 export default function RootLayout({
@@ -23,26 +25,19 @@ export default function RootLayout({
           rel="stylesheet"
         />
         <script
-          id="theme-initializer"
+          id="jokiin-theme-init"
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                const saved = localStorage.getItem('theme');
-                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                const theme = saved || (prefersDark ? 'dark' : 'light');
-                document.documentElement.setAttribute('data-theme', theme);
+                let theme = localStorage.getItem('jokiin_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                document.documentElement.dataset.theme = theme === 'dark' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'dark' : 'light');
               } catch (_) {}
             `,
           }}
         />
       </head>
-      <body>
-        <div className="container">
-          <HeaderNav />
-          <main>{children}</main>
-          <Footer />
-        </div>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

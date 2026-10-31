@@ -1,0 +1,19 @@
+#reviewModal .review-compose{position:relative;width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow-y:auto;padding:28px;border:1px solid var(--border-color);border-radius:16px;background:var(--card-solid);color:var(--text-main)}
+#reviewModal .modal-header{text-align:left;padding:0 44px 20px 0;margin:0 0 24px;border-bottom:1px solid var(--border-color)}
+#reviewModal h2{font-size:1.4rem;margin:0 0 8px}
+#reviewModal .modal-close-btn-left{left:auto;right:16px;top:16px;display:grid;place-items:center;color:var(--text-main);font-size:24px;line-height:1}
+#reviewModal .modal-body{padding:0}
+#reviewModal .review-rating{border:0;padding:0;margin:0 0 24px;min-width:0}
+#reviewModal legend{font-size:.9rem;font-weight:600;margin-bottom:12px}
+#reviewModal .interactive-stars{display:flex;justify-content:flex-start;gap:8px;margin:0}
+#reviewModal .star{display:grid;place-items:center;width:44px;height:44px;padding:0;background:transparent;border:0;border-radius:8px;font-size:32px;line-height:1;cursor:pointer}
+#reviewModal button:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+#reviewRatingLabel{margin:10px 0 0;font-size:.85rem;color:var(--text-muted)}
+#reviewModal textarea{width:100%;min-height:140px;resize:vertical;border-radius:8px;line-height:1.6}
+#reviewCharCount{margin:8px 0 0;text-align:right;font-size:.8rem;color:var(--text-muted)}
+#reviewModal .modal-footer{display:flex;justify-content:flex-end;gap:12px;padding:20px 0 0;margin:0;border:0;background:transparent}
+#reviewModal .modal-footer button{flex:0 1 auto;min-height:44px;padding:10px 20px}
+.review-delete{display:inline-flex;align-items:center;gap:6px;color:var(--error)}
+.review-delete svg{width:16px;height:16px}
+.tr-03__ava img,.tr-24__avatar-circle img{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%}
+@media(max-width:480px){#reviewModal .review-compose{padding:24px 20px}#reviewModal .modal-footer button{flex:1} .tr-03__rf{flex-wrap:wrap}}

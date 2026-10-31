@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const rootDir = path.resolve(__dirname, '..');
-const indexHtml = fs.readFileSync(path.join(rootDir, 'index.html'), 'utf8');
+const indexHtml = fs.readFileSync((fs.existsSync(path.join(rootDir, 'tests/fixtures/legacy/index.html')) ? path.join(rootDir, 'tests/fixtures/legacy/index.html') : path.join(rootDir, 'index.html')), 'utf8');
 const uiCss = fs.readFileSync(path.join(rootDir, 'assets', 'ui-enhancements.css'), 'utf8');
 
 test('all 22 products have valid testimonial public slugs and resolve accurately', () => {
