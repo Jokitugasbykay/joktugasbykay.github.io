@@ -1,0 +1,198 @@
+.adminMain {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 16px 60px;
+  min-height: 100vh;
+}
+
+.adminHeading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.brandLight {
+  display: block;
+  width: 150px;
+  height: auto;
+}
+
+.brandDark {
+  display: none;
+  width: 150px;
+  height: auto;
+}
+
+:global([data-theme="dark"]) .brandLight {
+  display: none;
+}
+
+:global([data-theme="dark"]) .brandDark {
+  display: block;
+}
+
+.title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.tabBtn {
+  font: inherit;
+  padding: 9px 16px;
+  border: 1px solid var(--border-color, #d8e5de);
+  border-radius: 10px;
+  background: var(--card-bg, #fff);
+  color: var(--text-main, #17211d);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.tabBtnActive {
+  background: var(--primary, #087b59);
+  color: #fff;
+  border-color: var(--primary, #087b59);
+}
+
+.inputField,
+.selectField {
+  font: inherit;
+  padding: 9px 12px;
+  border: 1px solid var(--border-color, #d8e5de);
+  border-radius: 10px;
+  background: var(--card-bg, #fff);
+  color: var(--text-main, #17211d);
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.actionBtn {
+  font: inherit;
+  padding: 9px 18px;
+  border: 1px solid var(--primary, #087b59);
+  border-radius: 10px;
+  background: var(--primary, #087b59);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.actionBtn:hover {
+  background: #066b4c;
+}
+
+.msg {
+  color: var(--text-secondary, #586a62);
+  margin: 8px 0 16px;
+  min-height: 1.4em;
+  font-size: 0.95rem;
+}
+
+.msgErr {
+  color: #b42318;
+  font-weight: 600;
+}
+
+.orderCard {
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border-color, #d8e5de);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.cardHead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 12px;
+  align-items: baseline;
+}
+
+.orderId {
+  font: 12px ui-monospace, Menlo, Consolas, monospace;
+  color: var(--text-secondary, #586a62);
+  word-break: break-all;
+}
+
+.statusBadge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 99px;
+  border: 1px solid currentColor;
+}
+
+.badgePAID {
+  color: #067647;
+  border-color: #067647;
+  background: rgba(6, 118, 71, 0.1);
+}
+
+.badgePENDING {
+  color: #b54708;
+  border-color: #b54708;
+  background: rgba(181, 71, 8, 0.1);
+}
+
+.badgeCANCELED {
+  color: #b42318;
+  border-color: #b42318;
+  background: rgba(180, 35, 24, 0.1);
+}
+
+.detailList {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 14px;
+  margin: 12px 0 0;
+  font-size: 0.92rem;
+}
+
+.detailDt {
+  color: var(--text-secondary, #586a62);
+  font-weight: 600;
+}
+
+.detailDd {
+  margin: 0;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.link {
+  color: var(--primary, #087b59);
+  text-decoration: underline;
+}
+
+.panel {
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border-color, #d8e5de);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.panelTitle {
+  font-size: 1.15rem;
+  margin: 0 0 8px;
+}
+
+.panelDesc {
+  color: var(--text-secondary, #586a62);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
