@@ -13,7 +13,7 @@ const cases = [
   ['Assholes', false]
 ];
 for (const [text, expected] of cases) assert.equal(blocked(text), expected, text);
-const html = fs.readFileSync((fs.existsSync(path.join(__dirname, '../legacy/index.html')) ? path.join(__dirname, '../legacy/index.html') : path.join(__dirname, '../index.html')), 'utf8');
+const html = fs.readFileSync((fs.existsSync(path.join(__dirname, 'fixtures/legacy/index.html')) ? path.join(__dirname, 'fixtures/legacy/index.html') : path.join(__dirname, '../index.html')), 'utf8');
 assert(html.includes('censorReviewText(document.getElementById'));
 assert(html.includes('comment: censorReviewText(review.comment)'));
 const sql = fs.readFileSync(path.join(__dirname, '../database/review_censorship.sql'), 'utf8');

@@ -17,12 +17,12 @@ const root = path.resolve(__dirname, '..');
         await page.route('**/*', route => {
             const url = new URL(route.request().url());
             if (url.hostname !== 'layout.test') return route.abort();
-            const file = path.resolve(root, '.' + (url.pathname === '/' ? (fs.existsSync(path.join(root, 'legacy/index.html')) ? '/legacy/index.html' : '/index.html') : url.pathname));
+            const file = path.resolve(root, '.' + (url.pathname === '/' ? (fs.existsSync(path.join(root, 'tests/fixtures/legacy/index.html')) ? '/tests/fixtures/legacy/index.html' : '/index.html') : url.pathname));
             return file.startsWith(root + path.sep) && fs.existsSync(file) ? route.fulfill({path: file}) : route.abort();
         });
         await page.goto('https://layout.test/', {waitUntil: 'load'});
         await page.addStyleTag({content: '*,*::before,*::after{transition:none!important;animation:none!important}'});
-        const html = fs.readFileSync(fs.existsSync(path.join(root, 'legacy/index.html')) ? path.join(root, 'legacy/index.html') : path.join(root, 'index.html'), 'utf8');
+        const html = fs.readFileSync(fs.existsSync(path.join(root, 'tests/fixtures/legacy/index.html')) ? path.join(root, 'tests/fixtures/legacy/index.html') : path.join(root, 'index.html'), 'utf8');
         const block = (start, end) => {assert(html.includes(start) && html.includes(end)); return html.slice(html.indexOf(start), html.indexOf(end));};
         // Exercise the real carousel without booting authentication or payment APIs.
         await page.addScriptTag({content: 'const CONFIG = {PRODUCTS: []};\n'

@@ -5,9 +5,11 @@ const path = require('node:path');
 const vm = require('node:vm');
 const { spawnSync } = require('node:child_process');
 const root = path.resolve(__dirname, '..');
-const loginPath = fs.existsSync(path.join(root, 'legacy/login/index.html'))
-  ? path.join(root, 'legacy/login/index.html')
-  : path.join(root, 'login/index.html');
+const loginPath = fs.existsSync(path.join(root, 'tests/fixtures/legacy/login/index.html'))
+  ? path.join(root, 'tests/fixtures/legacy/login/index.html')
+  : fs.existsSync(path.join(root, 'legacy/login/index.html'))
+    ? path.join(root, 'legacy/login/index.html')
+    : path.join(root, 'login/index.html');
 const login = fs.readFileSync(loginPath, 'utf8');
 
 test('login permits local redirects, rejects external and executable URLs', async () => {
@@ -35,7 +37,11 @@ test('all page inline scripts and local JavaScript parse', () => {
 });
 
 test('payment pending page does not display pesanan reguler or pesanan spesial badge', () => {
-  const legacyPath = fs.existsSync(path.join(root, 'legacy/index.html')) ? path.join(root, 'legacy/index.html') : path.join(root, 'index.html');
+  const legacyPath = fs.existsSync(path.join(root, 'tests/fixtures/legacy/index.html'))
+    ? path.join(root, 'tests/fixtures/legacy/index.html')
+    : fs.existsSync(path.join(root, 'legacy/index.html'))
+      ? path.join(root, 'legacy/index.html')
+      : path.join(root, 'index.html');
   const indexHtml = fs.readFileSync(legacyPath, 'utf8');
   // 1. In HTML markup for tab-order-success, succOrderTypeBadge span should not exist
   assert.ok(!indexHtml.includes('id="succOrderTypeBadge"'), 'succOrderTypeBadge span should be removed from tab-order-success');
@@ -48,7 +54,11 @@ test('payment pending page does not display pesanan reguler or pesanan spesial b
 });
 
 test('desktop mode on mobile displays proper desktop header without stretched or 62px buttons', () => {
-  const legacyPath = fs.existsSync(path.join(root, 'legacy/index.html')) ? path.join(root, 'legacy/index.html') : path.join(root, 'index.html');
+  const legacyPath = fs.existsSync(path.join(root, 'tests/fixtures/legacy/index.html'))
+    ? path.join(root, 'tests/fixtures/legacy/index.html')
+    : fs.existsSync(path.join(root, 'legacy/index.html'))
+      ? path.join(root, 'legacy/index.html')
+      : path.join(root, 'index.html');
   const indexHtml = fs.readFileSync(legacyPath, 'utf8');
   const desktopCss = fs.readFileSync(path.join(root, 'assets/desktop-storefront.css'), 'utf8');
 

@@ -17,7 +17,7 @@ const root = path.resolve(__dirname, '..');
         await page.route('**/*', route => {
             const url = new URL(route.request().url());
             if (url.hostname !== 'dropdown.test') return route.abort();
-            const file = path.resolve(root, '.' + (url.pathname === '/' ? (fs.existsSync(path.join(root, 'legacy/index.html')) ? '/legacy/index.html' : '/index.html') : url.pathname));
+            const file = path.resolve(root, '.' + (url.pathname === '/' ? (fs.existsSync(path.join(root, 'tests/fixtures/legacy/index.html')) ? '/tests/fixtures/legacy/index.html' : '/index.html') : url.pathname));
             return file.startsWith(root + path.sep) && fs.existsSync(file) ? route.fulfill({path: file}) : route.abort();
         });
         await page.goto('https://dropdown.test/', {waitUntil: 'load'});

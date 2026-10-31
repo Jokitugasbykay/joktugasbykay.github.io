@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const html = fs.readFileSync((fs.existsSync(path.join(root, 'legacy/index.html')) ? path.join(root, 'legacy/index.html') : path.join(root, 'index.html')), 'utf8');
+const html = fs.readFileSync((fs.existsSync(path.join(root, 'tests/fixtures/legacy/index.html')) ? path.join(root, 'tests/fixtures/legacy/index.html') : path.join(root, 'index.html')), 'utf8');
 
 test('index.html contains Pembuatan CV product in CONFIG and metadata', () => {
   assert.ok(html.includes('id: "pembuatan-cv"'), 'CONFIG.PRODUCTS contains pembuatan-cv');

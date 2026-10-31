@@ -8,7 +8,7 @@ try {
   process.exit(0);
 }
 (async () => {
-    const html = fs.readFileSync(process.argv[2] || (fs.existsSync(require('node:path').join(__dirname, '../legacy/index.html')) ? require('node:path').join(__dirname, '../legacy/index.html') : require('node:path').join(__dirname, '../index.html')), 'utf8');
+    const html = fs.readFileSync(process.argv[2] || (fs.existsSync(require('node:path').join(__dirname, 'fixtures/legacy/index.html')) ? require('node:path').join(__dirname, 'fixtures/legacy/index.html') : require('node:path').join(__dirname, '../index.html')), 'utf8');
     const browser = await chromium.launch({channel:'chrome',headless:true});
     try {
         const page = await browser.newPage();

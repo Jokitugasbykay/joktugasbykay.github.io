@@ -51,10 +51,12 @@ function planStorefrontExport(outDir, destination) {
   assert(fs.existsSync(path.join(outDir, 'index.html')), 'Storefront index.html missing from Next.js export');
 
   // Verify legacy index preservation before planning export
-  const legacyIndexPath = path.join(destination, 'legacy', 'index.html');
-  assert(fs.existsSync(legacyIndexPath), 'Legacy index.html MUST be preserved at legacy/index.html before export');
+  const legacyFixturePath = path.join(destination, 'tests', 'fixtures', 'legacy', 'index.html');
+  const legacyLegacyPath = path.join(destination, 'legacy', 'index.html');
+  const legacyIndexPath = fs.existsSync(legacyFixturePath) ? legacyFixturePath : legacyLegacyPath;
+  assert(fs.existsSync(legacyIndexPath), 'Legacy index.html MUST be preserved at tests/fixtures/legacy/index.html before export');
   const legacySha = hash(fs.readFileSync(legacyIndexPath));
-  assert.equal(legacySha, LEGACY_BASELINE_SHA, 'legacy/index.html SHA mismatch; cannot overwrite root index safely');
+  assert.equal(legacySha, LEGACY_BASELINE_SHA, 'legacy index SHA mismatch; cannot overwrite root index safely');
 
   const inventory = walk(outDir);
   const selected = new Set();

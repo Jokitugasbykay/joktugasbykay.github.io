@@ -1,0 +1,33 @@
+# GitHub Pages / Jekyll Configuration for JOKI.IN
+include:
+  - _next
+
+exclude:
+  - legacy
+  - tests
+  - frontend-next
+  - src
+  - database
+  - supabase
+  - storage
+  - api
+  - docs
+  - ts
+  - package.json
+  - package-lock.json
+  - tsconfig.json
+  - wrangler.jsonc
+  - .assetsignore
+  - promo-settings.sql
+  - SECURITY-REMEDIATION.md
+  - README.md
+  - README_CATALOG.md
+  - README_CLOUDFLARE.md
+  - README_DEPLOY.md
+  - README_PRODUCT_UPDATE.md
+  - README_PROMO_WEEKLY.md
+  - README_SECURITY_SETUP.md
+  - README_TASK_ATTACHMENTS.md
+  - "*.sql"
+  - "*.md"
+  - "*.txt"

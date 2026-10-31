@@ -23,11 +23,12 @@ test('1. Root index.html is modernized Next.js export (< 100 KB, not monolithic 
   assert(content.includes('Rekomendasi Produk'), 'Root index.html must include recommendations heading');
 });
 
-test('2. Legacy monolith index.html is securely preserved in legacy/ with exact SHA-256', () => {
-  const legacyIndex = path.join(root, 'legacy', 'index.html');
-  assert(fs.existsSync(legacyIndex), 'legacy/index.html must exist as durable backup');
+test('2. Legacy monolith index.html is securely preserved in tests/fixtures/legacy/ with exact SHA-256', () => {
+  const legacyIndex = path.join(root, 'tests', 'fixtures', 'legacy', 'index.html');
+  assert(fs.existsSync(legacyIndex), 'tests/fixtures/legacy/index.html must exist as durable backup');
+  assert(!fs.existsSync(path.join(root, 'legacy')), 'legacy/ must not exist in publication root');
   const legacyBytes = fs.readFileSync(legacyIndex);
-  assert.equal(hash(legacyBytes), LEGACY_BASELINE_SHA, 'legacy/index.html must match exact baseline SHA-256');
+  assert.equal(hash(legacyBytes), LEGACY_BASELINE_SHA, 'tests/fixtures/legacy/index.html must match exact baseline SHA-256');
 });
 
 test('3. Next.js static asset references in root index.html exist on disk', () => {

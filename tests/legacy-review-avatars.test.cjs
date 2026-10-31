@@ -21,7 +21,7 @@ assert(!fs.readdirSync(dir).some(file => file.endsWith('.svg')));
 assert(sql.includes('where r.user_id is null and r.customer_name = a.customer_name'));
 assert(sql.includes('Existing profile photos changed'));
 assert(sql.includes('Duplicate customer avatar'));
-const html = fs.readFileSync((fs.existsSync(path.join(root, 'legacy/index.html')) ? path.join(root, 'legacy/index.html') : path.join(root, 'index.html')), 'utf8');
+const html = fs.readFileSync((fs.existsSync(path.join(root, 'tests/fixtures/legacy/index.html')) ? path.join(root, 'tests/fixtures/legacy/index.html') : path.join(root, 'index.html')), 'utf8');
 assert(!html.includes('Avatar pengganti, bukan foto akun terhubung'));
 assert(!html.includes('reviewProfilePhoto'));
 for (const className of ['tr-24__avatar-circle', 'tr-03__ava']) {

@@ -309,7 +309,7 @@ test('7. File artefak kode sumber lengkap dan valid', () => {
 
 test('8. Category filter chips hide scrollbar on mobile while preserving horizontal scroll', () => {
   const root = path.resolve(__dirname, '..');
-  const indexHtml = fs.readFileSync((fs.existsSync(path.join(root, 'legacy/index.html')) ? path.join(root, 'legacy/index.html') : path.join(root, 'index.html')), 'utf8');
+  const indexHtml = fs.readFileSync((fs.existsSync(path.join(root, 'tests/fixtures/legacy/index.html')) ? path.join(root, 'tests/fixtures/legacy/index.html') : path.join(root, 'index.html')), 'utf8');
   const catalogJs = fs.readFileSync(path.join(root, 'assets', 'catalog.js'), 'utf8');
 
   assert.ok(indexHtml.includes('#hargaFilterContainer::-webkit-scrollbar'), 'index.html must hide webkit scrollbar on #hargaFilterContainer');
