@@ -1,0 +1,78 @@
+name: Audit Jekyll Build
+
+on:
+  push:
+    branches:
+      - audit/pr3-jekyll-validation
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target commit explicitly
+        uses: actions/checkout@v4
+        with:
+          ref: '6f908af994714f5ef8132c7961cfff70cc89e527'
+          fetch-depth: 1
+
+      - name: Verify checked out commit
+        run: |
+          echo "Checked out SHA:"
+          git rev-parse HEAD
+          test "$(git rev-parse HEAD)" = "6f908af994714f5ef8132c7961cfff70cc89e527"
+
+      - name: Build site with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
+
+      - name: Audit _site output
+        run: |
+          echo "=== AUDIT _SITE CONTENT ==="
+          echo "Total files count:"
+          find ./_site -type f | wc -l
+
+          echo "=== CHECKING FOR EXCLUDED / SENSITIVE LEAKS ==="
+          LEAKS=$(find ./_site -type f \( \
+            -path "*/legacy/*" -o \
+            -path "*/tests/*" -o \
+            -path "*/frontend-next/*" -o \
+            -path "*/src/*" -o \
+            -path "*/database/*" -o \
+            -path "*/supabase/*" -o \
+            -path "*/storage/*" -o \
+            -path "*/docs/*" -o \
+            -path "*/node_modules/*" -o \
+            -name "*.sql" -o \
+            -name "*.md" -o \
+            -name "package.json" -o \
+            -name "package-lock.json" -o \
+            -name "tsconfig.json" -o \
+            -name "wrangler.jsonc" \
+          \) || true)
+
+          if [ -n "$LEAKS" ]; then
+            echo "FAILED: Leaked internal files found:"
+            echo "$LEAKS"
+            exit 1
+          else
+            echo "PASSED: Zero internal or sensitive files leaked into _site."
+          fi
+
+          echo "=== VERIFYING REQUIRED PUBLIC ROUTES ==="
+          test -f ./_site/index.html || { echo "Missing index.html"; exit 1; }
+          test -f ./_site/login/index.html || { echo "Missing login/index.html"; exit 1; }
+          test -d ./_site/_next/static || { echo "Missing _next/static/"; exit 1; }
+          echo "Required public routes and _next/static/ verified!"
+
+      - name: Upload _site artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jekyll-build-site
+          path: ./_site
+          if-no-files-found: error
