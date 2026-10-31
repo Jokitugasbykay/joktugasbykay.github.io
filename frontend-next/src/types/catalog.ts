@@ -4,13 +4,25 @@ export interface CatalogProduct {
   category: string;
   price: string;
   priceNum: number;
-  image: string;
+  image?: string;
+  icon?: string;
   desc: string;
   benefits: string[];
   features?: string[];
   estimatedTime?: string;
   revisionTerms?: string;
   popularity?: number;
+  requiresDriveLink?: boolean;
+  target?: string;
+  notIncluded?: string[];
+  reviewImage?: string;
+  originalPrice?: number;
+  hasSale?: boolean;
+  salePercent?: number;
+  batasBeli?: number;
+  batas_beli_per_orang?: number;
+  isLimitedEdition?: boolean;
+  _isBannerOnly?: boolean;
 }
 
 export interface CatalogCategory {
@@ -20,7 +32,7 @@ export interface CatalogCategory {
 }
 
 export interface OrderStep {
-  num: number;
+  num: string;
   title: string;
   desc: string;
 }
@@ -33,4 +45,5 @@ export interface TestimonialReview {
   rating: number;
   date: string;
   review: string;
+  avatar?: string;
 }

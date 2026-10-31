@@ -10,7 +10,7 @@ try {
 }
 const root = path.join(__dirname, '..');
 (async () => {
-    const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+    const html = fs.readFileSync((fs.existsSync(path.join(root, 'legacy/index.html')) ? path.join(root, 'legacy/index.html') : path.join(root, 'index.html')), 'utf8');
     const handler = html.match(/document\.addEventListener\('dragstart', event => \{[\s\S]*?\}, true\);/)[0];
     assert(html.includes("event.pointerType === 'mouse' && event.target.closest('.recommendation-card-image')"));
     const browser = await chromium.launch({ channel: 'chrome', headless: true });

@@ -1,7 +1,7 @@
 const fs = require('node:fs');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
-const html = fs.readFileSync(require('node:path').join(__dirname, '../index.html'), 'utf8');
+const html = fs.readFileSync((fs.existsSync(require('node:path').join(__dirname, '../legacy/index.html')) ? require('node:path').join(__dirname, '../legacy/index.html') : require('node:path').join(__dirname, '../index.html')), 'utf8');
 function fn(name) {
   const start = html.indexOf('        function ' + name + '(');
   assert(start >= 0, name + ' exists');

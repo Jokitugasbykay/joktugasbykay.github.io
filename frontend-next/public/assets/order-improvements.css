@@ -1,0 +1,21 @@
+.invoice-actions { display:flex; gap:10px; width:100%; }
+.invoice-actions button { flex:1; min-height:44px; }
+.jokiin-vector { width:22px; height:22px; vertical-align:middle; flex:none; }
+:is([data-theme="dark"],.dark-mode) .jokiin-vector { filter:invert(1); }
+#serviceDetailModal .modal-content { max-height:calc(100dvh - 32px)!important; overflow-y:auto!important; width:min(560px,100%)!important; background:var(--card-solid,#fff)!important; }
+#serviceDetailModal .modal-body { min-height:0; overflow:visible; }
+#serviceDetailModal .modal-footer { position:sticky; bottom:0; background:var(--card-solid,#fff); padding-top:16px; }
+#invoiceModal { z-index:10001!important; background:rgba(0,0,0,.6); }
+#invoiceModal .modal-content { background:#fff!important; color:#17211d; width:min(860px,100%); max-height:calc(100dvh - 32px); overflow:auto; }
+#invoiceModal .modal-footer { background:#fff; }
+#serviceDetailModal .mobile-modal-close { z-index:5; }
+.order-guide { padding:24px 0; border-top:1px solid var(--border-color); margin-top:24px; }
+.order-guide details { padding:16px 0; border-bottom:1px solid var(--border-color); }
+.order-guide summary { cursor:pointer; font-weight:700; }
+.order-guide p { line-height:1.7; color:var(--text-secondary); }
+html.jokiin-scroll-locked { overflow:hidden; overscroll-behavior:none; }
+.modal-overlay { overscroll-behavior:contain; }
+@media(max-width:760px) {
+  #invoiceModal .modal-content { width:100%; max-height:calc(100dvh - 24px); overflow:auto; }
+  #orderDetailModal .modal-footer button { white-space:normal; }
+}

@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const html = fs.readFileSync('index.html', 'utf8');
+const html = fs.readFileSync(fs.existsSync('legacy/index.html') ? 'legacy/index.html' : 'index.html', 'utf8');
 const source = html.slice(html.indexOf('        let websiteMetrics = null;'), html.indexOf('        function renderApp()'));
 const ratings = [{}, {}], grid = {};
 let listener, subscribed, fetches = 0;

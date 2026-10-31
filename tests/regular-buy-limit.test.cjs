@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
+const html = fs.readFileSync((fs.existsSync(path.join(__dirname, '../legacy/index.html')) ? path.join(__dirname, '../legacy/index.html') : path.join(__dirname, '../index.html')), 'utf8');
 
 function block(start, end) {
   const at = html.indexOf(start), until = html.indexOf(end, at);

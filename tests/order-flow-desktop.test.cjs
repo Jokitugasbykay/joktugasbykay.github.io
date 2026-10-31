@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
-const indexHtml = fs.readFileSync(path.join(ROOT_DIR, 'index.html'), 'utf8');
+const indexHtml = fs.readFileSync((fs.existsSync(path.join(ROOT_DIR, 'legacy/index.html')) ? path.join(ROOT_DIR, 'legacy/index.html') : path.join(ROOT_DIR, 'index.html')), 'utf8');
 const desktopCss = fs.readFileSync(path.join(ROOT_DIR, 'assets', 'desktop-storefront.css'), 'utf8');
 
 test('root document prevents desktop horizontal page scrolling and scrollbar leaks', () => {
