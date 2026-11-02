@@ -5,8 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import type { InvoiceOrder, InvoiceItem } from '@/types/invoice';
 import styles from './invoice.module.css';
 
-const SUPABASE_URL = 'https://xdbnwjvxqtpkoaigedsk.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_WuihnHZo0ZJbVGCMe1sWJg_QVdRKw4z';
+const SUPABASE_PROXY_URL = '/api/supabase';
 
 function money(value?: number) {
   return new Intl.NumberFormat('id-ID', {
@@ -46,11 +45,10 @@ function InvoiceContent() {
         const isSpcl = rawCode.startsWith('SPCL');
         const tipe = isSpcl ? 'SPESIAL' : 'REGULER';
 
-        const response = await fetch(`${SUPABASE_URL}/functions/v1/jokiin-api`, {
+        const response = await fetch(`${SUPABASE_PROXY_URL}/functions/v1/jokiin-api`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            apikey: SUPABASE_ANON_KEY
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({ action: 'track', orderCode: rawCode })
         });

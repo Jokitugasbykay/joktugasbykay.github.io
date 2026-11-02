@@ -8,6 +8,7 @@ const APPROVED_PAGE_ROUTES = [
   'index.html',
   '_not-found/index.html',
   'admin/index.html',
+  'home/index.html',
   'invoice/index.html',
   'login/index.html',
   'payment/index.html',
@@ -87,6 +88,7 @@ function planStorefrontExport(outDir, destination) {
         file.endsWith('.txt') ||
         file.startsWith('_not-found/') ||
         file.startsWith('admin/') ||
+        file.startsWith('home/') ||
         file.startsWith('invoice/') ||
         file.startsWith('login/') ||
         file.startsWith('payment/') ||

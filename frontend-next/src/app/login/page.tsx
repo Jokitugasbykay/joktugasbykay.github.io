@@ -4,8 +4,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import styles from './login.module.css';
 
-const SUPABASE_URL = 'https://xdbnwjvxqtpkoaigedsk.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_WuihnHZo0ZJbVGCMe1sWJg_QVdRKw4z';
+const SUPABASE_PROXY_URL = '/api/supabase';
 
 function LoginContent() {
   const searchParams = useSearchParams();
@@ -40,9 +39,8 @@ function LoginContent() {
     const match = cookies.match(/(?:^|;\s*)sb-access-token=([^;]+)/);
     if (match && match[1]) {
       const token = decodeURIComponent(match[1]);
-      fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      fetch(`${SUPABASE_PROXY_URL}/auth/v1/user`, {
         headers: {
-          apikey: SUPABASE_ANON_KEY,
           authorization: `Bearer ${token}`
         }
       })
@@ -73,11 +71,10 @@ function LoginContent() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      const res = await fetch(`${SUPABASE_PROXY_URL}/auth/v1/token?grant_type=password`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          apikey: SUPABASE_ANON_KEY
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ email: cleanEmail, password })
       });
@@ -134,11 +131,10 @@ function LoginContent() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+      const res = await fetch(`${SUPABASE_PROXY_URL}/auth/v1/signup`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          apikey: SUPABASE_ANON_KEY
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           email: cleanEmail,
@@ -174,11 +170,10 @@ function LoginContent() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${SUPABASE_URL}/auth/v1/recover`, {
+      const res = await fetch(`${SUPABASE_PROXY_URL}/auth/v1/recover`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          apikey: SUPABASE_ANON_KEY
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ email: cleanEmail })
       });

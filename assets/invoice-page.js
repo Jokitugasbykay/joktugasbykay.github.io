@@ -7,7 +7,8 @@
     if (!/^(NUG[A-HJ-NP-Z2-9]{26}|SPCL[A-HJ-NP-Z2-9]{23})$/.test(code)) throw Error('Nomor invoice tidak valid.');
     const tipe = code.startsWith('SPCL') ? 'SPESIAL' : 'REGULER';
     const config = window.JOKIIN_PUBLIC_CONFIG;
-    const response = await fetch(`${config.SUPABASE_URL}/functions/v1/jokiin-api`,{method:'POST',headers:{'Content-Type':'application/json',apikey:config.SUPABASE_ANON_KEY},body:JSON.stringify({action:'track',orderCode:code})});
+    const supabaseUrl = (config && config.SUPABASE_URL) || '/api/supabase';
+    const response = await fetch(`${supabaseUrl}/functions/v1/jokiin-api`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'track',orderCode:code})});
     const result = await response.json();
     if (!response.ok) throw Error(result.error || 'Invoice belum dapat dimuat.');
     const row = result.order;

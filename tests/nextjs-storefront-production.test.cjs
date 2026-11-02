@@ -46,6 +46,7 @@ test('3. Next.js static asset references in root index.html exist on disk', () =
 test('4. All migrated App Router routes are present on disk with index.html', () => {
   const routes = [
     'admin/index.html',
+    'home/index.html',
     'invoice/index.html',
     'login/index.html',
     'payment/index.html',
@@ -114,4 +115,39 @@ test('6. Worker serves new Next.js index.html for root / request', async () => {
   const body = await res.text();
   assert(body.includes('Tugas Kamu'), 'Root request must serve Next.js storefront');
   assert(body.includes('/_next/static/'), 'Root request must contain Next.js assets');
+});
+
+test('7. /home/ serves identical Next.js storefront HTML with no fallback flash', async () => {
+  const homeIndexPath = path.join(root, 'home', 'index.html');
+  assert(fs.existsSync(homeIndexPath), 'home/index.html must exist on disk');
+  const homeContent = fs.readFileSync(homeIndexPath, 'utf8');
+  assert(homeContent.includes('Tugas Kamu'), 'home/index.html must include hero title');
+  assert(homeContent.includes('/_next/static/'), 'home/index.html must contain Next.js chunks');
+  assert(homeContent.includes('Rekomendasi Produk'), 'home/index.html must include recommendations');
+  assert(homeContent.includes('Solusi untuk Kebutuhan Kuliahmu'), 'home/index.html must include catalog');
+  assert(homeContent.includes('Pertanyaan yang Sering Diajukan'), 'home/index.html must include FAQ');
+
+  const workerMod = await import(pathToFileURL(path.join(root, 'src', 'worker.js')).href);
+  const worker = workerMod.default;
+
+  const env = {
+    ASSETS: {
+      async fetch(req) {
+        const u = new URL(req.url);
+        if (u.pathname === '/home/' || u.pathname === '/home' || u.pathname === '/home/index.html') {
+          return new Response(homeContent, {
+            status: 200,
+            headers: { 'content-type': 'text/html; charset=utf-8' }
+          });
+        }
+        return new Response('Not found', { status: 404 });
+      }
+    },
+    SUPABASE_URL: 'https://db.example'
+  };
+
+  const res = await worker.fetch(new Request('http://localhost/home'), env);
+  assert.equal(res.status, 200);
+  const body = await res.text();
+  assert(body.includes('Tugas Kamu'), 'Worker request to /home must return storefront HTML directly');
 });

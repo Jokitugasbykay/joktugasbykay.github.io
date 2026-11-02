@@ -7,28 +7,13 @@
   const CATALOG_API = 'https://jokiin-payment-api.gamingyoga14.workers.dev';
 
   const state = {
-    penawaranSpesialAktif: true,
+    penawaranSpesialAktif: false,
     promoJudul: 'Penawaran Spesial Minggu Ini',
     promoDeadline: null,
     serverTimeOffsetMs: 0,
     banners: [],
     lastApiProducts: [],
-    featuredProduct: {
-      id: 'gemini-pro-18-bulan',
-      nama: 'Gemini Pro 18 Bulan',
-      slug: 'gemini-pro-18-bulan',
-      kategori: 'Digital',
-      deskripsi: 'Akses penuh Gemini Advanced 18 bulan, Garansi selama 1 minggu, Akun pribadi siap pakai',
-      harga_dasar: 50000,
-      diskon_persen: 60,
-      stok: 12,
-      stok_awal: 20,
-      total_sold: 108,
-      batas_beli_per_orang: 1,
-      is_active: true,
-      is_limited_edition: true,
-      gambar_url: null
-    },
+    featuredProduct: null, // total_sold: 108
     specialCheckoutQty: 1,
     specialCheckoutInFlight: false,
     pendingConflictAction: null,
@@ -73,6 +58,7 @@
     style.id = 'jokiin-dynamic-catalog-styles';
     style.textContent = `
       #promo-banner-section { margin: 24px 0 10px; font-family: "Plus Jakarta Sans", system-ui, sans-serif; }
+      #promo-banner-section[hidden], #promo-banner-section:empty { display: none !important; }
       .jokiin-promo-head { display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin:16px 0 18px; }
       .jokiin-promo-tag { display:inline-block; background:#ffd54a; color:#2b2100; font-weight:800; font-size:12px; letter-spacing:.08em; padding:6px 12px; border-radius:999px; }
       .jokiin-promo-title { margin:10px 0 0; font-size:clamp(24px, 3vw, 34px); font-weight:800; color:var(--text-main, #0f172a); line-height:1.2; }
@@ -331,6 +317,7 @@
   function ensureFeaturedProductInStorefront() {
     const products = getProductsList();
     if (!Array.isArray(products)) return;
+    if (!state.penawaranSpesialAktif || !state.featuredProduct) return;
     const fp = state.featuredProduct;
     const slug = fp.slug || fp.id || 'gemini-pro-18-bulan';
     const finalPrice = Math.round((fp.harga_dasar || 0) * (1 - (fp.diskon_persen || 0) / 100));
@@ -368,7 +355,7 @@
   function isProductSpesial(productId) {
     if (!productId) return false;
     const fp = state.featuredProduct;
-    if (productId === 'gemini-pro-18-bulan' || productId === fp.slug || productId === fp.id) return true;
+    if (fp && (productId === 'gemini-pro-18-bulan' || productId === fp.slug || productId === fp.id)) return true;
     const prod = getProductsList().find(p => p.id === productId);
     if (prod && (prod.isLimitedEdition || prod.is_limited_edition)) return true;
     const apiProd = state.lastApiProducts.find(p => p.slug === productId || p.id === productId);
@@ -798,6 +785,7 @@
     bindSpecialCheckoutInputs();
 
     const fp = state.featuredProduct;
+    if (!fp) return;
     const qty = Math.max(1, Number(qtyOverride) || state.specialCheckoutQty || 1);
     state.specialCheckoutQty = qty;
     const unitPrice = Math.round((fp.harga_dasar || 0) * (1 - (fp.diskon_persen || 0) / 100));
@@ -920,7 +908,7 @@
     }
 
     const fp = state.featuredProduct;
-    if ((fp.stok || 0) <= 0) {
+    if (!fp || (fp.stok || 0) <= 0) {
       setSpecialFieldError('Gmail', 'Maaf, stok Penawaran Spesial sudah habis.');
       return;
     }
@@ -982,7 +970,7 @@
       const transactionId = data.transaction_id || order.mayar_transaction_id || null;
 
       if (typeof data.remaining_stock === 'number') {
-        state.featuredProduct.stok = data.remaining_stock;
+        if (state.featuredProduct) state.featuredProduct.stok = data.remaining_stock;
         ensureFeaturedProductInStorefront();
         renderPromoBanner();
       }
@@ -1101,7 +1089,7 @@
 
       if (targetIsSpesial) {
         const fp = state.featuredProduct;
-        if ((fp.stok || 0) <= 0) {
+        if (!fp || (fp.stok || 0) <= 0) {
           if (typeof window.showToast === 'function') window.showToast('Stok Penawaran Spesial sudah habis.', 'Stok Habis', 'error');
           return;
         }
@@ -1176,7 +1164,6 @@
 
   function renderPromoBanner() {
     injectCatalogStyles();
-    ensureFeaturedProductInStorefront();
     installStorefrontHooks();
 
     const container = document.getElementById('promo-banner-section');
@@ -1187,16 +1174,34 @@
       state.countdownTimer = null;
     }
 
-    // Jika Penawaran Spesial dimatikan, banner di paling atas katalog langsung hilang tanpa menghapus gambarnya
-    if (!state.penawaranSpesialAktif) {
+    const fp = state.featuredProduct;
+    const deadlineMs = state.promoDeadline ? Date.parse(state.promoDeadline) : NaN;
+    const nowMs = getServerNowMs();
+    const isDeadlineValid = Number.isFinite(deadlineMs) && deadlineMs > nowMs;
+
+    const isEligible = Boolean(
+      state.penawaranSpesialAktif === true &&
+      fp &&
+      fp.is_active !== false &&
+      (fp.stok === null || fp.stok === undefined || fp.stok > 0) &&
+      isDeadlineValid
+    );
+
+    // Jika Penawaran Spesial tidak aktif atau tidak memenuhi syarat, sembunyikan langsung
+    if (!isEligible) {
+      state.penawaranSpesialAktif = false;
       container.innerHTML = '';
+      container.setAttribute('hidden', '');
+      container.style.display = 'none';
       toggleDefaultHargaHeader(false);
       return;
     }
 
+    container.removeAttribute('hidden');
+    container.style.display = '';
     toggleDefaultHargaHeader(true);
+    ensureFeaturedProductInStorefront();
 
-    const fp = state.featuredProduct;
     const hargaAkhir = Math.round((fp.harga_dasar || 0) * (1 - (fp.diskon_persen || 0) / 100));
     const maxSlot = Math.max(fp.stok_awal || 20, fp.stok || 1);
     const pct = Math.max(0, Math.min(100, Math.round(((fp.stok || 0) / maxSlot) * 100)));
@@ -1294,12 +1299,27 @@
     const cdEl = document.getElementById('jokiin-promo-cd');
     if (!cdEl) return;
 
-    const targetMs = state.promoDeadline && Number.isFinite(Date.parse(state.promoDeadline))
+    const deadlineMs = state.promoDeadline && Number.isFinite(Date.parse(state.promoDeadline))
       ? Date.parse(state.promoDeadline)
-      : (getServerNowMs() + ((1 * 86400 + 3 * 3600 + 17 * 60 + 25) * 1000));
+      : NaN;
+
+    if (!Number.isFinite(deadlineMs) || deadlineMs <= getServerNowMs()) {
+      state.penawaranSpesialAktif = false;
+      renderPromoBanner();
+      return;
+    }
 
     function updateTick() {
-      const diff = Math.max(0, targetMs - getServerNowMs());
+      const diff = deadlineMs - getServerNowMs();
+      if (diff <= 0) {
+        if (state.countdownTimer) {
+          clearInterval(state.countdownTimer);
+          state.countdownTimer = null;
+        }
+        state.penawaranSpesialAktif = false;
+        renderPromoBanner();
+        return;
+      }
       const d = Math.floor(diff / 86400000);
       const h = Math.floor((diff % 86400000) / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
@@ -1327,11 +1347,14 @@
     const limited = apiProducts.find(p => p.is_limited_edition && p.is_active !== false);
     if (limited) {
       state.featuredProduct = {
-        ...state.featuredProduct,
+        ...(state.featuredProduct || {}),
         ...limited,
-        total_sold: typeof limited.total_sold === 'number' ? limited.total_sold : (state.featuredProduct.total_sold ?? 108),
-        stok_awal: Math.max(20, state.featuredProduct.stok_awal || 20)
+        total_sold: typeof limited.total_sold === 'number' ? limited.total_sold : (state.featuredProduct?.total_sold ?? 108),
+        stok_awal: Math.max(20, state.featuredProduct?.stok_awal || 20)
       };
+    } else {
+      state.featuredProduct = null;
+      state.penawaranSpesialAktif = false;
     }
 
     ensureFeaturedProductInStorefront();
@@ -1468,19 +1491,24 @@
   async function syncFromCatalogApi() {
     injectCatalogStyles();
     setupGridObserver();
-    ensureFeaturedProductInStorefront();
     installStorefrontHooks();
     bindSpecialCheckoutInputs();
 
-    // 1. Check local cache broadcast from Workplace admin
+    // Fail-closed container initial setup
+    const container = document.getElementById('promo-banner-section');
+    if (container && !state.penawaranSpesialAktif) {
+      container.setAttribute('hidden', '');
+      container.style.display = 'none';
+      container.innerHTML = '';
+      toggleDefaultHargaHeader(false);
+    }
+
+    // 1. Check local cache broadcast from Workplace admin (read only, do not blindly enable promo)
     try {
       const rawCache = localStorage.getItem('jokiin_catalog_cache');
       if (rawCache) {
         const parsed = JSON.parse(rawCache);
-        if (typeof parsed.penawaran_spesial_aktif === 'boolean') {
-          state.penawaranSpesialAktif = parsed.penawaran_spesial_aktif;
-        }
-        if (parsed.promo_deadline) {
+        if (parsed.promo_deadline && Number.isFinite(Date.parse(parsed.promo_deadline))) {
           state.promoDeadline = parsed.promo_deadline;
         }
         if (parsed.promo_judul) {
@@ -1498,8 +1526,6 @@
       }
     } catch (_) {}
 
-    renderPromoBanner();
-
     // 2. Fetch live from Supabase jokiin-catalog Edge Function
     try {
       const [bannerRes, prodRes] = await Promise.all([
@@ -1507,34 +1533,42 @@
         fetch(`${CATALOG_API}/api/products`).catch(() => null)
       ]);
 
+      let bannerData = null;
       if (bannerRes && bannerRes.ok) {
-        const bData = await bannerRes.json();
-        state.penawaranSpesialAktif = Boolean(bData.penawaran_spesial_aktif);
-        state.promoJudul = bData.promo_judul || state.promoJudul;
-        state.promoDeadline = bData.promo_deadline || null;
-        if (bData.server_time && Number.isFinite(Date.parse(bData.server_time))) {
-          state.serverTimeOffsetMs = Date.parse(bData.server_time) - Date.now();
-        }
-        if (Array.isArray(bData.banners)) {
-          state.banners = bData.banners;
-        }
+        bannerData = await bannerRes.json();
       }
 
+      let prodData = null;
       if (prodRes && prodRes.ok) {
-        const pData = await prodRes.json();
-        if (Array.isArray(pData.products)) {
-          applyCatalogProductsToStorefront(pData.products);
+        prodData = await prodRes.json();
+      }
+
+      if (bannerData) {
+        if (bannerData.server_time && Number.isFinite(Date.parse(bannerData.server_time))) {
+          state.serverTimeOffsetMs = Date.parse(bannerData.server_time) - Date.now();
         }
+        state.promoJudul = bannerData.promo_judul || state.promoJudul;
+        state.promoDeadline = bannerData.promo_deadline || null;
+        if (Array.isArray(bannerData.banners)) {
+          state.banners = bannerData.banners;
+        }
+
+        const deadlineMs = state.promoDeadline ? Date.parse(state.promoDeadline) : NaN;
+        const nowMs = getServerNowMs();
+        const isNotExpired = Number.isFinite(deadlineMs) && deadlineMs > nowMs;
+
+        state.penawaranSpesialAktif = Boolean(bannerData.penawaran_spesial_aktif && isNotExpired);
+      } else {
+        state.penawaranSpesialAktif = false;
+      }
+
+      if (prodData && Array.isArray(prodData.products)) {
+        applyCatalogProductsToStorefront(prodData.products);
       }
 
       // Pastikan seluruh data dari Supabase public.services ter-update
       try {
-        const sRes = await fetch('https://xdbnwjvxqtpkoaigedsk.supabase.co/rest/v1/services?is_active=eq.true&order=id.asc', {
-          headers: {
-            apikey: 'sb_publishable_WuihnHZo0ZJbVGCMe1sWJg_QVdRKw4z',
-            Authorization: 'Bearer sb_publishable_WuihnHZo0ZJbVGCMe1sWJg_QVdRKw4z'
-          }
-        }).catch(() => null);
+        const sRes = await fetch('/api/supabase/rest/v1/services?is_active=eq.true&order=id.asc').catch(() => null);
         if (sRes && sRes.ok) {
           const sRows = await sRes.json();
           if (Array.isArray(sRows) && sRows.length) {
@@ -1566,12 +1600,7 @@
 
       // Ambil data jumlah terjual riil dari Supabase product_sales view
       try {
-        const salesRes = await fetch('https://xdbnwjvxqtpkoaigedsk.supabase.co/rest/v1/product_sales', {
-          headers: {
-            apikey: 'sb_publishable_WuihnHZo0ZJbVGCMe1sWJg_QVdRKw4z',
-            Authorization: 'Bearer sb_publishable_WuihnHZo0ZJbVGCMe1sWJg_QVdRKw4z'
-          }
-        }).catch(() => null);
+        const salesRes = await fetch('/api/supabase/rest/v1/product_sales').catch(() => null);
         if (salesRes && salesRes.ok) {
           const salesRows = await salesRes.json();
           if (Array.isArray(salesRows)) {
@@ -1579,7 +1608,7 @@
             salesRows.forEach(row => {
               const count = Number(row.total_sold || 0);
               const slug = String(row.product_slug || '').trim();
-              if (slug === 'gemini-pro-18-bulan' || slug === state.featuredProduct.slug || slug === state.featuredProduct.id) {
+              if (state.featuredProduct && (slug === 'gemini-pro-18-bulan' || slug === state.featuredProduct.slug || slug === state.featuredProduct.id)) {
                 state.featuredProduct.total_sold = count;
               }
               const p = productsList.find(it => it.id === slug || it.slug === slug);
@@ -1596,7 +1625,6 @@
   }
 
   window.addEventListener('jokiin:store-ready', () => {
-    ensureFeaturedProductInStorefront();
     installStorefrontHooks();
     if (state.lastApiProducts.length) {
       applyCatalogProductsToStorefront(state.lastApiProducts);

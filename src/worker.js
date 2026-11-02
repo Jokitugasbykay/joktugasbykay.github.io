@@ -278,6 +278,12 @@ async function createPayment(request, env) {
   const items = Array.isArray(input?.items) ? input.items : [];
   const task = input && typeof input.task === 'object' && input.task !== null ? input.task : {};
   if (!clean(customer.name, 100) || !/^\S+@\S+\.\S+$/.test(clean(customer.email, 254))) return json({ error: 'Data pelanggan tidak valid.' }, 400);
+  const rawWa = customer.whatsapp ? String(customer.whatsapp).replace(/\D/g, '') : '';
+  let normalizedWa = rawWa;
+  if (normalizedWa.startsWith('0')) normalizedWa = '62' + normalizedWa.slice(1);
+  if (customer.whatsapp && (!rawWa || !/^(?:62|60)[0-9]{8,14}$/.test(normalizedWa))) {
+    return json({ error: 'Nomor WhatsApp tidak valid. Masukkan nomor WhatsApp aktif (contoh: 081234567890).' }, 400);
+  }
   if (!items.length || items.length > 20) return json({ error: 'Keranjang tidak valid.' }, 400);
   if (items.some(it => it?.productId === 'gemini-pro-18-bulan' || it?.slug === 'gemini-pro-18-bulan' || it?.is_limited_edition === true || String(it?.tipe || '').toUpperCase() === 'SPESIAL')) {
     return json({ error: 'Penawaran Spesial harus dibayar terpisah. Kosongkan keranjang reguler atau selesaikan pesanan reguler dulu.', code: 'CART_TYPE_CONFLICT' }, 409);
@@ -334,7 +340,7 @@ async function createPayment(request, env) {
     });
   }
   const orderCode = await generateUniqueOrderId(env, 'REGULER');
-  const cleanCustomer = { name: clean(customer.name, 100), nim: clean(customer.nim, 50), email: clean(customer.email, 254).toLowerCase(), whatsapp: clean(customer.whatsapp, 24) };
+  const cleanCustomer = { name: clean(customer.name, 100), nim: clean(customer.nim, 50), email: clean(customer.email, 254).toLowerCase(), whatsapp: normalizedWa || clean(customer.whatsapp, 24) };
   const cleanTask = { title: clean(task.title, 250), deadline: clean(task.deadline, 50), notes: clean(task.notes, 3000), googleDriveUrl: clean(task.googleDriveUrl, 2048) };
   const order = {
     order_code: orderCode,
@@ -372,12 +378,25 @@ async function createPayment(request, env) {
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
   const customerName = String(order.customer?.name || order.customer?.nama || order.nama || 'Pelanggan JOKI.IN').trim();
   const prodSummary = lines.map(l => l.name + ' x' + l.quantity).join(', ');
-  const payment = await mayar(env, 'POST', 'payments/create', { name: customerName, amount: total, email: order.customer.email, mobile: order.customer.whatsapp, description: `Pesanan JOKI.IN ${orderCode} - ${prodSummary}`, expiredAt: expiresAt });
+  const payment = await mayar(env, 'POST', 'payments/create', {
+    name: customerName,
+    amount: total,
+    email: order.customer.email,
+    ...(normalizedWa ? { mobile: normalizedWa } : {}),
+    description: `Pesanan JOKI.IN ${orderCode} - ${prodSummary}`,
+    expiredAt: expiresAt
+  });
   const data = payment.data?.data || {};
   const paymentUrl = data.link;
   const transactionId = data.transactionId || data.transaction_id || data.id;
   if (!payment.response.ok || typeof paymentUrl !== 'string' || !transactionId) {
+    console.error('Mayar payment creation failed:', payment.response?.status, payment.text);
     await supabase(env, `payment_orders?order_code=eq.${encodeURIComponent(orderCode)}`, { method: 'PATCH', body: JSON.stringify({ payment_status: 'CANCELED' }) }).catch(() => {});
+    const mayarMessage = payment.data?.message || payment.data?.messages || null;
+    const clientError = typeof mayarMessage === 'string' && mayarMessage.trim() ? mayarMessage.trim() : null;
+    if (payment.response && payment.response.status >= 400 && payment.response.status < 500 && clientError) {
+      return json({ error: clientError }, 400);
+    }
     return json({ error: 'Layanan pembayaran sedang sibuk. Coba lagi.' }, 502);
   }
   await supabase(env, `payment_orders?order_code=eq.${encodeURIComponent(orderCode)}`, { method: 'PATCH', body: JSON.stringify({ payment_url: paymentUrl, mayar_transaction_id: transactionId, expires_at: expiresAt }) });
@@ -534,26 +553,200 @@ async function promo(request, env) {
   }
 }
 
-async function proxyCatalogEdge(request, env, url) {
+const SUPABASE_ALLOWED_ORIGINS = new Set([
+  'https://jokiin.my.id',
+  'https://www.jokiin.my.id',
+  'https://jokitugasbykay.github.io',
+  'https://workplace.jokiin.my.id'
+]);
+
+function getSupabaseCorsOrigin(request) {
+  const origin = request.headers.get('origin');
+  if (!origin) return null; // same-origin or server-side call
+  if (SUPABASE_ALLOWED_ORIGINS.has(origin)) return origin;
+  return false;
+}
+
+const SUPABASE_PROXY_ALLOWED_PREFIXES = [
+  '/auth/v1/',
+  '/rest/v1/',
+  '/storage/v1/',
+  '/functions/v1/'
+];
+
+const SUPABASE_PROXY_ALLOWED_METHODS = new Set([
+  'GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'
+]);
+
+async function handleSupabaseProxy(request, env, url) {
+  if (!SUPABASE_PROXY_ALLOWED_METHODS.has(request.method)) {
+    return json({ error: 'Method tidak diizinkan.' }, 405);
+  }
+
+  const origin = getSupabaseCorsOrigin(request);
+  if (origin === false) {
+    return json({ error: 'Origin tidak diizinkan.' }, 403);
+  }
+
+  if (request.method === 'OPTIONS') {
+    const corsHeaders = {
+      'access-control-allow-methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD',
+      'access-control-allow-headers': 'content-type, authorization, prefer, range, x-client-info, x-requested-with',
+      'access-control-max-age': '86400',
+      'vary': 'Origin'
+    };
+    if (origin) {
+      corsHeaders['access-control-allow-origin'] = origin;
+    }
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+
+  const subpath = url.pathname.replace(/^\/api\/supabase/, '') || '/';
+
+  const rawUrl = request.url;
+  let hasTraversal = false;
+  try {
+    const decodedUrl = decodeURIComponent(rawUrl);
+    if (decodedUrl.includes('..') || /%2e/i.test(decodedUrl)) {
+      hasTraversal = true;
+    }
+  } catch {}
+
+  if (
+    hasTraversal ||
+    rawUrl.includes('..') ||
+    /%2e/i.test(rawUrl) ||
+    /%252e/i.test(rawUrl) ||
+    subpath.includes('..') ||
+    subpath.includes('//')
+  ) {
+    return json({ error: 'Path traversal tidak diizinkan.' }, 400);
+  }
+
+  const isAllowedSubpath = SUPABASE_PROXY_ALLOWED_PREFIXES.some(prefix => subpath.startsWith(prefix));
+  if (!isAllowedSubpath) {
+    return json({ error: 'Endpoint Supabase tidak diizinkan.' }, 404);
+  }
+
+  if (subpath.startsWith('/auth/v1/admin') || subpath.includes('/admin/')) {
+    return json({ error: 'Endpoint admin dilarang.' }, 403);
+  }
+
+  const anonKey = env.SUPABASE_ANON_KEY;
+  if (!anonKey || typeof anonKey !== 'string' || !anonKey.trim()) {
+    return json({ error: 'Supabase reverse proxy belum siap (secret belum dikonfigurasi).' }, 503);
+  }
+
   const baseUrl = (env.SUPABASE_URL || 'https://xdbnwjvxqtpkoaigedsk.supabase.co').replace(/\/+$/, '');
-  const target = `${baseUrl}/functions/v1/jokiin-catalog${url.pathname}${url.search}`;
+  const targetUrl = new URL(`${baseUrl}${subpath}${url.search}`);
+  targetUrl.searchParams.delete('apikey');
+
+  const upstreamHeaders = new Headers();
+  for (const [k, v] of request.headers.entries()) {
+    const lk = k.toLowerCase();
+    if ([
+      'apikey',
+      'host',
+      'connection',
+      'cookie',
+      'cf-ray',
+      'cf-visitor',
+      'cf-connecting-ip',
+      'x-forwarded-for',
+      'x-real-ip'
+    ].includes(lk)) {
+      continue;
+    }
+    upstreamHeaders.set(k, v);
+  }
+
+  upstreamHeaders.set('apikey', anonKey.trim());
+
+  const clientAuth = request.headers.get('authorization');
+  if (clientAuth && /^Bearer\s+\S+$/i.test(clientAuth)) {
+    upstreamHeaders.set('authorization', clientAuth);
+  } else {
+    upstreamHeaders.set('authorization', `Bearer ${anonKey.trim()}`);
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+  let upstreamResponse;
+  try {
+    const body = ['GET', 'HEAD'].includes(request.method) ? undefined : await request.clone().arrayBuffer();
+    upstreamResponse = await fetch(targetUrl.toString(), {
+      method: request.method,
+      headers: upstreamHeaders,
+      body,
+      signal: controller.signal
+    });
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if (err && err.name === 'AbortError') {
+      return json({ error: 'Upstream gateway timeout.' }, 504);
+    }
+    return json({ error: 'Gagal terhubung ke upstream database.' }, 502);
+  } finally {
+    clearTimeout(timeoutId);
+  }
+
+  const clientResHeaders = new Headers();
+  const safeResponseHeaders = [
+    'content-type',
+    'content-range',
+    'content-length',
+    'preference-applied',
+    'location',
+    'etag',
+    'cache-control'
+  ];
+  for (const [k, v] of upstreamResponse.headers.entries()) {
+    if (safeResponseHeaders.includes(k.toLowerCase())) {
+      clientResHeaders.set(k, v);
+    }
+  }
+  clientResHeaders.set('vary', 'Origin');
+  if (origin) {
+    clientResHeaders.set('access-control-allow-origin', origin);
+    clientResHeaders.set('access-control-expose-headers', 'content-range, preference-applied, location, etag');
+  }
+
+  return new Response(upstreamResponse.body, {
+    status: upstreamResponse.status,
+    statusText: upstreamResponse.statusText,
+    headers: clientResHeaders
+  });
+}
+
+async function proxyCatalogEdge(request, env, url) {
+  const anonKey = env.SUPABASE_ANON_KEY;
+  if (!anonKey || typeof anonKey !== 'string' || !anonKey.trim()) {
+    return json({ error: 'Supabase catalog belum siap (secret belum dikonfigurasi).' }, 503);
+  }
+  const baseUrl = (env.SUPABASE_URL || 'https://xdbnwjvxqtpkoaigedsk.supabase.co').replace(/\/+$/, '');
+  const targetUrl = new URL(`${baseUrl}/functions/v1/jokiin-catalog${url.pathname}${url.search}`);
+  targetUrl.searchParams.delete('apikey');
   const headers = new Headers();
   for (const [k, v] of request.headers.entries()) {
     const lk = k.toLowerCase();
-    if (!['host', 'connection', 'cf-ray', 'cf-visitor', 'cf-connecting-ip'].includes(lk)) {
+    if (!['host', 'connection', 'cf-ray', 'cf-visitor', 'cf-connecting-ip', 'apikey'].includes(lk)) {
       headers.set(k, v);
     }
   }
-  // Ensure valid key for Supabase gateway; publishable key is always valid
-  if (!headers.has('apikey')) {
-    headers.set('apikey', 'sb_publishable_WuihnHZo0ZJbVGCMe1sWJg_QVdRKw4z');
+  headers.set('apikey', anonKey.trim());
+  const clientAuth = request.headers.get('authorization');
+  if (clientAuth && /^Bearer\s+\S+$/i.test(clientAuth)) {
+    headers.set('authorization', clientAuth);
+  } else {
+    headers.set('authorization', `Bearer ${anonKey.trim()}`);
   }
   const init = {
     method: request.method,
     headers,
     body: ['GET', 'HEAD'].includes(request.method) ? undefined : await request.clone().text()
   };
-  return fetch(target, init);
+  return fetch(targetUrl.toString(), init);
 }
 
 async function handleSpecialCheckoutWithMayar(request, env, url) {
@@ -964,13 +1157,17 @@ export default { async fetch(request, env) {
     ) {
       return await proxyCatalogEdge(request, env, url);
     }
+    if (url.pathname === '/api/supabase' || url.pathname.startsWith('/api/supabase/')) {
+      return await handleSupabaseProxy(request, env, url);
+    }
     if (url.pathname === '/api/create-mayar-payment' && request.method === 'POST') return await createPayment(request, env);
     if (url.pathname === '/api/upload-task-file' && request.method === 'POST') return await uploadTaskFile(request, env);
     if (url.pathname === '/api/task-folder' && ['GET', 'PUT'].includes(request.method)) return await taskFolderSetting(request, env);
     if (url.pathname === '/api/mayar-webhook' && request.method === 'POST') return await webhook(request, env);
     if (url.pathname === '/api/check-status' && request.method === 'GET') return await paymentStatus(request, env);
     if (url.pathname === '/api/promo' && request.method === 'GET') return await promo(request, env);
-    if (/^\/(?:\.|src\/|supabase\/|tests\/|worker\.js|wrangler\.|package(?:-lock)?\.json|README)/i.test(url.pathname)) return json({ error: 'Not found' }, 404);
+    if (/^\/(?:\.|src\/|supabase\/|tests\/|legacy(?:\/|$)|frontend-next(?:\/|$)|worker\.js|wrangler\.|package(?:-lock)?\.json|README)/i.test(url.pathname)) return json({ error: 'Not found' }, 404);
+    if (/^\/legacy(?:\/.*)?$/i.test(url.pathname)) return json({ error: 'Not found' }, 404);
     if (/\.(?:php|sql|sqlite|env)$/i.test(url.pathname) || /^\/(?:database|storage|api)\//i.test(url.pathname)) return json({ error: 'Not found' }, 404);
     if (env.ASSETS) {
       const asset = await env.ASSETS.fetch(request);

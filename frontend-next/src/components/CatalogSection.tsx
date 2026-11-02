@@ -11,9 +11,10 @@ export default function CatalogSection() {
   const [selectedProduct, setSelectedProduct] = useState<CatalogProduct | null>(null);
 
   const filteredProducts =
-    selectedCategory === 'semua'
+    (selectedCategory === 'semua'
       ? PRODUCTS
-      : PRODUCTS.filter((p) => p.category === selectedCategory);
+      : PRODUCTS.filter((p) => p.category === selectedCategory)
+    ).filter((p) => !p._isBannerOnly);
 
   return (
     <section id="katalog" className={styles.sectionContainer}>

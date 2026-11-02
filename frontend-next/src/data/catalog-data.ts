@@ -100,9 +100,9 @@ export const PRODUCTS: CatalogProduct[] = [
                     target: "Mahasiswa dan pengguna yang membutuhkan AI asisten akademik premium.",
                     notIncluded: [],
                     estimatedTime: "Instan (10-30 Menit)", revisionTerms: "Garansi selama 1 minggu",
-                    price: "Rp 20.000", priceNum: 20000, originalPrice: 50000, hasSale: true, salePercent: 60,
+                    price: "Rp 50.000", priceNum: 50000, originalPrice: 50000, hasSale: false, salePercent: 0,
                     features: ["Gemini Advanced", "Garansi 1 Minggu", "Akun Pribadi"],
-                    batasBeli: 1, batas_beli_per_orang: 1, isLimitedEdition: true,
+                    batasBeli: 1, batas_beli_per_orang: 1, isLimitedEdition: false,
                     _isBannerOnly: true
                 }
             ];

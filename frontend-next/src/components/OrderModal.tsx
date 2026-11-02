@@ -7,9 +7,10 @@ import styles from './storefront.module.css';
 interface OrderModalProps {
   product: CatalogProduct | null;
   onClose: () => void;
+  initialCoupon?: string;
 }
 
-export default function OrderModal({ product, onClose }: OrderModalProps) {
+export default function OrderModal({ product, onClose, initialCoupon = '' }: OrderModalProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
@@ -18,6 +19,7 @@ export default function OrderModal({ product, onClose }: OrderModalProps) {
   const [deadline, setDeadline] = useState('');
   const [notes, setNotes] = useState('');
   const [driveUrl, setDriveUrl] = useState('');
+  const [coupon, setCoupon] = useState(initialCoupon);
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -33,6 +35,7 @@ export default function OrderModal({ product, onClose }: OrderModalProps) {
     const cleanEmail = email.trim();
     const cleanWa = whatsapp.trim();
     const cleanTitle = taskTitle.trim();
+    const cleanCoupon = coupon.trim();
 
     if (!cleanName || !cleanEmail || !cleanWa || !cleanTitle) {
       setErrorMsg('Nama, email, WhatsApp, dan judul tugas wajib diisi.');
@@ -49,7 +52,7 @@ export default function OrderModal({ product, onClose }: OrderModalProps) {
 
     setLoading(true);
     try {
-      const orderPayload = {
+      const orderPayload: Record<string, unknown> = {
         customer: {
           name: cleanName,
           email: cleanEmail,
@@ -72,6 +75,10 @@ export default function OrderModal({ product, onClose }: OrderModalProps) {
         ]
       };
 
+      if (cleanCoupon) {
+        orderPayload.promo = cleanCoupon;
+      }
+
       const res = await fetch('/api/checkout/reguler', {
         method: 'POST',
         headers: {
@@ -91,8 +98,9 @@ export default function OrderModal({ product, onClose }: OrderModalProps) {
       });
     } catch (err: unknown) {
       // Fallback: order through official Admin WhatsApp
+      const couponLine = cleanCoupon ? `\nKupon: ${cleanCoupon}` : '';
       const waText = encodeURIComponent(
-        `Halo Admin JOKI.IN, saya mau pesan layanan ${product.title}!\n\nNama: ${cleanName}\nEmail: ${cleanEmail}\nNIM: ${nim.trim() || '-'}\nJudul Tugas: ${cleanTitle}\nDeadline: ${deadline || '-'}\nCatatan: ${notes.trim() || '-'}`
+        `Halo Admin JOKI.IN, saya mau pesan layanan ${product.title}!\n\nNama: ${cleanName}\nEmail: ${cleanEmail}\nNIM: ${nim.trim() || '-'}\nJudul Tugas: ${cleanTitle}\nDeadline: ${deadline || '-'}${couponLine}\nCatatan: ${notes.trim() || '-'}`
       );
       const waUrl = `https://wa.me/601155639233?text=${waText}`;
       setSuccessData({
@@ -199,6 +207,18 @@ export default function OrderModal({ product, onClose }: OrderModalProps) {
                   className={styles.formInput}
                   value={deadline}
                   onChange={(e) => setDeadline(e.target.value)}
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel} htmlFor="orderCoupon">Kode Kupon / Promo (Opsional)</label>
+                <input
+                  id="orderCoupon"
+                  type="text"
+                  className={styles.formInput}
+                  placeholder="Contoh: JOKIHEMAT"
+                  value={coupon}
+                  onChange={(e) => setCoupon(e.target.value)}
                 />
               </div>
 

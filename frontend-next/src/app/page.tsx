@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PromoStrip from '@/components/PromoStrip';
 import Header from '@/components/Header';
 import NavPills from '@/components/NavPills';
@@ -32,6 +32,34 @@ export default function HomePage() {
 
   // FAQ state
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [activePromoCoupon, setActivePromoCoupon] = useState<string>('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as unknown as { switchTab: (tab: string) => void }).switchTab = (tab: string) => {
+        setActiveTab(tab);
+      };
+    }
+  }, []);
+
+  const handleClaimPromo = (promo: {
+    coupon?: string;
+    product?: CatalogProduct | null;
+    title?: string;
+  }) => {
+    if (promo.coupon) {
+      setActivePromoCoupon(promo.coupon);
+    }
+    if (promo.product) {
+      setSelectedOrderProduct(promo.product);
+    } else {
+      setActiveTab('harga');
+      if (typeof window !== 'undefined') {
+        const el = document.getElementById('tab-harga');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
 
   const openWhatsApp = (num: string, text: string) => {
     window.open(`https://wa.me/${num}?text=${encodeURIComponent(text)}`, '_blank');
@@ -55,8 +83,11 @@ export default function HomePage() {
     setSelectedOrderProduct(product);
   };
 
+  // Filtered products for Storefront tabs (exclude banner-only products)
+  const STOREFRONT_PRODUCTS = PRODUCTS.filter((p) => !p._isBannerOnly);
+
   // Filtered products for Harga tab
-  const filteredHargaProducts = PRODUCTS.filter((p) => {
+  const filteredHargaProducts = STOREFRONT_PRODUCTS.filter((p) => {
     if (hargaFilter === 'Semua') return true;
     return p.category === hargaFilter;
   });
@@ -64,7 +95,7 @@ export default function HomePage() {
   return (
     <>
       {/* 1. Promo countdown banner */}
-      <PromoStrip />
+      <PromoStrip onClaimPromo={handleClaimPromo} />
 
       {/* 2. Container utama */}
       <div className="container">
@@ -103,13 +134,13 @@ export default function HomePage() {
 
           {/* Recommendations carousel */}
           <RecommendationsSection
-            products={PRODUCTS}
+            products={STOREFRONT_PRODUCTS}
             onSelectProduct={(p) => setSelectedDetailProduct(p)}
           />
 
           {/* Popular services grid */}
           <PopularServices
-            products={PRODUCTS}
+            products={STOREFRONT_PRODUCTS}
             onSelectProduct={(p) => setSelectedDetailProduct(p)}
             onViewAll={() => setActiveTab('layanan')}
           />
@@ -145,7 +176,7 @@ export default function HomePage() {
             dengan lebih cepat, rapi, dan sesuai kebutuhan.
           </p>
           <div className="services-grid" id="full-layanan">
-            {PRODUCTS.filter((p) =>
+            {STOREFRONT_PRODUCTS.filter((p) =>
               !searchQuery.trim() ||
               p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
               p.desc.toLowerCase().includes(searchQuery.toLowerCase())
@@ -382,6 +413,7 @@ export default function HomePage() {
         <OrderModal
           product={selectedOrderProduct}
           onClose={() => setSelectedOrderProduct(null)}
+          initialCoupon={activePromoCoupon}
         />
       )}
     </>
