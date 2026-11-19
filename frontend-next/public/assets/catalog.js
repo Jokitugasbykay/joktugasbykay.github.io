@@ -7,7 +7,8 @@
   const CATALOG_API = 'https://jokiin-payment-api.gamingyoga14.workers.dev';
 
   const state = {
-    penawaranSpesialAktif: true,
+    penawaranSpesialAktif: false,
+    featuredVerified: false,
     promoJudul: 'Penawaran Spesial Minggu Ini',
     promoDeadline: null,
     serverTimeOffsetMs: 0,
@@ -1188,7 +1189,7 @@
     }
 
     // Jika Penawaran Spesial dimatikan, banner di paling atas katalog langsung hilang tanpa menghapus gambarnya
-    if (!state.penawaranSpesialAktif) {
+    if (!state.penawaranSpesialAktif || !state.featuredVerified) {
       container.innerHTML = '';
       toggleDefaultHargaHeader(false);
       return;
@@ -1472,31 +1473,9 @@
     installStorefrontHooks();
     bindSpecialCheckoutInputs();
 
-    // 1. Check local cache broadcast from Workplace admin
-    try {
-      const rawCache = localStorage.getItem('jokiin_catalog_cache');
-      if (rawCache) {
-        const parsed = JSON.parse(rawCache);
-        if (typeof parsed.penawaran_spesial_aktif === 'boolean') {
-          state.penawaranSpesialAktif = parsed.penawaran_spesial_aktif;
-        }
-        if (parsed.promo_deadline) {
-          state.promoDeadline = parsed.promo_deadline;
-        }
-        if (parsed.promo_judul) {
-          state.promoJudul = parsed.promo_judul;
-        }
-        if (parsed.bannerUrl || parsed.bannerMobileUrl) {
-          const banners = [];
-          if (parsed.bannerUrl) banners.push({ gambar_url: parsed.bannerUrl, judul: parsed.bannerTitle || 'Promo (Desktop)', urutan: 0 });
-          if (parsed.bannerMobileUrl) banners.push({ gambar_url: parsed.bannerMobileUrl, judul: (parsed.bannerTitle || 'Promo') + ' (Mobile)', urutan: 1 });
-          state.banners = banners;
-        }
-        if (Array.isArray(parsed.products)) {
-          applyCatalogProductsToStorefront(parsed.products);
-        }
-      }
-    } catch (_) {}
+    // Only live server data can activate a promotion.
+    state.penawaranSpesialAktif = false;
+    state.featuredVerified = false;
 
     renderPromoBanner();
 
@@ -1509,7 +1488,7 @@
 
       if (bannerRes && bannerRes.ok) {
         const bData = await bannerRes.json();
-        state.penawaranSpesialAktif = Boolean(bData.penawaran_spesial_aktif);
+        state.penawaranSpesialAktif = bData.penawaran_spesial_aktif === true;
         state.promoJudul = bData.promo_judul || state.promoJudul;
         state.promoDeadline = bData.promo_deadline || null;
         if (bData.server_time && Number.isFinite(Date.parse(bData.server_time))) {
