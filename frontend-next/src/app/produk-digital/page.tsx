@@ -208,7 +208,7 @@ function DigitalStoreContent() {
         <div className={styles.deniedCard}>
           <div className={styles.deniedBadge}>AKSES TERBATAS</div>
           <h2 style={{ margin: '0 0 12px', fontSize: '20px' }}>Khusus Admin Kayla</h2>
-          <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: 1.6, margin: '0 0 24px' }}>
+          <p style={{ color: '#a4b0b4', fontSize: '14px', lineHeight: 1.6, margin: '0 0 24px' }}>
             Halaman ini sedang dalam masa pengembangan dan pengujian internal khusus Admin Kayla.
           </p>
           <a
@@ -216,7 +216,7 @@ function DigitalStoreContent() {
             style={{
               display: 'inline-block',
               padding: '10px 20px',
-              background: '#2563eb',
+              background: '#008e70',
               color: '#fff',
               textDecoration: 'none',
               borderRadius: '8px',
@@ -233,15 +233,10 @@ function DigitalStoreContent() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.adminBar}>
-        Mode ADMIN_ONLY : etalase privat khusus Admin Kayla : data katalog dan gateway pembayaran terisolasi
-      </div>
-
       <header className={styles.header}>
         <div className={styles.navWrap}>
           <Link href="/produk-digital" className={styles.logo} aria-label="JOKI.IN Digital Store">
-            <i className={styles.logoIcon}>J</i>
-            JOKI.IN
+            <img className={styles.logoImage} src="/assets/produk-digital/jokiin-logo-white.png" alt="JOKI.IN" width="124" height="40" />
             <small className={styles.logoTag}>Digital Store</small>
           </Link>
 
@@ -280,8 +275,12 @@ function DigitalStoreContent() {
             {cartTotalCount > 0 && <span className={styles.badge}>{cartTotalCount}</span>}
           </button>
 
+          <Link href="/produk-digital/pesanan" className={styles.ordersLink}>
+            Pesanan Saya
+          </Link>
+
           <a href="/" className={styles.backLink}>
-            Kembali ke JOKI.IN
+            Beranda
           </a>
         </div>
 
@@ -307,8 +306,11 @@ function DigitalStoreContent() {
       </header>
 
       <main className={styles.mainContent}>
-        {/* Hero Banner */}
-        <section className={styles.hero}>
+        <div className={styles.adminBar}>
+          <strong>INFO</strong> · Katalog AI &amp; premium apps, game, kreativitas, media sosial, dan aset digital
+        </div>
+        {/* Banner existing: pertahankan konten yang dikonfigurasi */}
+        <section className={styles.hero} aria-label="Promo JOKI.IN Digital Store">
           <span className={styles.heroTag}>{DEFAULT_DIGITAL_HERO_SLIDES[0].l}</span>
           <h1 className={styles.heroTitle}>{DEFAULT_DIGITAL_HERO_SLIDES[0].h}</h1>
           <p className={styles.heroDesc}>{DEFAULT_DIGITAL_HERO_SLIDES[0].p}</p>
@@ -331,13 +333,17 @@ function DigitalStoreContent() {
               ? 'Semua Produk Tersedia'
               : DEFAULT_DIGITAL_CATEGORIES.find((c) => c.id === selectedCategory)?.t || 'Katalog Produk'}
           </h2>
-          <span style={{ fontSize: '13px', color: '#64748b' }}>{filteredProducts.length} produk</span>
+          <span className={styles.productCount}>{filteredProducts.length} produk</span>
         </div>
 
         {/* Product Grid */}
         <div className={styles.productGrid}>
           {filteredProducts.map((prod) => (
             <article key={prod.id || prod.slug} className={styles.productCard}>
+              <div className={styles.cardVisual} aria-hidden="true">
+                {prod.old && <span className={styles.discountTag}>Promo</span>}
+                <span>{prod.n.trim().charAt(0).toUpperCase() || 'P'}</span>
+              </div>
               <div className={styles.cardTags}>
                 <span className={styles.tagPill}>{prod.pv}</span>
                 {prod.is_limited_edition && (
@@ -365,21 +371,48 @@ function DigitalStoreContent() {
                     setSelectedQuantity(1);
                   }}
                 >
-                  Detail & Pesan
+                  Lihat Produk
                 </button>
                 <button
                   type="button"
-                  className={styles.btnSecondary}
+                  className={styles.cartIconBtn}
                   disabled={prod.st <= 0}
                   onClick={() => handleAddToCart(prod, 1)}
                   aria-label="Tambah ke keranjang"
+                  title="Tambah ke keranjang"
                 >
-                  + Keranjang
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                    <path d="M3 4h2l2.4 11h10.2L20 7H6.2" />
+                    <circle cx="9" cy="19.5" r="1.5" />
+                    <circle cx="17" cy="19.5" r="1.5" />
+                  </svg>
                 </button>
               </div>
             </article>
           ))}
         </div>
+
+        <section className={styles.categorySection} aria-labelledby="categoryTitle">
+          <div className={styles.categoryHeading}>
+            <div>
+              <h2 className={styles.sectionTitle} id="categoryTitle">Jelajahi Kategori</h2>
+              <p>Pilih kategori sesuai kebutuhanmu.</p>
+            </div>
+          </div>
+          <div className={styles.categoryGrid}>
+            {DEFAULT_DIGITAL_CATEGORIES.map((cat) => (
+              <button
+                key={cat.id}
+                type="button"
+                className={styles.categoryTile}
+                onClick={() => setSelectedCategory(cat.id)}
+              >
+                <span aria-hidden="true">{cat.t.trim().charAt(0).toUpperCase()}</span>
+                {cat.t}
+              </button>
+            ))}
+          </div>
+        </section>
       </main>
 
       {/* Product Detail Modal */}
@@ -397,12 +430,12 @@ function DigitalStoreContent() {
                 x
               </button>
             </div>
-            <p style={{ color: '#64748b', fontSize: '14px', lineHeight: 1.5, margin: '0 0 16px' }}>
+            <p style={{ color: '#a4b0b4', fontSize: '14px', lineHeight: 1.5, margin: '0 0 16px' }}>
               {selectedProduct.ds}
             </p>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <span style={{ fontSize: '14px', color: '#64748b' }}>Harga Satuan:</span>
-              <span style={{ fontSize: '16px', fontWeight: 800, color: '#1d4ed8' }}>
+              <span style={{ fontSize: '14px', color: '#a4b0b4' }}>Harga Satuan:</span>
+              <span style={{ fontSize: '16px', fontWeight: 800, color: '#55d9b0' }}>
                 {formatRupiah(selectedProduct.pr)}
               </span>
             </div>
@@ -425,7 +458,7 @@ function DigitalStoreContent() {
               >
                 +
               </button>
-              <span style={{ marginLeft: 'auto', fontWeight: 800, color: '#1d4ed8' }}>
+              <span style={{ marginLeft: 'auto', fontWeight: 800, color: '#55d9b0' }}>
                 Subtotal: {formatRupiah(selectedProduct.pr * selectedQuantity)}
               </span>
             </div>
@@ -472,7 +505,7 @@ function DigitalStoreContent() {
             </div>
 
             {cart.length === 0 ? (
-              <p style={{ textAlign: 'center', color: '#64748b', margin: '24px 0' }}>
+              <p style={{ textAlign: 'center', color: '#a4b0b4', margin: '24px 0' }}>
                 Keranjang belanja masih kosong.
               </p>
             ) : (
@@ -486,17 +519,17 @@ function DigitalStoreContent() {
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         padding: '10px 0',
-                        borderBottom: '1px solid #e2e7f1',
+                        borderBottom: '1px solid #2b343a',
                       }}
                     >
                       <div>
                         <div style={{ fontWeight: 700, fontSize: '14px' }}>{item.productName}</div>
-                        <div style={{ color: '#64748b', fontSize: '12px' }}>
+                        <div style={{ color: '#a4b0b4', fontSize: '12px' }}>
                           {item.quantity} x {formatRupiah(item.price)}
                         </div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontWeight: 800, color: '#1d4ed8', fontSize: '14px' }}>
+                        <span style={{ fontWeight: 800, color: '#55d9b0', fontSize: '14px' }}>
                           {formatRupiah(item.price * item.quantity)}
                         </span>
                         <button
@@ -527,7 +560,7 @@ function DigitalStoreContent() {
                   }}
                 >
                   <span>Total Pesanan:</span>
-                  <span style={{ color: '#1d4ed8' }}>{formatRupiah(cartTotalPrice)}</span>
+                  <span style={{ color: '#55d9b0' }}>{formatRupiah(cartTotalPrice)}</span>
                 </div>
                 <button
                   type="button"
