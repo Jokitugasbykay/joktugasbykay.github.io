@@ -36,6 +36,11 @@ async function call(url,body) {
   // Product sale: Rp2.000 x 90% x 2 = Rp3.600; campaign 30% -> Rp2.520.
   assert.equal((await call('https://example.com/api/create-mayar-payment',payment)).status,409);
   payment.amount = 2520;
+  const invalidContact = await call('https://example.com/api/create-mayar-payment', {
+    ...payment, customer: { ...payment.customer, whatsapp: '62802133' }
+  });
+  assert.equal(invalidContact.status, 400);
+  assert.match(invalidContact.data.error, /Nomor WhatsApp/);
   const paid = await call('https://example.com/api/create-mayar-payment',payment);
   assert.equal(paid.status,201);
   assert.equal(paid.data.total,2520);

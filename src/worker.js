@@ -278,6 +278,12 @@ async function createPayment(request, env) {
   const items = Array.isArray(input?.items) ? input.items : [];
   const task = input && typeof input.task === 'object' && input.task !== null ? input.task : {};
   if (!clean(customer.name, 100) || !/^\S+@\S+\.\S+$/.test(clean(customer.email, 254))) return json({ error: 'Data pelanggan tidak valid.' }, 400);
+  const whatsapp = clean(customer.whatsapp, 24);
+  const whatsappDigits = whatsapp.replace(/^\+/, '');
+  if (whatsapp && (!/^[1-9]\d{7,14}$/.test(whatsappDigits) ||
+      (whatsappDigits.startsWith('62') && !/^628\d{7,11}$/.test(whatsappDigits)))) {
+    return json({ error: 'Nomor WhatsApp tidak valid. Masukkan nomor lengkap dengan kode negara.' }, 400);
+  }
   if (!items.length || items.length > 20) return json({ error: 'Keranjang tidak valid.' }, 400);
   if (items.some(it => it?.productId === 'gemini-pro-18-bulan' || it?.slug === 'gemini-pro-18-bulan' || it?.is_limited_edition === true || String(it?.tipe || '').toUpperCase() === 'SPESIAL')) {
     return json({ error: 'Penawaran Spesial harus dibayar terpisah. Kosongkan keranjang reguler atau selesaikan pesanan reguler dulu.', code: 'CART_TYPE_CONFLICT' }, 409);
@@ -377,6 +383,11 @@ async function createPayment(request, env) {
   const paymentUrl = data.link;
   const transactionId = data.transactionId || data.transaction_id || data.id;
   if (!payment.response.ok || typeof paymentUrl !== 'string' || !transactionId) {
+    console.warn('Mayar checkout response rejected', {
+      upstreamStatus: payment.response.status,
+      hasPaymentUrl: typeof paymentUrl === 'string',
+      hasTransactionId: Boolean(transactionId)
+    });
     await supabase(env, `payment_orders?order_code=eq.${encodeURIComponent(orderCode)}`, { method: 'PATCH', body: JSON.stringify({ payment_status: 'CANCELED' }) }).catch(() => {});
     return json({ error: 'Layanan pembayaran sedang sibuk. Coba lagi.' }, 502);
   }
