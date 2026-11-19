@@ -9,6 +9,7 @@
   const state = {
     penawaranSpesialAktif: false,
     featuredVerified: false,
+    promoSync: 0,
     promoJudul: 'Penawaran Spesial Minggu Ini',
     promoDeadline: null,
     serverTimeOffsetMs: 0,
@@ -73,11 +74,13 @@
     const style = document.createElement('style');
     style.id = 'jokiin-dynamic-catalog-styles';
     style.textContent = `
+      #promo-banner-section:empty { display: none; }
       #promo-banner-section { margin: 24px 0 10px; font-family: "Plus Jakarta Sans", system-ui, sans-serif; }
       .jokiin-promo-head { display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin:16px 0 18px; }
       .jokiin-promo-tag { display:inline-block; background:#ffd54a; color:#2b2100; font-weight:800; font-size:12px; letter-spacing:.08em; padding:6px 12px; border-radius:999px; }
       .jokiin-promo-title { margin:10px 0 0; font-size:clamp(24px, 3vw, 34px); font-weight:800; color:var(--text-main, #0f172a); line-height:1.2; }
       .jokiin-cd { display:flex; gap:8px; }
+      .jokiin-cd[hidden] { display: none; }
       .jokiin-cd > div { border-radius:10px; padding:6px 10px; text-align:center; font-weight:800; min-width:54px; transition:background .2s, border-color .2s, color .2s; }
       .jokiin-cd small { display:block; font-size:10px; font-weight:600; margin-top:2px; }
       .jokiin-lim { position:relative; border-radius:22px; padding:3px; overflow:hidden; transition:background .2s, box-shadow .2s; }
@@ -330,6 +333,7 @@
   }
 
   function ensureFeaturedProductInStorefront() {
+    if (!state.penawaranSpesialAktif || !state.featuredVerified) return;
     const products = getProductsList();
     if (!Array.isArray(products)) return;
     const fp = state.featuredProduct;
@@ -1189,7 +1193,8 @@
     }
 
     // Jika Penawaran Spesial dimatikan, banner di paling atas katalog langsung hilang tanpa menghapus gambarnya
-    if (!state.penawaranSpesialAktif || !state.featuredVerified) {
+    if (!state.penawaranSpesialAktif || !state.featuredVerified ||
+        (state.promoDeadline && !(Date.parse(state.promoDeadline) > getServerNowMs()))) {
       container.innerHTML = '';
       toggleDefaultHargaHeader(false);
       return;
@@ -1202,8 +1207,11 @@
     const maxSlot = Math.max(fp.stok_awal || 20, fp.stok || 1);
     const pct = Math.max(0, Math.min(100, Math.round(((fp.stok || 0) / maxSlot) * 100)));
     const isSoldOut = (fp.stok || 0) <= 0;
-    const desktopBannerObj = state.banners?.find(b => !/mobile/i.test(b.judul || '') && b.urutan !== 1);
-    const mobileBannerObj = state.banners?.find(b => /mobile/i.test(b.judul || '') || b.urutan === 1);
+    const productBanners = state.banners.filter(b =>
+      String(b.judul || '').replace(/\s*\(mobile\)\s*$/i, '').trim().toLowerCase() === fp.nama.trim().toLowerCase()
+    );
+    const desktopBannerObj = productBanners.find(b => !/mobile/i.test(b.judul || '') && b.urutan !== 1);
+    const mobileBannerObj = productBanners.find(b => /mobile/i.test(b.judul || '') || b.urutan === 1);
 
     const desktopBanner = desktopBannerObj?.gambar_url || (!/mobile/i.test(fp.nama || '') ? fp.gambar_url || '' : '');
     const mobileBanner = mobileBannerObj?.gambar_url || '';
@@ -1233,7 +1241,7 @@
           <span class="jokiin-promo-tag">PROMO TERBATAS</span>
           <h1 class="jokiin-promo-title">${escapeHtml(state.promoJudul || 'Penawaran Spesial Minggu Ini')}</h1>
         </div>
-        <div class="jokiin-cd" id="jokiin-promo-cd" aria-label="Hitung mundur promo">
+        <div class="jokiin-cd" id="jokiin-promo-cd" aria-label="Hitung mundur promo"${state.promoDeadline ? '' : ' hidden'}>
           <div><span data-cd="d">01</span><small>HARI</small></div>
           <div><span data-cd="h">03</span><small>JAM</small></div>
           <div><span data-cd="m">17</span><small>MNT</small></div>
@@ -1293,14 +1301,17 @@
 
   function startServerCountdown() {
     const cdEl = document.getElementById('jokiin-promo-cd');
-    if (!cdEl) return;
+    if (!cdEl || !state.promoDeadline) return;
 
-    const targetMs = state.promoDeadline && Number.isFinite(Date.parse(state.promoDeadline))
-      ? Date.parse(state.promoDeadline)
-      : (getServerNowMs() + ((1 * 86400 + 3 * 3600 + 17 * 60 + 25) * 1000));
+    const targetMs = Date.parse(state.promoDeadline);
 
     function updateTick() {
-      const diff = Math.max(0, targetMs - getServerNowMs());
+      const diff = targetMs - getServerNowMs();
+      if (diff <= 0) {
+        state.penawaranSpesialAktif = false;
+        renderPromoBanner();
+        return;
+      }
       const d = Math.floor(diff / 86400000);
       const h = Math.floor((diff % 86400000) / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
@@ -1316,24 +1327,15 @@
       if (sEl) sEl.textContent = String(s).padStart(2, '0');
     }
 
-    updateTick();
     state.countdownTimer = setInterval(updateTick, 1000);
+    updateTick();
   }
 
   function applyCatalogProductsToStorefront(apiProducts) {
     if (!Array.isArray(apiProducts) || !apiProducts.length) return;
     state.lastApiProducts = apiProducts;
 
-    // Pick limited edition product for banner if present
     const limited = apiProducts.find(p => p.is_limited_edition && p.is_active !== false);
-    if (limited) {
-      state.featuredProduct = {
-        ...state.featuredProduct,
-        ...limited,
-        total_sold: typeof limited.total_sold === 'number' ? limited.total_sold : (state.featuredProduct.total_sold ?? 108),
-        stok_awal: Math.max(20, state.featuredProduct.stok_awal || 20)
-      };
-    }
 
     ensureFeaturedProductInStorefront();
 
@@ -1474,6 +1476,7 @@
     bindSpecialCheckoutInputs();
 
     // Only live server data can activate a promotion.
+    const promoSync = ++state.promoSync;
     state.penawaranSpesialAktif = false;
     state.featuredVerified = false;
 
@@ -1486,25 +1489,29 @@
         fetch(`${CATALOG_API}/api/products`).catch(() => null)
       ]);
 
-      if (bannerRes && bannerRes.ok) {
-        const bData = await bannerRes.json();
-        state.penawaranSpesialAktif = bData.penawaran_spesial_aktif === true;
+      const [bData, pData] = await Promise.all([
+        bannerRes?.ok ? bannerRes.json().catch(() => null) : null,
+        prodRes?.ok ? prodRes.json().catch(() => null) : null
+      ]);
+      if (promoSync !== state.promoSync) return;
+
+      const limited = Array.isArray(pData?.products) && pData.products.find(p =>
+        p?.is_limited_edition === true && p.is_active === true && typeof p.nama === 'string' && p.nama.trim() && (p.slug || p.id)
+      );
+      if (bData?.penawaran_spesial_aktif === true && limited) {
         state.promoJudul = bData.promo_judul || state.promoJudul;
         state.promoDeadline = bData.promo_deadline || null;
         if (bData.server_time && Number.isFinite(Date.parse(bData.server_time))) {
           state.serverTimeOffsetMs = Date.parse(bData.server_time) - Date.now();
         }
-        if (Array.isArray(bData.banners)) {
-          state.banners = bData.banners;
-        }
+        state.banners = Array.isArray(bData.banners) ? bData.banners : [];
+        state.featuredProduct = limited;
+        state.featuredVerified = true;
+        state.penawaranSpesialAktif = !state.promoDeadline || Date.parse(state.promoDeadline) > getServerNowMs();
       }
 
-      if (prodRes && prodRes.ok) {
-        const pData = await prodRes.json();
-        if (Array.isArray(pData.products)) {
-          applyCatalogProductsToStorefront(pData.products);
-        }
-      }
+      if (Array.isArray(pData?.products)) applyCatalogProductsToStorefront(pData.products);
+      renderPromoBanner();
 
       // Pastikan seluruh data dari Supabase public.services ter-update
       try {
@@ -1558,7 +1565,7 @@
             salesRows.forEach(row => {
               const count = Number(row.total_sold || 0);
               const slug = String(row.product_slug || '').trim();
-              if (slug === 'gemini-pro-18-bulan' || slug === state.featuredProduct.slug || slug === state.featuredProduct.id) {
+              if (slug === state.featuredProduct.slug || slug === state.featuredProduct.id) {
                 state.featuredProduct.total_sold = count;
               }
               const p = productsList.find(it => it.id === slug || it.slug === slug);
