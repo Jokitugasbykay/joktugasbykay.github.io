@@ -8,11 +8,30 @@ import { DigitalProduct, DigitalCartItem } from '../../types/digital';
 import {
   ADMIN_KAYLA_ID,
   DEFAULT_DIGITAL_CATEGORIES,
-  DEFAULT_DIGITAL_HERO_SLIDES,
   DIGITAL_API_ENDPOINTS,
   SAMPLE_DIGITAL_PRODUCTS,
   formatRupiah,
+  normalizeDigitalCategory,
 } from '../../data/digital-data';
+
+const CATEGORY_ICONS: Record<string, string> = {
+  game: 'M6 12h2m-1-1v2m9-1h.01M18 13h.01M7.5 6h9a3 3 0 0 1 2.9 2.3l1.1 5.2a2.5 2.5 0 0 1-4.2 2.2L14 13h-4l-2.3 2.7a2.5 2.5 0 0 1-4.2-2.2l1.1-5.2A3 3 0 0 1 7.5 6Z',
+  topup: 'M12 3 21 12l-9 9-9-9 9-9Zm0 4-5 5 5 5 5-5-5-5Z',
+  voucher: 'M4 6h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4V6Zm5 0v3m0 3v2m0 3v1',
+  pulsa: 'M7 3h10v18H7zM10 6h4m-3 12h2',
+  pln: 'm13 2-9 12h7l-1 8 10-13h-7l1-7Z',
+  software: 'M3 5h18v12H3zM8 21h8m-4-4v4',
+  giftcard: 'M3 10h18v11H3zM2 6h20v4H2zm10 0v15m0-15H8a2 2 0 1 1 2-2c0 1.1 2 2 2 2Zm0 0h4a2 2 0 1 0-2-2c0 1.1-2 2-2 2Z',
+  lainnya: 'M5 5h.01M12 5h.01M19 5h.01M5 12h.01M12 12h.01M19 12h.01M5 19h.01M12 19h.01M19 19h.01',
+};
+
+function CategoryIcon({ id }: { id: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d={CATEGORY_ICONS[id] || CATEGORY_ICONS.lainnya} />
+    </svg>
+  );
+}
 
 function DigitalStoreContent() {
   const router = useRouter();
@@ -113,7 +132,7 @@ function DigitalStoreContent() {
         if (Array.isArray(data.products) && data.products.length > 0) {
           const mapped: DigitalProduct[] = data.products.map((p: any) => ({
             id: p.id,
-            c: p.kategori || 'ai',
+            c: normalizeDigitalCategory(p.kategori || p.category),
             n: p.nama,
             pv: 'JOKI.IN Store',
             ds: p.deskripsi || '',
@@ -121,6 +140,7 @@ function DigitalStoreContent() {
             st: Number(p.stok) || 0,
             old: p.diskon_persen ? Number(p.harga_dasar) : undefined,
             slug: p.slug,
+            gambar_url: p.gambar_url || p.image_url,
             is_active: p.is_active,
           }));
           setProducts(mapped);
@@ -289,7 +309,7 @@ function DigitalStoreContent() {
           >
             Semua Produk
           </button>
-          {DEFAULT_DIGITAL_CATEGORIES.map((cat) => (
+          {DEFAULT_DIGITAL_CATEGORIES.filter((cat) => cat.id !== 'software' && cat.id !== 'giftcard').map((cat) => (
             <button
               key={cat.id}
               type="button"
@@ -304,33 +324,41 @@ function DigitalStoreContent() {
 
       <main className={styles.mainContent}>
         <div className={styles.adminBar}>
-          <strong>INFO</strong> · Katalog AI &amp; premium apps, game, kreativitas, media sosial, dan aset digital
+          <strong>INFO</strong><span>Transaksi otomatis 24 jam, proses cepat &amp; aman.</span><i aria-hidden="true" />
+          <span>Top up game, voucher, dan kebutuhan digital kamu, lengkap di JOKI.IN!</span>
         </div>
-        {/* Banner existing: pertahankan konten yang dikonfigurasi */}
-        <section className={styles.hero} aria-label="Promo JOKI.IN Digital Store">
-          <span className={styles.heroTag}>{DEFAULT_DIGITAL_HERO_SLIDES[0].l}</span>
-          <h1 className={styles.heroTitle}>{DEFAULT_DIGITAL_HERO_SLIDES[0].h}</h1>
-          <p className={styles.heroDesc}>{DEFAULT_DIGITAL_HERO_SLIDES[0].p}</p>
-          <button
-            type="button"
-            className={styles.heroBtn}
-            onClick={() => {
-              const el = document.getElementById('catalogGrid');
-              if (el) el.scrollIntoView({ behavior: 'smooth' });
-            }}
-          >
-            {DEFAULT_DIGITAL_HERO_SLIDES[0].a}
-          </button>
+        <section className={styles.hero} aria-label="Top up game dan beli produk digital">
+          <div className={styles.heroCopy}>
+            <span className={styles.heroTag}><b>JOKI.IN</b> Digital Store</span>
+            <h1 className={styles.heroTitle}>Top Up Game &amp;<br />Beli Produk Digital<br /><strong>Lebih Cepat, Aman, dan Praktis</strong></h1>
+            <p className={styles.heroDesc}>Lengkap untuk kebutuhan gamer dan hiburan digital kamu, dari top up game, voucher, langganan premium, hingga pulsa &amp; tagihan.</p>
+            <div className={styles.heroActions}>
+              <button type="button" className={styles.heroBtn} onClick={() => document.getElementById('catalogGrid')?.scrollIntoView({ behavior: 'smooth' })}>
+                <span aria-hidden="true">↯</span> Top Up Sekarang
+              </button>
+              <button type="button" className={styles.heroSecondaryBtn} onClick={() => document.getElementById('categoryTitle')?.scrollIntoView({ behavior: 'smooth' })}>
+                <span aria-hidden="true">⠿</span> Lihat Semua Produk
+              </button>
+            </div>
+          </div>
+          <div className={styles.heroArtwork} aria-hidden="true">
+            <div className={`${styles.heroBrandCard} ${styles.heroMl}`}><b>ML</b><span>DIAMONDS</span></div>
+            <div className={`${styles.heroBrandCard} ${styles.heroSteam}`}><b>◉</b><span>STEAM</span></div>
+            <div className={`${styles.heroBrandCard} ${styles.heroNetflix}`}><b>NETFLIX</b></div>
+            <div className={`${styles.heroBrandCard} ${styles.heroSpotify}`}><b>◉</b><span>Spotify</span></div>
+            <div className={styles.heroController}>
+              <svg viewBox="0 0 220 130" fill="none"><path d="M49 37c-15 0-25 10-31 28L7 91c-7 20 10 32 25 21l26-20h104l26 20c15 11 32-1 25-21l-11-26c-6-18-16-28-31-28H49Z" fill="#172b2b" stroke="#6ce8c3" strokeWidth="3"/><path d="M55 58v28m-14-14h28M151 68h.1M174 80h.1" stroke="#61e1bc" strokeWidth="7" strokeLinecap="round"/><path d="M85 43h50" stroke="#3c7771" strokeWidth="4" strokeLinecap="round"/></svg>
+            </div>
+          </div>
         </section>
 
         {/* Section Header */}
         <div className={styles.sectionHeader} id="catalogGrid">
-          <h2 className={styles.sectionTitle}>
-            {selectedCategory === 'all'
-              ? 'Semua Produk Tersedia'
-              : DEFAULT_DIGITAL_CATEGORIES.find((c) => c.id === selectedCategory)?.t || 'Katalog Produk'}
-          </h2>
-          <span className={styles.productCount}>{filteredProducts.length} produk</span>
+          <div>
+            <h2 className={styles.sectionTitle}>{selectedCategory === 'all' ? 'Rekomendasi Produk untuk Kamu' : DEFAULT_DIGITAL_CATEGORIES.find((c) => c.id === selectedCategory)?.t || 'Produk Digital'}</h2>
+            <p className={styles.sectionSubTitle}>Produk pilihan yang paling banyak dicari, siap dibeli sekarang juga.</p>
+          </div>
+          <button type="button" className={styles.seeAll} onClick={() => { setSelectedCategory('all'); setSearchQuery(''); }}>Lihat Semua Produk <span aria-hidden="true">→</span></button>
         </div>
 
         {/* Product Grid */}
@@ -338,11 +366,13 @@ function DigitalStoreContent() {
           {filteredProducts.map((prod) => (
             <article key={prod.id || prod.slug} className={styles.productCard}>
               <div className={styles.cardVisual} aria-hidden="true">
-                {prod.old && <span className={styles.discountTag}>Promo</span>}
-                <span>{prod.n.trim().charAt(0).toUpperCase() || 'P'}</span>
+                {prod.gambar_url ? <img className={styles.cardImage} src={prod.gambar_url} alt="" loading="lazy" /> : (
+                  <div className={styles.cardArtwork}><span>{prod.pv}</span><b>{prod.n}</b></div>
+                )}
+                {prod.old && <span className={styles.discountTag}>-{Math.max(1, Math.round((1 - prod.pr / prod.old) * 100))}%</span>}
               </div>
               <div className={styles.cardTags}>
-                <span className={styles.tagPill}>{prod.pv}</span>
+                <span className={styles.providerName}>{prod.pv}</span>
                 {prod.is_limited_edition && (
                   <span className={styles.tagPill} style={{ background: '#fef3c7', color: '#b45309' }}>
                     Limited
@@ -356,33 +386,26 @@ function DigitalStoreContent() {
                 {prod.old && <span className={styles.cardOldPrice}>{formatRupiah(prod.old)}</span>}
               </div>
               <div className={`${styles.cardStock} ${prod.st <= 0 ? styles.cardStockEmpty : ''}`}>
-                {prod.st > 0 ? `Tersedia: ${prod.st} akun` : 'Stok sedang kosong'}
+                <span aria-hidden="true" />{prod.st > 0 ? (prod.st <= 5 ? 'Stok Terbatas' : 'Stok Tersedia') : 'Stok habis'}
               </div>
               <div className={styles.cardActions}>
                 <button
                   type="button"
                   className={styles.btnPrimary}
                   disabled={prod.st <= 0}
-                  onClick={() => {
-                    setSelectedProduct(prod);
-                    setSelectedQuantity(1);
-                  }}
+                  onClick={() => handleAddToCart(prod, 1)}
                 >
-                  Lihat Produk
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M3 4h2l2.4 11h10.2L20 7H6.2"/><circle cx="9" cy="19.5" r="1.5"/><circle cx="17" cy="19.5" r="1.5"/></svg>
+                  Beli Sekarang
                 </button>
                 <button
                   type="button"
-                  className={styles.cartIconBtn}
-                  disabled={prod.st <= 0}
-                  onClick={() => handleAddToCart(prod, 1)}
-                  aria-label="Tambah ke keranjang"
-                  title="Tambah ke keranjang"
+                  className={styles.cardDetailBtn}
+                  onClick={() => { setSelectedProduct(prod); setSelectedQuantity(1); }}
+                  aria-label={`Detail ${prod.n}`}
+                  title="Detail produk"
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                    <path d="M3 4h2l2.4 11h10.2L20 7H6.2" />
-                    <circle cx="9" cy="19.5" r="1.5" />
-                    <circle cx="17" cy="19.5" r="1.5" />
-                  </svg>
+                  <span aria-hidden="true">⋯</span>
                 </button>
               </div>
             </article>
@@ -404,7 +427,7 @@ function DigitalStoreContent() {
                 className={styles.categoryTile}
                 onClick={() => setSelectedCategory(cat.id)}
               >
-                <span aria-hidden="true">{cat.t.trim().charAt(0).toUpperCase()}</span>
+                <CategoryIcon id={cat.id} />
                 {cat.t}
               </button>
             ))}

@@ -14,13 +14,27 @@ export const formatRupiah = (amount: number): string => {
 };
 
 export const DEFAULT_DIGITAL_CATEGORIES: DigitalCategory[] = [
-  { id: 'unggulan', t: 'Produk Unggulan', d: 'Pilihan yang paling sering dibuka', hue: 230 },
-  { id: 'ai', t: 'AI & Premium Apps', d: 'Aplikasi premium untuk kerja dan belajar', hue: 255 },
-  { id: 'kreatif', t: 'Kreativitas & Editing', d: 'Desain dan video tanpa ribet', hue: 285 },
-  { id: 'game', t: 'Top Up Game', d: 'Diamond, voucher, dan koin', hue: 212 },
-  { id: 'sosmed', t: 'Social Media Services', d: 'Layanan untuk akun sosial', hue: 240 },
-  { id: 'ebook', t: 'E-book & Digital Assets', d: 'Template dan aset siap pakai', hue: 268 },
+  { id: 'game', t: 'Game', d: 'Top up dan kebutuhan gaming', hue: 160 },
+  { id: 'topup', t: 'Top Up Game', d: 'Diamond dan mata uang game', hue: 160 },
+  { id: 'voucher', t: 'Voucher & Langganan', d: 'Akun premium dan voucher', hue: 160 },
+  { id: 'pulsa', t: 'Pulsa & Data', d: 'Pulsa dan paket internet', hue: 160 },
+  { id: 'pln', t: 'PLN & Tagihan', d: 'Token listrik dan pembayaran', hue: 160 },
+  { id: 'software', t: 'Software', d: 'Aplikasi dan lisensi digital', hue: 160 },
+  { id: 'giftcard', t: 'Gift Card', d: 'Saldo untuk layanan digital', hue: 160 },
+  { id: 'lainnya', t: 'Lainnya', d: 'Produk digital lainnya', hue: 160 },
 ];
+
+export const normalizeDigitalCategory = (value: unknown): string => {
+  const category = String(value || '').toLowerCase();
+  if (category.includes('top') || category.includes('diamond')) return 'topup';
+  if (category.includes('game')) return 'game';
+  if (category.includes('voucher') || category.includes('langganan') || category.includes('premium')) return 'voucher';
+  if (category.includes('pulsa') || category.includes('data')) return 'pulsa';
+  if (category.includes('pln') || category.includes('tagihan') || category.includes('listrik')) return 'pln';
+  if (category.includes('software') || category.includes('aplikasi') || category.includes('ai') || category.includes('kreatif')) return 'software';
+  if (category.includes('gift') || category.includes('card')) return 'giftcard';
+  return 'lainnya';
+};
 
 export const DEFAULT_DIGITAL_HERO_SLIDES: DigitalHeroSlide[] = [
   {
@@ -45,7 +59,7 @@ export const DEFAULT_DIGITAL_HERO_SLIDES: DigitalHeroSlide[] = [
 export const SAMPLE_DIGITAL_PRODUCTS: DigitalProduct[] = [
   {
     id: '03d664e2-a799-45f8-8952-3e1e1a7efe59',
-    c: 'ai',
+    c: 'software',
     n: 'Gemini Pro 18 Bulan',
     pv: 'Google Workspace',
     ds: 'Akses penuh Gemini Advanced 18 bulan dengan penyimpanan cloud terintegrasi.',
@@ -57,7 +71,7 @@ export const SAMPLE_DIGITAL_PRODUCTS: DigitalProduct[] = [
   },
   {
     id: 'ai-chatgpt-plus',
-    c: 'ai',
+    c: 'software',
     n: 'ChatGPT Plus Shared Private',
     pv: 'OpenAI',
     ds: 'Akses GPT-4o, browsing web, code analysis, dan image generation berkecepatan tinggi.',
@@ -69,7 +83,7 @@ export const SAMPLE_DIGITAL_PRODUCTS: DigitalProduct[] = [
   },
   {
     id: 'kreatif-canva-pro',
-    c: 'kreatif',
+    c: 'software',
     n: 'Canva Pro Edu 1 Tahun',
     pv: 'Canva',
     ds: 'Akses fitur brand kit, jutaan aset grafis premium, dan magic resize tanpa watermark.',
@@ -81,7 +95,7 @@ export const SAMPLE_DIGITAL_PRODUCTS: DigitalProduct[] = [
   },
   {
     id: 'tools-turnitin-no-repo',
-    c: 'ai',
+    c: 'software',
     n: 'Turnitin Akun Instructor No Repository',
     pv: 'Turnitin LLC',
     ds: 'Pengecekan orisinalitas tanpa menyimpan berkas ke database utama (zero repository).',
