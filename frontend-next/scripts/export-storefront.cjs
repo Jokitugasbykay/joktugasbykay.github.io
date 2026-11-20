@@ -66,7 +66,7 @@ function planStorefrontExport(outDir, destination) {
     const isApprovedRoute = APPROVED_PAGE_ROUTES.some(r => file === r || file.startsWith(path.dirname(r) + '/__next.'));
     const isStaticAsset = file.startsWith('_next/static/');
     const isTxtMetadata = file.endsWith('.txt');
-    const isPublicAsset = file.startsWith('assets/');
+    const isPublicAsset = file.startsWith('assets/') && !file.endsWith('/README.md');
 
     if (isApprovedRoute || isStaticAsset || isTxtMetadata || isPublicAsset) {
       selected.add(file);
