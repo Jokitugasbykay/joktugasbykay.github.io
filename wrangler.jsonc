@@ -9,5 +9,8 @@
     "directory": ".",
     "binding": "ASSETS",
     "run_worker_first": ["/api/*", "/produk-digital", "/produk-digital/*"]
-  }
+  },
+  "r2_buckets": [
+    { "binding": "TASK_ATTACHMENTS", "bucket_name": "jokiin-task-attachments" }
+  ]
 }

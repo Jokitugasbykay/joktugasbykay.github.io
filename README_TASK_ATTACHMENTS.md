@@ -1,15 +1,18 @@
-# Lampiran pesanan ke Google Drive
+# Lampiran pesanan: Cloudflare R2 ke Google Drive
 
-Perubahan kode ini belum aktif sampai Worker dan aset situs di-deploy. Link yang disimpan pada `site_settings.task_upload_drive_folder` harus berupa folder utama penampung, bukan folder tanggal tertentu.
+Target alurnya: customer mengunggah file lewat form checkout, Worker menyimpan file secara privat ke bucket `jokiin-task-attachments`, lalu menyalin file ke subfolder tanggal di Google Drive admin. Catatan lampiran dan status sinkronisasi disimpan pada `payment_orders.task.attachments`.
 
-## Aktivasi
+## Konfigurasi
 
-1. Siapkan Google Drive API OAuth milik akun pemilik folder. Izin OAuth harus dapat membuat file di folder tujuan; simpan refresh token dari akun tersebut di server. URL folder saja tidak memberikan izin unggah. Jangan masukkan kredensial atau refresh token ke source, HTML, APK, atau chat.
-2. Untuk folder **My Drive**, gunakan OAuth akun pemilik folder. Service account tidak memiliki kuota penyimpanan Drive; membagikan folder My Drive sebagai Editor tidak mengatasi batasan ini.
-3. Simpan tiga secret Worker: `GOOGLE_DRIVE_CLIENT_ID`, `GOOGLE_DRIVE_CLIENT_SECRET`, `GOOGLE_DRIVE_REFRESH_TOKEN`. Alternatif service account dengan secret `GOOGLE_SERVICE_ACCOUNT_JSON` hanya untuk folder di **Shared Drive** organisasi.
-4. Deploy `src/worker.js`, lalu deploy `index.html` beserta file web terkait. Jalur checkout akan membuat pesanan dan mengunggah lampiran ke Drive sebelum membuka halaman pembayaran. Jika Drive gagal, checkout menampilkan error dan tidak menganggap lampiran terkirim.
-5. Buka halaman `admin/`, pilih tab **Folder Lampiran**, lalu simpan link folder utama. Sistem akan membuat atau memakai subfolder tanggal hari ini otomatis memakai zona waktu WIB, sehingga link tidak perlu diganti setiap hari. Menu tersebut membaca dan menyimpan `site_settings.task_upload_drive_folder`, yang dibatasi untuk admin.
+1. Bucket R2 `jokiin-task-attachments` dibuat di lokasi APAC. Binding Worker bernama `TASK_ATTACHMENTS` didefinisikan di `wrangler.jsonc`.
+2. Worker perlu secret Google Drive yang sudah ada: `GOOGLE_DRIVE_CLIENT_ID`, `GOOGLE_DRIVE_CLIENT_SECRET`, `GOOGLE_DRIVE_REFRESH_TOKEN`. Refresh token harus milik akun dengan izin tulis ke folder Drive tujuan. Akun service hanya dapat mengunggah ke Shared Drive.
+3. Admin menyimpan URL folder utama melalui tab **Folder Lampiran** di `/admin/`. Worker membuat subfolder tanggal WIB.
+4. Deploy Worker beserta frontend checkout. File dibatasi 10 file per pesanan, ukuran gabungan 50 MB, dan format PDF, DOC, DOCX, ZIP, JPG, JPEG, PNG.
 
-File maksimal 10 dengan ukuran gabungan 50 MB. Endpoint Worker mengulangi pemeriksaan jumlah dan ukuran. Nama dan link hasil unggah disimpan dalam `payment_orders.task.attachments` dan akan tersalin ke `orders.task` ketika pembayaran berubah menjadi PAID. Pada transaksi yang sudah PAID sebelum perubahan ini, lampiran lama yang tidak pernah diunggah tidak dapat dipulihkan dari browser.
+Jika Drive sedang gagal, lampiran tetap tersimpan di R2 dan diberi status `pending`; endpoint admin `POST /api/sync-task-attachment` dapat mencoba sinkronisasi ulang dengan bearer token akun admin Supabase dan body `{ "order_id": "...", "attachment_id": "..." }`.
 
-**Batasan operasional:** unggah 50 MB dari jaringan seluler perlu pengujian langsung pada akun dan batas paket Cloudflare. Jika akun Google OAuth atau service account tidak diberi akses tulis ke folder utama, Worker mengembalikan kegagalan yang menjelaskan tindakan perbaikannya. Uji dengan file kecil terlebih dahulu sebelum transaksi nyata.
+R2 memiliki kuota gratis bulanan; pemakaian di atas kuota ditagih berdasarkan tarif Cloudflare. Uji unggah file kecil melalui checkout sebelum digunakan customer.
+
+## Status penerapan
+
+Bucket sudah dibuat dan backend lokal sudah memiliki binding serta endpoint R2. Form produksi masih menampilkan keadaan lama **Dalam Perbaikan**: `jokiin.my.id` menyajikan storefront legacy yang berbeda dari halaman Next.js di repo ini. Karena sumber aktif storefront tidak ada di checkout ini, perubahan belum di-deploy agar tidak menimpa website dengan halaman migrasi yang keliru.

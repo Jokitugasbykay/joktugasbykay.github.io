@@ -129,45 +129,99 @@ async function uploadTaskFile(request, env) {
   try { name = decodeURIComponent(request.headers.get('x-file-name') || ''); } catch { return json({error:'Nama file tidak valid.'},400); }
   const extension = name.split('.').pop()?.toLowerCase();
   const size = Number(request.headers.get('x-file-size') || request.headers.get('content-length'));
-  if (!id || !draftKey || name.length > 200 || !FILE_MIMES[extension] || /[\\/\x00-\x1f]/.test(name) || !Number.isInteger(size) || size < 1 || size > MAX_TASK_BYTES) return json({error:'Lampiran tidak valid atau melebihi 50 MB.'},400);
+  if (!/^[A-Za-z0-9_-]{1,80}$/.test(id) || !draftKey || name.length > 200 || !FILE_MIMES[extension] || /[\\/\x00-\x1f]/.test(name) || !Number.isInteger(size) || size < 1 || size > MAX_TASK_BYTES) return json({error:'Lampiran tidak valid atau melebihi 50 MB.'},400);
+  if (!env.TASK_ATTACHMENTS) return json({error:'Penyimpanan lampiran belum siap. Hubungi admin.'},503);
   const rows = await supabase(env,`payment_orders?id=eq.${encodeURIComponent(id)}&request_key=eq.${encodeURIComponent(draftKey)}&select=id,task,payment_status&limit=1`);
   const order = rows?.[0];
   if (!order || order.payment_status !== 'PENDING') return json({error:'Pesanan tidak tersedia untuk lampiran.'},403);
+  const bytes = await request.arrayBuffer();
+  if (bytes.byteLength !== size) return json({error:'Ukuran file tidak sesuai. Pilih ulang lampiran dan coba lagi.'},400);
+  const hashBytes = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
+  const fileHash = [...hashBytes].map(n => n.toString(16).padStart(2,'0')).join('');
+  const key = `task-attachments/${id}/${fileHash}-${encodeURIComponent(name)}`;
+  const idBytes = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${fileHash}:${name}`)));
+  const attachmentId = [...idBytes].map(n => n.toString(16).padStart(2,'0')).join('');
   const attachments = Array.isArray(order.task?.attachments) ? order.task.attachments : [];
-  const existing = attachments.find(file => file.name === name && Number(file.size) === size);
+  const existing = attachments.find(file => file.r2_key === key);
   if (existing) return json({attachment:existing});
-  if (attachments.length >= 10 || attachments.reduce((sum,file)=>sum+Number(file.size||0),size)>MAX_TASK_BYTES) return json({error:'Maksimal 10 file / total 50 MB.'},400);
+  if (!existing && (attachments.length >= 10 || attachments.reduce((sum,file)=>sum+Number(file.size||0),size)>MAX_TASK_BYTES)) return json({error:'Maksimal 10 file / total 50 MB.'},400);
+  try {
+    const stored = await env.TASK_ATTACHMENTS.put(key, bytes, {
+      httpMetadata: { contentType: FILE_MIMES[extension], cacheControl: 'private, no-store' },
+      customMetadata: { orderId: id, sha256: fileHash }
+    });
+    if (stored.size !== size) throw new Error('R2 size mismatch');
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : 'R2 upload error');
+    return json({error:'Cloudflare R2 gagal menyimpan lampiran. Coba lagi.'},502);
+  }
+  const entry = existing || { id:attachmentId, name, size, r2_key:key };
+  if (!existing) {
+    const nextTask = { ...order.task, attachments:[...attachments, entry] };
+    try {
+      await supabase(env,`payment_orders?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:JSON.stringify({task:nextTask})});
+    } catch (error) {
+      await env.TASK_ATTACHMENTS.delete(key).catch(() => {});
+      throw error;
+    }
+  }
+  return json({attachment:entry},201);
+}
+
+async function syncR2AttachmentToDrive(env, attachment) {
   const settings = await supabase(env,'site_settings?key=eq.task_upload_drive_folder&select=value&limit=1');
   const folderId = clean(settings?.[0]?.value?.folder_id,120);
-  let token;
-  try { token = await googleToken(env); }
-  catch { return json({error:'Autorisasi Google Drive gagal. Admin perlu memperbarui kredensial Google Drive di Worker.'},503); }
-  if (!/^[A-Za-z0-9_-]{10,120}$/.test(folderId) || !token) return json({error:'Folder lampiran belum siap. Hubungi admin.'},503);
-  let file;
+  const token = await googleToken(env);
+  if (!/^[A-Za-z0-9_-]{10,120}$/.test(folderId) || !token) throw new Error('Google Drive belum dikonfigurasi.');
+  const object = await env.TASK_ATTACHMENTS.get(attachment.r2_key);
+  if (!object || object.size !== Number(attachment.size)) throw new Error('R2 object missing or size mismatch');
+  const folderResponse = await fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(folderId)}?fields=id,mimeType,driveId,capabilities(canAddChildren)&supportsAllDrives=true`,{headers:{Authorization:`Bearer ${token}`}});
+  if (!folderResponse.ok) throw new Error(`Drive folder lookup error ${folderResponse.status}`);
+  const folder = await folderResponse.json();
+  if (folder.mimeType !== 'application/vnd.google-apps.folder' || !folder.capabilities?.canAddChildren) throw new Error('Drive folder is not writable');
+  const usingOAuth = env.GOOGLE_DRIVE_CLIENT_ID && env.GOOGLE_DRIVE_CLIENT_SECRET && env.GOOGLE_DRIVE_REFRESH_TOKEN;
+  if (!usingOAuth && !folder.driveId) throw new Error('Shared Drive required for service account uploads');
+  const dailyFolder = await ensureDailyDriveFolder(token, folderId);
+  const objectBytes = await object.arrayBuffer();
+  const extension = attachment.name.split('.').pop()?.toLowerCase();
+  const session = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id,name&supportsAllDrives=true',{method:'POST',headers:{Authorization:`Bearer ${token}`,'content-type':'application/json','x-upload-content-type':FILE_MIMES[extension],'x-upload-content-length':String(attachment.size)},body:JSON.stringify({name:attachment.name,parents:[dailyFolder.id]})});
+  const location = session.headers.get('location');
+  if (!session.ok || !location?.startsWith('https://www.googleapis.com/')) throw new Error(`Drive session error ${session.status}`);
+  const uploaded = await fetch(location,{method:'PUT',headers:{'content-type':FILE_MIMES[extension],'content-length':String(attachment.size)},body:objectBytes});
+  if (!uploaded.ok) throw new Error(`Drive upload error ${uploaded.status}`);
+  const file = await uploaded.json();
+  if (!file?.id) throw new Error('Drive returned no file ID');
+  return `https://drive.google.com/file/d/${encodeURIComponent(file.id)}/view`;
+}
+
+async function retryTaskAttachmentSync(request, env) {
+  if (!corsOk(request)) return json({error:'Origin tidak diizinkan.'},403);
+  const userId = await authenticatedUserId(request, env);
+  if (!userId) return json({error:'Login admin diperlukan.'},401);
+  const profile = await supabase(env,`profiles?id=eq.${encodeURIComponent(userId)}&select=role&limit=1`);
+  if (!['admin','super_admin'].includes(profile?.[0]?.role)) return json({error:'Akses admin diperlukan.'},403);
+  const body = await readJSON(request);
+  const id = clean(body?.order_id,80);
+  const attachmentId = clean(body?.attachment_id,64);
+  if (!/^[A-Za-z0-9_-]{1,80}$/.test(id) || !/^[a-f0-9]{64}$/i.test(attachmentId)) return json({error:'Lampiran tidak valid.'},400);
+  const rows = await supabase(env,`payment_orders?id=eq.${encodeURIComponent(id)}&select=id,order_code,task&limit=1`);
+  const order = rows?.[0];
+  if (!order) return json({error:'Pesanan tidak ditemukan.'},404);
+  const attachments = Array.isArray(order.task?.attachments) ? order.task.attachments : [];
+  const attachment = attachments.find(file => file.id === attachmentId && typeof file.r2_key === 'string');
+  if (!attachment) return json({error:'Lampiran tidak ditemukan di R2.'},404);
+  if (attachment.drive_url && attachment.sync_status === 'synced') return json({attachment});
   try {
-    const folderResponse = await fetch(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(folderId)}?fields=id,mimeType,driveId,capabilities(canAddChildren)&supportsAllDrives=true`,{headers:{Authorization:`Bearer ${token}`}});
-    if (!folderResponse.ok) return json({error:'Folder Google Drive tidak dapat diakses. Periksa ID folder dan izin akun upload.'},502);
-    const folder = await folderResponse.json();
-    if (folder.mimeType !== 'application/vnd.google-apps.folder' || !folder.capabilities?.canAddChildren) return json({error:'Akun upload tidak memiliki izin menambahkan file ke folder tujuan.'},502);
-    const usingOAuth = env.GOOGLE_DRIVE_CLIENT_ID && env.GOOGLE_DRIVE_CLIENT_SECRET && env.GOOGLE_DRIVE_REFRESH_TOKEN;
-    if (!usingOAuth && !folder.driveId) return json({error:'Upload ke My Drive memerlukan OAuth akun pemilik. Service account tidak memiliki kuota penyimpanan; gunakan Shared Drive atau konfigurasi OAuth di Worker.'},503);
-    const dailyFolder = await ensureDailyDriveFolder(token, folderId);
-    const session = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id,name&supportsAllDrives=true',{method:'POST',headers:{Authorization:`Bearer ${token}`,'content-type':'application/json','x-upload-content-type':FILE_MIMES[extension],'x-upload-content-length':String(size)},body:JSON.stringify({name,parents:[dailyFolder.id]})});
-    const location = session.headers.get('location');
-    if (!session.ok || !location?.startsWith('https://www.googleapis.com/')) throw new Error(`Drive session error ${session.status}`);
-    const bytes = await request.arrayBuffer();
-    if (bytes.byteLength !== size) return json({error:'Ukuran file tidak sesuai. Pilih ulang lampiran dan coba lagi.'},400);
-    const uploaded = await fetch(location,{method:'PUT',headers:{'content-type':FILE_MIMES[extension],'content-length':String(size)},body:bytes});
-    if (!uploaded.ok) throw new Error(`Drive upload error ${uploaded.status}`);
-    file = await uploaded.json();
-    if (!file?.id) throw new Error('Drive returned no file ID');
+    const driveUrl = await syncR2AttachmentToDrive(env, attachment);
+    const synced = { ...attachment, drive_url:driveUrl, sync_status:'synced', synced_at:new Date().toISOString() };
+    const nextTask = { ...order.task, attachments:attachments.map(file => file.id === attachmentId ? synced : file) };
+    await supabase(env,`payment_orders?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:JSON.stringify({task:nextTask})});
+    await supabase(env,`orders?order_code=eq.${encodeURIComponent(order.order_code)}`,{method:'PATCH',body:JSON.stringify({task:nextTask})}).catch(() => {});
+    return json({attachment:synced});
   } catch (error) {
-    console.error(error instanceof Error ? error.message : 'Drive upload error');
-    return json({error:'Google Drive gagal menerima lampiran. Admin perlu memeriksa kuota penyimpanan, izin folder, dan kredensial upload.'},502);
+    console.error(error instanceof Error ? error.message : 'Google Drive retry error');
+    return json({error:'File masih aman di R2, tetapi Google Drive belum bisa menerima salinannya. Coba lagi nanti.'},502);
   }
-  const entry = {name,size,drive_url:`https://drive.google.com/file/d/${encodeURIComponent(file.id)}/view`};
-  await supabase(env,`payment_orders?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:JSON.stringify({task:{...order.task,attachments:[...attachments,entry]}})});
-  return json({attachment:entry},201);
 }
 
 function supabaseHeaders(env) {
