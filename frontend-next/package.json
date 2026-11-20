@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "packageManager": "npm@12.2.1",
-  "engines": { "node": "26.13.0", "npm": "12.2.1" },
+  "engines": {
+    "node": "26.13.0",
+    "npm": "12.2.1"
+  },
   "scripts": {
     "type-check": "next typegen && tsc --noEmit --incremental false",
     "build": "next build",
@@ -13,7 +16,7 @@
     "audit:lock": "node scripts/audit-lock.cjs"
   },
   "dependencies": {
-    "next": "16.4.3",
+    "next": "16.4.6",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },
