@@ -29,11 +29,11 @@ const CATEGORY_ICONS: Record<string, string> = {
 };
 
 const FEATURED_PREVIEW = [
-  { name: 'Mobile Legends Diamonds', brand: 'Mobile Legends', description: 'Isi ulang Diamond Mobile Legends.', art: 'mlbb' },
+  { name: 'Mobile Legends Diamonds', brand: 'Mobile Legends', description: 'Isi ulang Diamond Mobile Legends.', art: 'mlbb', wordmark: 'MOBILE LEGENDS' },
   { name: 'Free Fire Diamonds', brand: 'Garena', description: 'Isi ulang Diamond Free Fire.', art: 'freeFire', image: 'free-fire.webp' },
-  { name: 'Steam Wallet IDR', brand: 'Steam', description: 'Voucher saldo untuk Steam Wallet.', art: 'steam', image: 'steam.svg' },
-  { name: 'Netflix Premium', brand: 'Netflix', description: 'Langganan hiburan Netflix.', art: 'netflix', image: 'netflix.svg' },
-  { name: 'Spotify Premium', brand: 'Spotify', description: 'Langganan musik Spotify.', art: 'spotify', image: 'spotify.svg' },
+  { name: 'Steam Wallet IDR', brand: 'Steam', description: 'Voucher saldo untuk Steam Wallet.', art: 'steam', image: 'steam.svg', wordmark: 'STEAM' },
+  { name: 'Netflix Premium', brand: 'Netflix', description: 'Langganan hiburan Netflix.', art: 'netflix', image: 'netflix.svg', wordmark: 'NETFLIX' },
+  { name: 'Spotify Premium', brand: 'Spotify', description: 'Langganan musik Spotify.', art: 'spotify', image: 'spotify.svg', wordmark: 'Spotify' },
 ];
 
 function CategoryIcon({ id }: { id: string }) {
@@ -274,28 +274,6 @@ function DigitalStoreContent() {
 
           </Link>
 
-          <form className={styles.searchForm} role="search" onSubmit={(e) => { e.preventDefault(); document.getElementById('catalogGrid')?.scrollIntoView(); }}>
-            <CategoryIcon id="search" />
-            <input
-              className={styles.searchInput}
-              type="search"
-              placeholder="Cari produk digital..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              aria-label="Cari produk digital"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                className={styles.searchClear}
-                onClick={() => setSearchQuery('')}
-                aria-label="Hapus pencarian"
-              >
-                <CategoryIcon id="close" />
-              </button>
-            )}
-          </form>
-
           <button
             className={styles.actionBtn}
             type="button"
@@ -319,27 +297,50 @@ function DigitalStoreContent() {
           </a>
         </div>
 
-        <nav className={styles.catNav} aria-label="Kategori Produk">
-          <button
-            type="button"
-            className={`${styles.catBtn} ${selectedCategory === 'all' ? styles.catBtnActive : ''}`}
-            aria-pressed={selectedCategory === 'all'}
-            onClick={() => { setSelectedCategory('all'); document.getElementById('catalogGrid')?.scrollIntoView(); }}
-          >
-            <CategoryIcon id="all" /> Semua Produk
-          </button>
-          {DEFAULT_DIGITAL_CATEGORIES.filter((cat) => cat.id !== 'software' && cat.id !== 'giftcard').map((cat) => (
+        <div className={styles.subNavWrap}>
+          <nav className={styles.catNav} aria-label="Kategori Produk">
             <button
-              key={cat.id}
               type="button"
-              className={`${styles.catBtn} ${selectedCategory === cat.id ? styles.catBtnActive : ''}`}
-              aria-pressed={selectedCategory === cat.id}
-              onClick={() => { setSelectedCategory(cat.id); setSearchQuery(''); document.getElementById('catalogGrid')?.scrollIntoView(); }}
+              className={`${styles.catBtn} ${selectedCategory === 'all' ? styles.catBtnActive : ''}`}
+              aria-pressed={selectedCategory === 'all'}
+              onClick={() => { setSelectedCategory('all'); document.getElementById('catalogGrid')?.scrollIntoView(); }}
             >
-              <CategoryIcon id={cat.id} /> {cat.t}
+              <CategoryIcon id="all" /> Semua Produk
             </button>
-          ))}
-        </nav>
+            {DEFAULT_DIGITAL_CATEGORIES.filter((cat) => cat.id !== 'software' && cat.id !== 'giftcard').map((cat) => (
+              <button
+                key={cat.id}
+                type="button"
+                className={`${styles.catBtn} ${selectedCategory === cat.id ? styles.catBtnActive : ''}`}
+                aria-pressed={selectedCategory === cat.id}
+                onClick={() => { setSelectedCategory(cat.id); setSearchQuery(''); document.getElementById('catalogGrid')?.scrollIntoView(); }}
+              >
+                <CategoryIcon id={cat.id} /> {cat.t}
+              </button>
+            ))}
+          </nav>
+          <form className={styles.searchForm} role="search" onSubmit={(e) => { e.preventDefault(); document.getElementById('catalogGrid')?.scrollIntoView(); }}>
+            <CategoryIcon id="search" />
+            <input
+              className={styles.searchInput}
+              type="search"
+              placeholder="Cari produk digital..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Cari produk digital"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                className={styles.searchClear}
+                onClick={() => setSearchQuery('')}
+                aria-label="Hapus pencarian"
+              >
+                <CategoryIcon id="close" />
+              </button>
+            )}
+          </form>
+        </div>
       </header>
 
       <main className={styles.mainContent}>
@@ -373,7 +374,8 @@ function DigitalStoreContent() {
             {FEATURED_PREVIEW.map((item) => (
               <article key={item.name} className={`${styles.productCard} ${styles.previewCard}`}>
                 <div className={`${styles.cardVisual} ${styles.previewVisual}`} data-brand={item.art} aria-hidden="true">
-                  {item.image ? <img src={`/assets/produk-digital/brands/${item.image}`} alt="" loading="lazy" /> : <span>ML</span>}
+                  {item.image ? <img src={`/assets/produk-digital/brands/${item.image}`} alt="" loading="lazy" /> : <span className={styles.mlbbMark}>ML</span>}
+                  {item.wordmark && <span className={styles.previewWordmark}>{item.wordmark}</span>}
                 </div>
                 <div className={styles.cardTags}><span className={styles.providerName}>{item.brand}</span></div>
                 <h3 className={styles.cardTitle}>{item.name}</h3>
