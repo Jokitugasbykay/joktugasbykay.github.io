@@ -97,12 +97,9 @@ function DigitalStoreContent() {
             setAuthStatus('forbidden');
           }
         })
-        .catch(() => {
-          // Fallback ke authorized jika verifikasi offline atau token ada
-          setAuthStatus('authorized');
-        });
+        .catch(() => setAuthStatus('forbidden'));
     } catch (_) {
-      setAuthStatus('authorized');
+      setAuthStatus('forbidden');
     }
   }, [router]);
 
