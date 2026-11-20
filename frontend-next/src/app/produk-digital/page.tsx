@@ -14,6 +14,14 @@ import {
   normalizeDigitalCategory,
 } from '../../data/digital-data';
 
+const PRODUCT_ART: Record<string, string> = {
+  'pembuatan-cv': 'document',
+  'joki-skripsi': 'book',
+  'joki-ppt': 'presentation',
+  'joki-proposal-skripsi': 'writing',
+  'cek-turnitin': 'receipt',
+};
+
 const CATEGORY_ICONS: Record<string, string> = {
   game: 'M6 12h2m-1-1v2m9-1h.01M18 13h.01M7.5 6h9a3 3 0 0 1 2.9 2.3l1.1 5.2a2.5 2.5 0 0 1-4.2 2.2L14 13h-4l-2.3 2.7a2.5 2.5 0 0 1-4.2-2.2l1.1-5.2A3 3 0 0 1 7.5 6Z',
   topup: 'M12 3 21 12l-9 9-9-9 9-9Zm0 4-5 5 5 5 5-5-5-5Z',
@@ -336,20 +344,12 @@ function DigitalStoreContent() {
               <button type="button" className={styles.heroBtn} onClick={() => document.getElementById('catalogGrid')?.scrollIntoView({ behavior: 'smooth' })}>
                 <span aria-hidden="true">↯</span> Top Up Sekarang
               </button>
-              <button type="button" className={styles.heroSecondaryBtn} onClick={() => document.getElementById('categoryTitle')?.scrollIntoView({ behavior: 'smooth' })}>
+              <button type="button" className={styles.heroSecondaryBtn} onClick={() => { setSelectedCategory('all'); setSearchQuery(''); document.getElementById('catalogGrid')?.scrollIntoView({ behavior: 'smooth' }); }}>
                 <span aria-hidden="true">⠿</span> Lihat Semua Produk
               </button>
             </div>
           </div>
-          <div className={styles.heroArtwork} aria-hidden="true">
-            <div className={`${styles.heroBrandCard} ${styles.heroMl}`}><b>ML</b><span>DIAMONDS</span></div>
-            <div className={`${styles.heroBrandCard} ${styles.heroSteam}`}><b>◉</b><span>STEAM</span></div>
-            <div className={`${styles.heroBrandCard} ${styles.heroNetflix}`}><b>NETFLIX</b></div>
-            <div className={`${styles.heroBrandCard} ${styles.heroSpotify}`}><b>◉</b><span>Spotify</span></div>
-            <div className={styles.heroController}>
-              <svg viewBox="0 0 220 130" fill="none"><path d="M49 37c-15 0-25 10-31 28L7 91c-7 20 10 32 25 21l26-20h104l26 20c15 11 32-1 25-21l-11-26c-6-18-16-28-31-28H49Z" fill="#172b2b" stroke="#6ce8c3" strokeWidth="3"/><path d="M55 58v28m-14-14h28M151 68h.1M174 80h.1" stroke="#61e1bc" strokeWidth="7" strokeLinecap="round"/><path d="M85 43h50" stroke="#3c7771" strokeWidth="4" strokeLinecap="round"/></svg>
-            </div>
-          </div>
+          <img className={styles.heroArtwork} src="/assets/produk-digital/store-hero.webp" alt="" fetchPriority="high" />
         </section>
 
         {/* Section Header */}
@@ -367,7 +367,10 @@ function DigitalStoreContent() {
             <article key={prod.id || prod.slug} className={styles.productCard}>
               <div className={styles.cardVisual} aria-hidden="true">
                 {prod.gambar_url ? <img className={styles.cardImage} src={prod.gambar_url} alt="" loading="lazy" /> : (
-                  <div className={styles.cardArtwork}><span>{prod.pv}</span><b>{prod.n}</b></div>
+                  <div className={styles.cardArtwork}>
+                    <b>{prod.n}</b>
+                    <img src={`/assets/ui-art/${PRODUCT_ART[prod.slug ?? ''] ?? 'folder'}.png`} alt="" loading="lazy" />
+                  </div>
                 )}
                 {prod.old && <span className={styles.discountTag}>-{Math.max(1, Math.round((1 - prod.pr / prod.old) * 100))}%</span>}
               </div>
@@ -379,14 +382,16 @@ function DigitalStoreContent() {
                   </span>
                 )}
               </div>
-              <h3 className={styles.cardTitle}>{prod.n}</h3>
+              <h3 className={styles.cardTitle}>
+                <button type="button" className={styles.cardTitleButton} onClick={() => { setSelectedProduct(prod); setSelectedQuantity(1); }}>
+                  {prod.n}
+                </button>
+              </h3>
               <p className={styles.cardDesc}>{prod.ds}</p>
               <div className={styles.cardPricing}>
                 <span className={styles.cardPrice}>{formatRupiah(prod.pr)}</span>
+                <span className={`${styles.cardStock} ${prod.st <= 0 ? styles.cardStockEmpty : prod.st <= 5 ? styles.cardStockLimited : ''}`}>{prod.st > 5 ? 'Stok Tersedia' : prod.st > 0 ? 'Stok Terbatas' : 'Stok habis'}</span>
                 {prod.old && <span className={styles.cardOldPrice}>{formatRupiah(prod.old)}</span>}
-              </div>
-              <div className={`${styles.cardStock} ${prod.st <= 0 ? styles.cardStockEmpty : ''}`}>
-                <span aria-hidden="true" />{prod.st > 0 ? (prod.st <= 5 ? 'Stok Terbatas' : 'Stok Tersedia') : 'Stok habis'}
               </div>
               <div className={styles.cardActions}>
                 <button
@@ -397,15 +402,6 @@ function DigitalStoreContent() {
                 >
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M3 4h2l2.4 11h10.2L20 7H6.2"/><circle cx="9" cy="19.5" r="1.5"/><circle cx="17" cy="19.5" r="1.5"/></svg>
                   Beli Sekarang
-                </button>
-                <button
-                  type="button"
-                  className={styles.cardDetailBtn}
-                  onClick={() => { setSelectedProduct(prod); setSelectedQuantity(1); }}
-                  aria-label={`Detail ${prod.n}`}
-                  title="Detail produk"
-                >
-                  <span aria-hidden="true">⋯</span>
                 </button>
               </div>
             </article>

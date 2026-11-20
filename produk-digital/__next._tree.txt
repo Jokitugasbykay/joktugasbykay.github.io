@@ -1,7 +1,7 @@
 :HL["/_next/static/chunks/31zg_kdr80cl1.css","style"]
 :HL["/_next/static/chunks/2_27sae8ni7kb.css","style"]
-:HL["/_next/static/chunks/2ixs1lvmoai-w.css","style"]
+:HL["/_next/static/chunks/42vgqrv1kjv0a.css","style"]
 :HL["https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap","style"]
 2:[["children",{"s":"__PAGE__","h":160}]]
 1:[["children",{"s":"produk-digital","h":96,"c":"$Q2"}]]
-0:{"b":"3t3tdaXH9Uz2sWgHxgJRE","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
+0:{"b":"m3jac-rmO_0E8MkgJDvO7","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
