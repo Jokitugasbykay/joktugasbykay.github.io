@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import styles from './login.module.css';
-import { getAccount, GOOGLE_RETURN_KEY, saveAccessToken, signOut, SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/auth-session';
+import { getAccount, GOOGLE_RETURN_KEY, saveAuthSession, signOut, SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/auth-session';
 
 function safeRedirect(target: string | null) {
   return target?.startsWith('/') && !target.startsWith('//') && !/[\\\x00-\x20]/.test(target) ? target : '/';
@@ -50,11 +50,12 @@ function LoginContent() {
           headers: { apikey: SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
           body: JSON.stringify({ auth_code: code, code_verifier: verifier }),
         });
-        const { access_token: token } = await response.json();
-        if (!response.ok || typeof token !== 'string' || !await getAccount(token)) {
+        const session = await response.json();
+        const account = response.ok && typeof session.access_token === 'string' ? await getAccount(session.access_token) : null;
+        if (!account) {
           throw new Error('Sesi Google gagal dibuat. Silakan coba masuk lagi.');
         }
-        saveAccessToken(token);
+        saveAuthSession({ ...session, user: account.user });
         window.location.replace(safeRedirect(target));
         return;
       }
@@ -137,7 +138,7 @@ function LoginContent() {
       }
 
       if (typeof data?.access_token !== 'string') throw new Error('Sesi gagal dibuat. Silakan coba lagi.');
-      saveAccessToken(data.access_token);
+      saveAuthSession(data);
 
       setSuccessMsg('Berhasil masuk! Mengalihkan...');
       setTimeout(() => {

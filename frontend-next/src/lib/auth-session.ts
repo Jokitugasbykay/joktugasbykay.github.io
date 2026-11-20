@@ -57,10 +57,28 @@ function authHeaders(token: string) {
   return { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${token}` };
 }
 
-export function saveAccessToken(token: string) {
+type AuthSession = {
+  access_token?: string;
+  refresh_token?: string;
+  expires_at?: number;
+  expires_in?: number;
+  user?: Account;
+};
+
+export function saveAuthSession(session: AuthSession) {
+  const { access_token: token, refresh_token, expires_in, user } = session;
+  const now = Math.floor(Date.now() / 1000);
+  const expires_at = session.expires_at ?? (typeof expires_in === 'number' ? now + expires_in : NaN);
+  if (!token || !refresh_token || !user?.id || !Number.isSafeInteger(expires_at) || expires_at <= now) {
+    throw new Error('Sesi tidak lengkap. Silakan masuk lagi.');
+  }
+  // Share the Supabase SDK session format with the restored storefront.
+  const stored = JSON.stringify({ access_token: token, refresh_token, expires_at, expires_in, token_type: 'bearer', user });
   const cookieOptions = `; Path=/; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`;
+  localStorage.setItem(storageKey, stored);
   document.cookie = `sb-access-token=${encodeURIComponent(token)}${cookieOptions}`;
   if (parseToken(cookies().get('sb-access-token')) !== token) {
+    localStorage.removeItem(storageKey);
     throw new Error('Sesi tidak tersimpan. Izinkan cookie lalu coba lagi.');
   }
 }
