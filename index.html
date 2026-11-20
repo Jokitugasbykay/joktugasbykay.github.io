@@ -9728,7 +9728,7 @@ Teman tugas mahasiswa.`;
                 window.switchTab('testimoni', false);
                 window.showTestimoniList(false);
             } else {
-                const routeAliases = { '/howtoorder': 'carapesan', '/informasi': 'informasi' };
+                const routeAliases = { '/howtoorder': 'carapesan', '/informasi': 'informasi', '/information/': 'informasi' };
                 const tab = TAB_BY_ROUTE[pathname] || routeAliases[pathname] || 'beranda';
                 window.switchTab(tab, false);
             }
@@ -9867,7 +9867,7 @@ Teman tugas mahasiswa.`;
             try { fallbackPath = sessionStorage.getItem('jokiin_spa_fallback_path') || localStorage.getItem('jokiin_spa_fallback_path') || ''; } catch (_) { }
             try { sessionStorage.removeItem('jokiin_spa_fallback_path'); localStorage.removeItem('jokiin_spa_fallback_path'); } catch (_) { }
             if (fallbackPath && fallbackPath.startsWith('/')) history.replaceState(null, '', fallbackPath);
-            const routeAliases = { '/howtoorder':'carapesan', '/informasi':'informasi' };
+            const routeAliases = { '/howtoorder':'carapesan', '/informasi':'informasi', '/information/': 'informasi' };
             const pathname = window.location.pathname;
             if (pathname.startsWith('/produk-digital')) {
                 window.location.replace('/produk-digital/home/');
