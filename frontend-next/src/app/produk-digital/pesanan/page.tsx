@@ -27,8 +27,32 @@ function PesananContent() {
 
     try {
       let token: string | null = null;
-      const match = document.cookie.match(/(?:^|;\s*)sb-access-token=([^;]+)/);
-      if (match) token = decodeURIComponent(match[1]);
+      const match = document.cookie.match(/(?:^|;\s*)(?:sb-access-token|sb-[a-z0-9]+-auth-token)=([^;]+)/i);
+      if (match) {
+        try {
+          const decoded = decodeURIComponent(match[1]);
+          if (decoded.startsWith('[') || decoded.startsWith('{')) {
+            const parsed = JSON.parse(decoded);
+            if (parsed.access_token) token = parsed.access_token;
+          } else {
+            token = decoded;
+          }
+        } catch (_) {}
+      }
+      if (!token && typeof localStorage !== 'undefined') {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i) || '';
+          if (key.includes('auth-token')) {
+            try {
+              const raw = localStorage.getItem(key);
+              if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed?.access_token) token = parsed.access_token;
+              }
+            } catch (_) {}
+          }
+        }
+      }
 
       const res = await fetch(`${DIGITAL_API_ENDPOINTS.ORDER_STATUS}/${encodeURIComponent(orderCode)}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -53,10 +77,6 @@ function PesananContent() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.adminBar}>
-        Mode ADMIN_ONLY : etalase privat khusus Admin Kayla : data katalog dan gateway pembayaran terisolasi
-      </div>
-
       <header className={styles.header}>
         <div className={styles.navWrap}>
           <Link href="/produk-digital" className={styles.logo} aria-label="JOKI.IN Digital Store">

@@ -3,10 +3,38 @@
 import { Suspense, useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { DIGITAL_API_ENDPOINTS, formatRupiah } from '../../../data/digital-data';
+import { DIGITAL_API_ENDPOINTS, DEFAULT_DIGITAL_PRODUCTS, formatRupiah } from '../../../data/digital-data';
 import styles from '../digital.module.css';
 
 type Product = { nama: string; harga_dasar: number; diskon_persen: number; stok: number; batas_beli_per_orang: number };
+
+function getAuthToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  const match = document.cookie.match(/(?:^|;\s*)(?:sb-access-token|sb-[a-z0-9]+-auth-token)=([^;]+)/i);
+  if (match) {
+    try {
+      const decoded = decodeURIComponent(match[1]);
+      if (decoded.startsWith('[') || decoded.startsWith('{')) {
+        const parsed = JSON.parse(decoded);
+        if (parsed.access_token) return parsed.access_token;
+      }
+      return decoded;
+    } catch (_) {}
+  }
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i) || '';
+    if (key.includes('auth-token')) {
+      try {
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed?.access_token) return parsed.access_token;
+        }
+      } catch (_) {}
+    }
+  }
+  return null;
+}
 
 function CheckoutContent() {
   const params = useSearchParams();
@@ -31,10 +59,29 @@ function CheckoutContent() {
       setProductLoading(false);
       return;
     }
-    fetch(DIGITAL_API_ENDPOINTS.PRODUCTS + '/' + encodeURIComponent(slug), { signal: controller.signal })
+    const token = getAuthToken();
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    fetch(DIGITAL_API_ENDPOINTS.PRODUCTS + '/' + encodeURIComponent(slug), {
+      headers,
+      signal: controller.signal
+    })
       .then(async response => {
         const data = await response.json();
-        if (!response.ok || !data.product) throw new Error(data.error || 'Produk digital tidak tersedia.');
+        if (!response.ok || !data.product) {
+          const fallback = DEFAULT_DIGITAL_PRODUCTS.find(p => p.slug === slug);
+          if (fallback) {
+            return {
+              nama: fallback.n,
+              harga_dasar: fallback.pr,
+              diskon_persen: 0,
+              stok: fallback.st,
+              batas_beli_per_orang: 10
+            } as Product;
+          }
+          throw new Error(data.error || 'Produk digital tidak tersedia.');
+        }
         return data.product as Product;
       })
       .then(item => {
@@ -74,9 +121,13 @@ function CheckoutContent() {
     setPending(true);
     setError('');
     try {
+      const token = getAuthToken();
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
       const response = await fetch(DIGITAL_API_ENDPOINTS.CHECKOUT, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ ...details, request_key: request.current.key }),
       });
       const data = await response.json();

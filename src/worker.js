@@ -320,7 +320,10 @@ async function reconcilePayment(env, order) {
 
 function corsOk(request) {
   const origin = request.headers.get('origin');
-  return !origin || origin === 'https://jokiin.my.id' || origin === 'https://www.jokiin.my.id';
+  if (!origin) return true;
+  if (origin === 'https://jokiin.my.id' || origin === 'https://www.jokiin.my.id') return true;
+  if (/^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?$/.test(origin)) return true;
+  return false;
 }
 
 async function createPayment(request, env) {
