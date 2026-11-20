@@ -87,8 +87,8 @@
 
 .logoImage {
   display: block;
-  width: 124px;
-  height: 40px;
+  width: 180px;
+  height: 50px;
   object-fit: contain;
   object-position: left center;
 }
@@ -602,7 +602,7 @@
 @media (max-width: 640px) {
   .productGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .categoryGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
-  .logoImage { width: 106px; height: 34px; }
+  .logoImage { width: 145px; height: 42px; }
   .logoTag { display: none; }
   .backLink { display: none; }
   .adminBar { margin-bottom: 14px; gap: 7px; font-size: 10px; }
