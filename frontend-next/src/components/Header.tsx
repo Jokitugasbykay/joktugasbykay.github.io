@@ -1,6 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { getAccessToken } from '@/lib/auth-session';
+
+const SUPABASE_URL = 'https://xdbnwjvxqtpkoaigedsk.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_WuihnHZo0ZJbVGCMe1sWJg_QVdRKw4z';
 
 interface HeaderProps {
   cartCount?: number;
@@ -9,6 +13,17 @@ interface HeaderProps {
 }
 
 export default function Header({ cartCount = 0, onOpenCart, onOpenTrack }: HeaderProps) {
+  const [account, setAccount] = useState<string | null>(null);
+
+  useEffect(() => {
+    const token = getAccessToken();
+    if (!token) return;
+    fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: { apikey: SUPABASE_ANON_KEY, authorization: `Bearer ${token}` } })
+      .then((res) => res.ok ? res.json() : null)
+      .then((user) => { if (user?.id) setAccount(user.email || 'Akun Saya'); })
+      .catch(() => {});
+  }, []);
+
   return (
     <header>
       <a
@@ -58,7 +73,7 @@ export default function Header({ cartCount = 0, onOpenCart, onOpenTrack }: Heade
           Pesanan Saya
         </button>
         <a id="authHeaderBtn" className="btn-header" href="/login/">
-          Masuk
+          {account || 'Masuk'}
         </a>
       </div>
     </header>

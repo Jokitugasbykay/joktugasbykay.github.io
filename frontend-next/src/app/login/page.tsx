@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import styles from './login.module.css';
+import { getAccessToken } from '@/lib/auth-session';
 
 const SUPABASE_URL = 'https://xdbnwjvxqtpkoaigedsk.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_WuihnHZo0ZJbVGCMe1sWJg_QVdRKw4z';
@@ -35,11 +36,15 @@ function LoginContent() {
   };
 
   useEffect(() => {
-    // Check if user session already exists in cookies
-    const cookies = typeof document !== 'undefined' ? document.cookie : '';
-    const match = cookies.match(/(?:^|;\s*)sb-access-token=([^;]+)/);
-    if (match && match[1]) {
-      const token = decodeURIComponent(match[1]);
+    const oauthToken = new URLSearchParams(window.location.hash.slice(1)).get('access_token');
+    if (oauthToken) {
+      const secureFlag = window.location.protocol === 'https:' ? '; Secure' : '';
+      document.cookie = `sb-access-token=${encodeURIComponent(oauthToken)}; path=/; SameSite=Lax${secureFlag}`;
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+
+    const token = oauthToken || getAccessToken();
+    if (token) {
       fetch(`${SUPABASE_URL}/auth/v1/user`, {
         headers: {
           apikey: SUPABASE_ANON_KEY,
@@ -55,6 +60,11 @@ function LoginContent() {
         .catch(() => {});
     }
   }, []);
+
+  const handleGoogleLogin = () => {
+    const redirectTo = `${window.location.origin}/login/`;
+    window.location.assign(`${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectTo)}`);
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -287,6 +297,10 @@ function LoginContent() {
 
             <button type="submit" className={styles.submitBtn} disabled={loading}>
               {loading ? 'Masuk...' : 'Masuk Sekarang'}
+            </button>
+
+            <button type="button" className={styles.googleBtn} onClick={handleGoogleLogin}>
+              Masuk dengan Google
             </button>
 
             <div className={styles.bottomLink}>
