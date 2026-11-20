@@ -1,4 +1,4 @@
-import { DigitalCategory, DigitalHeroSlide, DigitalProduct } from '../types/digital';
+import { DigitalCategory, DigitalHeroSlide } from '../types/digital';
 
 export const ADMIN_KAYLA_ID = '92e7a1cb-2136-496a-913b-00cd402c04f5';
 
@@ -53,56 +53,5 @@ export const DEFAULT_DIGITAL_HERO_SLIDES: DigitalHeroSlide[] = [
     p: 'Kompilasi langganan riset dan komputasi untuk menunjang kebutuhan tugas dan proyek.',
     a: 'Buka Katalog AI',
     art: ['GPT', 'GEMINI', 'RESEARCH'],
-  },
-];
-
-export const SAMPLE_DIGITAL_PRODUCTS: DigitalProduct[] = [
-  {
-    id: '03d664e2-a799-45f8-8952-3e1e1a7efe59',
-    c: 'software',
-    n: 'Gemini Pro 18 Bulan',
-    pv: 'Google Workspace',
-    ds: 'Akses penuh Gemini Advanced 18 bulan dengan penyimpanan cloud terintegrasi.',
-    pr: 50000,
-    st: 10,
-    old: 75000,
-    slug: 'gemini-pro-18-bulan',
-    is_active: true,
-  },
-  {
-    id: 'ai-chatgpt-plus',
-    c: 'software',
-    n: 'ChatGPT Plus Shared Private',
-    pv: 'OpenAI',
-    ds: 'Akses GPT-4o, browsing web, code analysis, dan image generation berkecepatan tinggi.',
-    pr: 45000,
-    st: 8,
-    old: 60000,
-    slug: 'chatgpt-plus-shared',
-    is_active: true,
-  },
-  {
-    id: 'kreatif-canva-pro',
-    c: 'software',
-    n: 'Canva Pro Edu 1 Tahun',
-    pv: 'Canva',
-    ds: 'Akses fitur brand kit, jutaan aset grafis premium, dan magic resize tanpa watermark.',
-    pr: 25000,
-    st: 15,
-    old: 35000,
-    slug: 'canva-pro-edu',
-    is_active: true,
-  },
-  {
-    id: 'tools-turnitin-no-repo',
-    c: 'software',
-    n: 'Turnitin Akun Instructor No Repository',
-    pv: 'Turnitin LLC',
-    ds: 'Pengecekan orisinalitas tanpa menyimpan berkas ke database utama (zero repository).',
-    pr: 35000,
-    st: 5,
-    old: 50000,
-    slug: 'turnitin-instructor-no-repo',
-    is_active: true,
   },
 ];

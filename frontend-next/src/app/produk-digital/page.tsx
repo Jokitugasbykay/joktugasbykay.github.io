@@ -28,6 +28,14 @@ const CATEGORY_ICONS: Record<string, string> = {
   lainnya: 'M5 5h.01M12 5h.01M19 5h.01M5 12h.01M12 12h.01M19 12h.01M5 19h.01M12 19h.01M19 19h.01',
 };
 
+const FEATURED_PREVIEW = [
+  { name: 'Mobile Legends Diamonds', brand: 'Mobile Legends', description: 'Isi ulang Diamond Mobile Legends.', art: 'mlbb' },
+  { name: 'Free Fire Diamonds', brand: 'Garena', description: 'Isi ulang Diamond Free Fire.', art: 'freeFire', image: 'free-fire.webp' },
+  { name: 'Steam Wallet IDR', brand: 'Steam', description: 'Voucher saldo untuk Steam Wallet.', art: 'steam', image: 'steam.svg' },
+  { name: 'Netflix Premium', brand: 'Netflix', description: 'Langganan hiburan Netflix.', art: 'netflix', image: 'netflix.svg' },
+  { name: 'Spotify Premium', brand: 'Spotify', description: 'Langganan musik Spotify.', art: 'spotify', image: 'spotify.svg' },
+];
+
 function CategoryIcon({ id }: { id: string }) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -218,6 +226,8 @@ function DigitalStoreContent() {
     });
   }, [products, selectedCategory, searchQuery]);
 
+  const showFeaturedPreview = catalogStatus === 'ready' && products.length === 0 && selectedCategory === 'all' && !searchQuery.trim();
+
   if (authStatus === 'loading') {
     return (
       <div className={styles.deniedWrap}>
@@ -350,19 +360,36 @@ function DigitalStoreContent() {
               </button>
             </div>
           </div>
-          <img className={styles.heroArtwork} src="/assets/produk-digital/store-hero-hd.webp" alt="" fetchPriority="high" />
+          <img className={styles.heroArtwork} src="/assets/produk-digital/store-hero-1080p.webp" alt="" fetchPriority="high" />
         </section>
 
         {/* Section Header */}
         <div className={styles.sectionHeader} id="catalogGrid">
           <div>
-            <h2 className={styles.sectionTitle}>{selectedCategory === 'all' ? 'Rekomendasi Produk untuk Kamu' : DEFAULT_DIGITAL_CATEGORIES.find((c) => c.id === selectedCategory)?.t || 'Produk Digital'}</h2>
-            <p className={styles.sectionSubTitle}>{searchQuery ? 'Hasil pencarian' : 'Harga dan stok terkini dari katalog digital.'}</p>
+            <h2 className={styles.sectionTitle}>{showFeaturedPreview ? 'Pilihan Produk Digital' : selectedCategory === 'all' ? 'Rekomendasi Produk untuk Kamu' : DEFAULT_DIGITAL_CATEGORIES.find((c) => c.id === selectedCategory)?.t || 'Produk Digital'}</h2>
+            <p className={styles.sectionSubTitle}>{searchQuery ? 'Hasil pencarian' : showFeaturedPreview ? 'Pratinjau etalase. Harga dan stok belum tersedia.' : 'Harga dan stok terkini dari katalog digital.'}</p>
           </div>
-          <button type="button" className={styles.seeAll} onClick={() => { setSelectedCategory('all'); setSearchQuery(''); }}>Lihat Semua Produk <span aria-hidden="true">→</span></button>
+          {!showFeaturedPreview && <button type="button" className={styles.seeAll} onClick={() => { setSelectedCategory('all'); setSearchQuery(''); }}>Lihat Semua Produk <span aria-hidden="true">→</span></button>}
         </div>
 
-        {catalogStatus !== 'ready' || filteredProducts.length === 0 ? (
+        {showFeaturedPreview ? (
+          <div className={styles.productGrid}>
+            {FEATURED_PREVIEW.map((item) => (
+              <article key={item.name} className={`${styles.productCard} ${styles.previewCard}`}>
+                <div className={`${styles.cardVisual} ${styles.previewVisual}`} data-brand={item.art} aria-hidden="true">
+                  {item.image ? <img src={`/assets/produk-digital/brands/${item.image}`} alt="" loading="lazy" /> : <span>ML</span>}
+                </div>
+                <div className={styles.cardTags}><span className={styles.providerName}>{item.brand}</span></div>
+                <h3 className={styles.cardTitle}>{item.name}</h3>
+                <p className={styles.cardDesc}>{item.description}</p>
+                <div className={styles.previewStatus}>Harga &amp; stok belum diatur</div>
+                <div className={styles.cardActions}>
+                  <button type="button" className={styles.btnPrimary} disabled>Segera Hadir</button>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : catalogStatus !== 'ready' || filteredProducts.length === 0 ? (
           <div className={styles.catalogEmpty} role="status">
             <CategoryIcon id={catalogStatus === 'ready' ? 'search' : 'all'} />
             <div>

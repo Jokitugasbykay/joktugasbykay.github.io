@@ -645,6 +645,19 @@
 .catalogEmpty { display: flex; align-items: center; gap: 14px; padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
 .catalogEmpty svg { width: 28px; color: var(--mint); flex: 0 0 28px; }
 .catalogEmpty p { margin: 5px 0 0; color: var(--mut); font-size: 13px; }
+.previewVisual { height: auto; min-height: 92px; aspect-ratio: 2.32; padding: 14px; }
+.previewVisual[data-brand="mlbb"] { background: radial-gradient(ellipse at 82% 10%, #25504a, transparent 45%), linear-gradient(135deg, #10201f, #152b31); color: #f1d88e; }
+.previewVisual[data-brand="freeFire"] { background: radial-gradient(ellipse at 85% 5%, #772e23, transparent 52%), linear-gradient(135deg, #171719, #2b211e); }
+.previewVisual[data-brand="steam"] { background: radial-gradient(ellipse at 80% 5%, #254a62, transparent 50%), linear-gradient(135deg, #111b25, #162a34); }
+.previewVisual[data-brand="netflix"] { background: radial-gradient(ellipse at 88% 5%, #631f26, transparent 50%), linear-gradient(135deg, #171719, #2a1c20); }
+.previewVisual[data-brand="spotify"] { background: radial-gradient(ellipse at 88% 5%, #176449, transparent 52%), linear-gradient(135deg, #10241f, #142f29); }
+.previewVisual img { width: min(78%, 160px); height: 58%; object-fit: contain; }
+.previewVisual[data-brand="freeFire"] img { width: min(88%, 180px); height: auto; filter: brightness(0) invert(1); }
+.previewVisual[data-brand="steam"] img { filter: brightness(0) invert(1); }
+.previewVisual > span { font-size: clamp(25px, 3vw, 38px); letter-spacing: -.08em; font-weight: 900; text-shadow: 0 2px 12px #0008; }
+.previewCard .cardTitle { min-height: 2.5em; }
+.previewStatus { color: #a4b0b4; font-size: 12px; line-height: 1.4; padding-top: 8px; }
+.previewCard .cardActions .btnPrimary { width: 100%; min-height: 42px; background: #19352f; color: var(--mint); opacity: 1; cursor: not-allowed; }
 .container :is(button,a,input):focus-visible { outline: 2px solid var(--mint); outline-offset: 3px; }
 
 .checkoutPage { width: min(100%, 920px); padding: 22px 16px 56px; margin: auto; animation: digital-enter .23s ease-out both; }
