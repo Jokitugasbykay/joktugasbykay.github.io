@@ -8,6 +8,7 @@ import { DigitalProduct, DigitalCartItem } from '../../types/digital';
 import {
   ADMIN_KAYLA_ID,
   DEFAULT_DIGITAL_CATEGORIES,
+  DEFAULT_DIGITAL_PRODUCTS,
   DIGITAL_API_ENDPOINTS,
   formatRupiah,
   normalizeDigitalCategory,
@@ -28,8 +29,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   lainnya: 'M5 5h.01M12 5h.01M19 5h.01M5 12h.01M12 12h.01M19 12h.01M5 19h.01M12 19h.01M19 19h.01',
 };
 
-const FEATURED_PREVIEW = [
-  { name: 'Mobile Legends Diamonds', brand: 'Mobile Legends', description: 'Isi ulang Diamond Mobile Legends.', art: 'mlbb', wordmark: 'MOBILE LEGENDS' },
+const UPCOMING_PREVIEW = [
   { name: 'Free Fire Diamonds', brand: 'Garena', description: 'Isi ulang Diamond Free Fire.', art: 'freeFire', image: 'free-fire.webp' },
   { name: 'Steam Wallet IDR', brand: 'Steam', description: 'Voucher saldo untuk Steam Wallet.', art: 'steam', image: 'steam.svg', wordmark: 'STEAM' },
   { name: 'Netflix Premium', brand: 'Netflix', description: 'Langganan hiburan Netflix.', art: 'netflix', image: 'netflix.svg', wordmark: 'NETFLIX' },
@@ -143,12 +143,17 @@ function DigitalStoreContent() {
       if (!res.ok) throw new Error('Catalog fetch failed');
       {
         const data = await res.json();
-        if (Array.isArray(data.products)) {
+        if (Array.isArray(data.products) && data.products.length > 0) {
           const mapped: DigitalProduct[] = data.products.map((p: any) => ({
             id: p.id,
             c: normalizeDigitalCategory(p.kategori || p.category),
             n: p.nama,
-            pv: 'JOKI.IN Store',
+            pv: p.provider || p.brand || (
+              p.nama.toLowerCase().includes('mobile legend') || p.nama.toLowerCase().includes('mlbb') ? 'Mobile Legends' :
+              p.nama.toLowerCase().includes('genshin') ? 'Genshin Impact' :
+              p.nama.toLowerCase().includes('chronal') ? 'Chronal Nexus' :
+              'JOKI.IN Store'
+            ),
             ds: p.deskripsi || '',
             pr: Math.round(Number(p.harga_dasar) * (1 - (Number(p.diskon_persen) || 0) / 100)),
             st: Number(p.stok) || 0,
@@ -156,14 +161,19 @@ function DigitalStoreContent() {
             slug: p.slug,
             gambar_url: p.gambar_url || p.image_url,
             is_active: p.is_active,
+            is_limited_edition: p.is_limited_edition,
           }));
           setProducts(mapped);
           setCatalogStatus('ready');
         } else {
-          setCatalogStatus('error');
+          setProducts(DEFAULT_DIGITAL_PRODUCTS);
+          setCatalogStatus('ready');
         }
       }
-    } catch (_) { setCatalogStatus('error'); }
+    } catch (_) {
+      setProducts(DEFAULT_DIGITAL_PRODUCTS);
+      setCatalogStatus('ready');
+    }
   };
 
   // Muat keranjang dari local storage
@@ -371,7 +381,7 @@ function DigitalStoreContent() {
 
         {showFeaturedPreview ? (
           <div className={styles.productGrid}>
-            {FEATURED_PREVIEW.map((item) => (
+            {UPCOMING_PREVIEW.map((item) => (
               <article key={item.name} className={`${styles.productCard} ${styles.previewCard}`}>
                 <div className={`${styles.cardVisual} ${styles.previewVisual}`} data-brand={item.art} aria-hidden="true">
                   {item.image ? <img src={`/assets/produk-digital/brands/${item.image}`} alt="" loading="lazy" /> : <span className={styles.mlbbMark}>ML</span>}
@@ -402,7 +412,24 @@ function DigitalStoreContent() {
           {filteredProducts.map((prod) => (
             <article key={prod.id || prod.slug} className={styles.productCard}>
               <div className={styles.cardVisual} aria-hidden="true">
-                {prod.gambar_url ? <img className={styles.cardImage} src={prod.gambar_url} alt="" loading="lazy" /> : (
+                {prod.gambar_url ? (
+                  <img className={styles.cardImage} src={prod.gambar_url} alt="" loading="lazy" />
+                ) : prod.pv === 'Mobile Legends' ? (
+                  <div className={styles.previewVisual} data-brand="mlbb" style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}>
+                    <span className={styles.mlbbMark}>ML</span>
+                    <span className={styles.previewWordmark}>MOBILE LEGENDS</span>
+                  </div>
+                ) : prod.pv === 'Genshin Impact' ? (
+                  <div className={styles.previewVisual} data-brand="genshin" style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}>
+                    <span style={{ color: '#e0c068', fontSize: '26px', fontWeight: 900, letterSpacing: '-0.05em' }}>GI</span>
+                    <span className={styles.previewWordmark} style={{ color: '#e0c068', fontSize: '11px', letterSpacing: '0.08em' }}>GENSHIN IMPACT</span>
+                  </div>
+                ) : prod.pv === 'Chronal Nexus' ? (
+                  <div className={styles.previewVisual} data-brand="chronal" style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}>
+                    <span style={{ color: '#55d9b0', fontSize: '26px', fontWeight: 900, letterSpacing: '-0.05em' }}>CN</span>
+                    <span className={styles.previewWordmark} style={{ color: '#55d9b0', fontSize: '11px', letterSpacing: '0.08em' }}>CHRONAL NEXUS</span>
+                  </div>
+                ) : (
                   <div className={styles.cardArtwork}>
                     <b>{prod.n}</b>
                     <CategoryIcon id={prod.c} />
@@ -414,7 +441,7 @@ function DigitalStoreContent() {
                 <span className={styles.providerName}>{prod.pv}</span>
                 {prod.is_limited_edition && (
                   <span className={styles.tagPill} style={{ background: '#fef3c7', color: '#b45309' }}>
-                    Limited
+                    Best Value
                   </span>
                 )}
               </div>
@@ -443,6 +470,35 @@ function DigitalStoreContent() {
             </article>
           ))}
         </div>
+
+        {/* Segera Hadir Section */}
+        {selectedCategory === 'all' && !searchQuery.trim() && UPCOMING_PREVIEW.length > 0 && (
+          <section style={{ marginTop: '42px' }}>
+            <div className={styles.sectionHeader}>
+              <div>
+                <h3 className={styles.sectionTitle} style={{ fontSize: '18px' }}>Segera Hadir</h3>
+                <p className={styles.sectionSubTitle}>Produk yang sedang disiapkan dan akan segera dibuka untuk pemesanan.</p>
+              </div>
+            </div>
+            <div className={styles.productGrid}>
+              {UPCOMING_PREVIEW.map((item) => (
+                <article key={item.name} className={`${styles.productCard} ${styles.previewCard}`}>
+                  <div className={`${styles.cardVisual} ${styles.previewVisual}`} data-brand={item.art} aria-hidden="true">
+                    {item.image ? <img src={`/assets/produk-digital/brands/${item.image}`} alt="" loading="lazy" /> : <span className={styles.mlbbMark}>ML</span>}
+                    {item.wordmark && <span className={styles.previewWordmark}>{item.wordmark}</span>}
+                  </div>
+                  <div className={styles.cardTags}><span className={styles.providerName}>{item.brand}</span></div>
+                  <h4 className={styles.cardTitle}>{item.name}</h4>
+                  <p className={styles.cardDesc}>{item.description}</p>
+                  <div className={styles.previewStatus}>Harga &amp; stok belum diatur</div>
+                  <div className={styles.cardActions}>
+                    <button type="button" className={styles.btnPrimary} disabled>Segera Hadir</button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className={styles.categorySection} aria-labelledby="categoryTitle">
           <div className={styles.categoryHeading}>

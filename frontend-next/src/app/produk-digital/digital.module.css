@@ -651,6 +651,8 @@
 .catalogEmpty p { margin: 5px 0 0; color: var(--mut); font-size: 13px; }
 .previewVisual { height: auto; min-height: 92px; aspect-ratio: 2.1; padding: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; background: radial-gradient(ellipse at 50% -12%, rgba(84, 230, 186, .18), transparent 66%), linear-gradient(145deg, #142a27, #0d1717); border-bottom: 1px solid rgba(84, 230, 186, .13); }
 .previewVisual[data-brand="mlbb"] { flex-direction: column; gap: 2px; }
+.previewVisual[data-brand="genshin"] { flex-direction: column; gap: 2px; background: radial-gradient(ellipse at 50% -12%, rgba(224, 192, 104, .2), transparent 66%), linear-gradient(145deg, #2b2513, #15130b); border-bottom: 1px solid rgba(224, 192, 104, .18); }
+.previewVisual[data-brand="chronal"] { flex-direction: column; gap: 2px; background: radial-gradient(ellipse at 50% -12%, rgba(85, 217, 176, .2), transparent 66%), linear-gradient(145deg, #122824, #0b1615); border-bottom: 1px solid rgba(85, 217, 176, .18); }
 .previewVisual img { flex: 0 0 auto; width: 42px; height: 42px; object-fit: contain; }
 .previewVisual[data-brand="freeFire"] img { width: min(88%, 180px); height: auto; filter: brightness(0) invert(1); }
 .previewVisual[data-brand="steam"] img { filter: brightness(0) invert(1); }
