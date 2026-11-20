@@ -1,10 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { getAccessToken } from '@/lib/auth-session';
-
-const SUPABASE_URL = 'https://xdbnwjvxqtpkoaigedsk.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_WuihnHZo0ZJbVGCMe1sWJg_QVdRKw4z';
+import { getAccount, GOOGLE_RETURN_KEY } from '@/lib/auth-session';
 
 interface HeaderProps {
   cartCount?: number;
@@ -13,15 +10,30 @@ interface HeaderProps {
 }
 
 export default function Header({ cartCount = 0, onOpenCart, onOpenTrack }: HeaderProps) {
-  const [account, setAccount] = useState<string | null>(null);
+  const [signedIn, setSignedIn] = useState(false);
 
   useEffect(() => {
-    const token = getAccessToken();
-    if (!token) return;
-    fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: { apikey: SUPABASE_ANON_KEY, authorization: `Bearer ${token}` } })
-      .then((res) => res.ok ? res.json() : null)
-      .then((user) => { if (user?.id) setAccount(user.email || 'Akun Saya'); })
-      .catch(() => {});
+    const url = new URL(window.location.href);
+    const hash = new URLSearchParams(url.hash.slice(1));
+    try {
+      if (sessionStorage.getItem(GOOGLE_RETURN_KEY) &&
+          (hash.has('error') || url.searchParams.has('error') || url.searchParams.has('code'))) {
+        window.location.replace('/login/' + url.search + url.hash);
+        return;
+      }
+    } catch { /* Account lookup still works when sessionStorage is blocked. */ }
+
+    let active = true;
+    const refresh = () => {
+      getAccount().then((account) => { if (active) setSignedIn(Boolean(account)); })
+        .catch(() => { if (active) setSignedIn(false); });
+    };
+    refresh();
+    window.addEventListener('pageshow', refresh);
+    return () => {
+      active = false;
+      window.removeEventListener('pageshow', refresh);
+    };
   }, []);
 
   return (
@@ -72,8 +84,8 @@ export default function Header({ cartCount = 0, onOpenCart, onOpenTrack }: Heade
         >
           Pesanan Saya
         </button>
-        <a id="authHeaderBtn" className="btn-header" href="/login/">
-          {account || 'Masuk'}
+        <a id="authHeaderBtn" className="btn-header" href={signedIn ? '/login/?account=1' : '/login/'}>
+          {signedIn ? 'Akun' : 'Masuk'}
         </a>
       </div>
     </header>

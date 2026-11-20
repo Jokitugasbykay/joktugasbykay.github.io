@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import styles from './login.module.css';
-import { getAccessToken } from '@/lib/auth-session';
+import { getAccount, GOOGLE_RETURN_KEY, saveAccessToken, signOut, SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/auth-session';
 
-const SUPABASE_URL = 'https://xdbnwjvxqtpkoaigedsk.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_WuihnHZo0ZJbVGCMe1sWJg_QVdRKw4z';
+function safeRedirect(target: string | null) {
+  return target?.startsWith('/') && !target.startsWith('//') && !/[\\\x00-\x20]/.test(target) ? target : '/';
+}
 
 function LoginContent() {
   const searchParams = useSearchParams();
@@ -21,49 +22,84 @@ function LoginContent() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
-
-  // Validate local redirect
-  const getSafeRedirect = () => {
-    try {
-      const target = searchParams.get('redirect') || '/';
-      if (target.startsWith('/') && !target.startsWith('//') && !target.includes(':')) {
-        return target;
-      }
-    } catch {
-      // Fallback
-    }
-    return '/';
-  };
+  const [checking, setChecking] = useState(true);
+  const [session, setSession] = useState<Awaited<ReturnType<typeof getAccount>>>(null);
+  const checked = useRef(false);
+  const showProfile = searchParams.get('account') === '1';
+  const redirect = safeRedirect(searchParams.get('redirect'));
 
   useEffect(() => {
-    const oauthToken = new URLSearchParams(window.location.hash.slice(1)).get('access_token');
-    if (oauthToken) {
-      const secureFlag = window.location.protocol === 'https:' ? '; Secure' : '';
-      document.cookie = `sb-access-token=${encodeURIComponent(oauthToken)}; path=/; SameSite=Lax${secureFlag}`;
-      window.history.replaceState(null, '', window.location.pathname + window.location.search);
-    }
-
-    const token = oauthToken || getAccessToken();
-    if (token) {
-      fetch(`${SUPABASE_URL}/auth/v1/user`, {
-        headers: {
-          apikey: SUPABASE_ANON_KEY,
-          authorization: `Bearer ${token}`
+    if (checked.current) return;
+    checked.current = true;
+    async function checkSession() {
+      const url = new URL(window.location.href);
+      const hash = new URLSearchParams(url.hash.slice(1));
+      const code = url.searchParams.get('code');
+      const oauthError = url.searchParams.has('error') || hash.has('error');
+      if (code || oauthError) {
+        for (const key of ['code', 'error', 'error_code', 'error_description']) url.searchParams.delete(key);
+        window.history.replaceState(null, '', url.pathname + url.search);
+        const pending = sessionStorage.getItem(GOOGLE_RETURN_KEY);
+        sessionStorage.removeItem(GOOGLE_RETURN_KEY);
+        if (oauthError || !pending || !code) {
+          throw new Error('Login Google dibatalkan atau gagal. Silakan coba lagi.');
         }
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && data.id) {
-            window.location.replace(getSafeRedirect());
-          }
-        })
-        .catch(() => {});
-    }
-  }, []);
+        const { verifier, target } = JSON.parse(pending);
+        const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=pkce`, {
+          method: 'POST',
+          headers: { apikey: SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ auth_code: code, code_verifier: verifier }),
+        });
+        const { access_token: token } = await response.json();
+        if (!response.ok || typeof token !== 'string' || !await getAccount(token)) {
+          throw new Error('Sesi Google gagal dibuat. Silakan coba masuk lagi.');
+        }
+        saveAccessToken(token);
+        window.location.replace(safeRedirect(target));
+        return;
+      }
 
-  const handleGoogleLogin = () => {
-    const redirectTo = `${window.location.origin}/login/`;
-    window.location.assign(`${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectTo)}`);
+      const account = await getAccount();
+      if (account && !showProfile) window.location.replace(redirect);
+      else setSession(account);
+      setChecking(false);
+    }
+    checkSession().catch((error) => {
+      setErrorMsg(error instanceof Error ? error.message : 'Gagal memuat sesi.');
+      setChecking(false);
+    });
+  }, [redirect, showProfile]);
+
+  const handleGoogleLogin = async () => {
+    setErrorMsg(null);
+    setLoading(true);
+    try {
+      const verifier = Array.from(crypto.getRandomValues(new Uint8Array(32)), (byte) => byte.toString(16).padStart(2, '0')).join('');
+      const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+      const challenge = btoa(String.fromCharCode(...new Uint8Array(digest))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      sessionStorage.setItem(GOOGLE_RETURN_KEY, JSON.stringify({ verifier, target: redirect }));
+      const params = new URLSearchParams({
+        provider: 'google', redirect_to: location.origin + '/login/',
+        code_challenge: challenge, code_challenge_method: 's256', prompt: 'select_account',
+      });
+      window.location.assign(`${SUPABASE_URL}/auth/v1/authorize?${params}`);
+    } catch {
+      setErrorMsg('Gagal membuka login Google. Silakan coba lagi.');
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    if (!session) return;
+    setLoading(true);
+    setErrorMsg(null);
+    try {
+      await signOut(session.token);
+      window.location.replace('/');
+    } catch {
+      setErrorMsg('Gagal keluar. Silakan coba lagi.');
+      setLoading(false);
+    }
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -100,15 +136,12 @@ function LoginContent() {
         throw new Error(data?.error_description || 'Email atau password salah. Silakan coba lagi.');
       }
 
-      const accessToken = data?.access_token;
-      if (accessToken) {
-        const secureFlag = window.location.protocol === 'https:' ? '; Secure' : '';
-        document.cookie = `sb-access-token=${encodeURIComponent(accessToken)}; path=/; SameSite=Lax${secureFlag}`;
-      }
+      if (typeof data?.access_token !== 'string') throw new Error('Sesi gagal dibuat. Silakan coba lagi.');
+      saveAccessToken(data.access_token);
 
       setSuccessMsg('Berhasil masuk! Mengalihkan...');
       setTimeout(() => {
-        window.location.replace(getSafeRedirect());
+        window.location.replace(redirect);
       }, 700);
     } catch (err: unknown) {
       setErrorMsg(err instanceof Error ? err.message : 'Terjadi kesalahan saat masuk.');
@@ -206,6 +239,26 @@ function LoginContent() {
     }
   };
 
+  if (checking) return <main className={styles.loginContainer}><p role="status">Memeriksa sesi…</p></main>;
+
+  if (session) {
+    const name = session.user.user_metadata?.full_name ?? session.user.user_metadata?.name;
+    return (
+      <main className={styles.loginContainer}>
+        <section className={styles.authCard} aria-labelledby="profile-title">
+          <h1 id="profile-title" className={styles.title}>Profil Saya</h1>
+          {typeof name === 'string' && <p style={{ overflowWrap: 'anywhere' }}>{name}</p>}
+          <p style={{ overflowWrap: 'anywhere' }}>{session.user.email}</p>
+          {errorMsg && <p role="alert" className={styles.alertError}>{errorMsg}</p>}
+          <button type="button" className={styles.submitBtn} disabled={loading} onClick={handleLogout}>
+            {loading ? 'Sedang keluar…' : 'Keluar'}
+          </button>
+          <div className={styles.bottomLink}><a href="/" className={styles.backHome}>← Kembali ke Beranda</a></div>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className={styles.loginContainer}>
       <div className={styles.authCard}>
@@ -299,7 +352,7 @@ function LoginContent() {
               {loading ? 'Masuk...' : 'Masuk Sekarang'}
             </button>
 
-            <button type="button" className={styles.googleBtn} onClick={handleGoogleLogin}>
+            <button type="button" className={styles.googleBtn} disabled={loading} onClick={handleGoogleLogin}>
               Masuk dengan Google
             </button>
 

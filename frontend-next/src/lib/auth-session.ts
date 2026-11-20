@@ -1,25 +1,83 @@
-export function getAccessToken(): string | null {
-  const cookie = document.cookie.match(/(?:^|;\s*)(?:sb-access-token|sb-[a-z0-9-]+-auth-token)=([^;]+)/i)?.[1];
-  if (cookie) {
-    try {
-      const value = decodeURIComponent(cookie);
-      const parsed = value.startsWith('base64-')
-        ? JSON.parse(atob(value.slice(7)))
-        : value.startsWith('{') || value.startsWith('[') ? JSON.parse(value) : null;
-      const token = Array.isArray(parsed) ? parsed[0] : parsed?.access_token;
-      if (token) return token;
-      if (!parsed) return value;
-    } catch { /* Try localStorage session below. */ }
-  }
+export const SUPABASE_URL = 'https://xdbnwjvxqtpkoaigedsk.supabase.co';
+export const SUPABASE_ANON_KEY = 'sb_publishable_WuihnHZo0ZJbVGCMe1sWJg_QVdRKw4z';
+export const GOOGLE_RETURN_KEY = 'jokiin-google-return';
+const storageKey = 'sb-xdbnwjvxqtpkoaigedsk-auth-token';
 
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i) || '';
-    if (!key.includes('auth-token')) continue;
-    try {
-      const raw = localStorage.getItem(key) || '';
-      const session = raw.startsWith('base64-') ? JSON.parse(atob(raw.slice(7))) : JSON.parse(raw);
-      if (session?.access_token) return session.access_token;
-    } catch { /* Ignore invalid/stale session entries. */ }
+function cookies() {
+  return new Map(document.cookie.split('; ').map((entry) => {
+    const separator = entry.indexOf('=');
+    return [entry.slice(0, separator), entry.slice(separator + 1)];
+  }));
+}
+
+function parseToken(value: string | undefined): string | undefined {
+  if (!value) return;
+  try {
+    const decoded = decodeURIComponent(value);
+    if (decoded.startsWith('eyJ')) return decoded;
+    const json = decoded.startsWith('base64-')
+      ? new TextDecoder().decode(Uint8Array.from(atob(decoded.slice(7).replace(/-/g, '+').replace(/_/g, '/')), (byte) => byte.charCodeAt(0)))
+      : decoded;
+    const session = JSON.parse(json);
+    const token = Array.isArray(session) ? session[0] : session?.access_token;
+    if (typeof token === 'string') return token;
+  } catch { /* Expired or malformed browser data can be replaced by a fresh login. */ }
+}
+
+function* accessTokens() {
+  const values = cookies();
+  yield parseToken(values.get('sb-access-token'));
+  yield parseToken(values.get(storageKey));
+  const chunks: string[] = [];
+  for (let i = 0; values.has(`${storageKey}.${i}`); i++) {
+    chunks.push(values.get(`${storageKey}.${i}`)!);
+  }
+  yield parseToken(chunks.join(''));
+  try {
+    yield parseToken(localStorage.getItem(storageKey) ?? undefined);
+  } catch { /* Browser storage may be disabled. */ }
+}
+
+export type Account = { id: string; email?: string; user_metadata?: { full_name?: unknown; name?: unknown } };
+
+export async function getAccount(callbackToken?: string) {
+  const tokens = callbackToken ? [callbackToken] : accessTokens();
+  for (const token of new Set(tokens)) {
+    if (!token) continue;
+    const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: authHeaders(token) });
+    if (response.status === 401 || response.status === 403) continue;
+    if (!response.ok) throw new Error('Gagal memuat akun. Silakan coba lagi.');
+    const user: Account = await response.json();
+    if (user.id) return { user, token };
   }
   return null;
+}
+
+function authHeaders(token: string) {
+  return { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${token}` };
+}
+
+export function saveAccessToken(token: string) {
+  const cookieOptions = `; Path=/; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`;
+  document.cookie = `sb-access-token=${encodeURIComponent(token)}${cookieOptions}`;
+  if (parseToken(cookies().get('sb-access-token')) !== token) {
+    throw new Error('Sesi tidak tersimpan. Izinkan cookie lalu coba lagi.');
+  }
+}
+
+export async function signOut(token: string) {
+  const response = await fetch(`${SUPABASE_URL}/auth/v1/logout?scope=local`, { method: 'POST', headers: authHeaders(token) });
+  if (!response.ok && ![401, 403, 404].includes(response.status)) {
+    throw new Error('Gagal keluar. Silakan coba lagi.');
+  }
+  for (const key of cookies().keys()) {
+    if (key !== 'sb-access-token' && key !== storageKey && !key.startsWith(storageKey + '.')) continue;
+    for (const path of ['/', '/login', '/login/']) {
+      document.cookie = `${key}=; Max-Age=0; Path=${path}; SameSite=Lax`;
+      if (location.hostname === 'jokiin.my.id' || location.hostname === 'www.jokiin.my.id') {
+        document.cookie = `${key}=; Max-Age=0; Path=${path}; Domain=jokiin.my.id; SameSite=Lax; Secure`;
+      }
+    }
+  }
+  try { localStorage.removeItem(storageKey); } catch { /* Browser storage may be disabled. */ }
 }
