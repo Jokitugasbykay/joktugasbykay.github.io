@@ -1,344 +1,153 @@
 'use client';
 
-import React, { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { DIGITAL_API_ENDPOINTS, formatRupiah } from '../../../data/digital-data';
 import styles from '../digital.module.css';
-import { DigitalProduct } from '../../../types/digital';
-import {
-  DIGITAL_API_ENDPOINTS,
-  SAMPLE_DIGITAL_PRODUCTS,
-  formatRupiah,
-} from '../../../data/digital-data';
+
+type Product = { nama: string; harga_dasar: number; diskon_persen: number; stok: number; batas_beli_per_orang: number };
 
 function CheckoutContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const slug = searchParams.get('slug') || 'gemini-pro-18-bulan';
-  const initialQty = Math.max(1, parseInt(searchParams.get('qty') || '1', 10));
-
-  const [product, setProduct] = useState<DigitalProduct | null>(null);
-  const [quantity, setQuantity] = useState<number>(initialQty);
-  const [name, setName] = useState<string>('Admin Kayla');
-  const [email, setEmail] = useState<string>('kaylafisika24@gmail.com');
-  const [whatsapp, setWhatsapp] = useState<string>('081234567890');
-  const [loading, setLoading] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const params = useSearchParams();
+  const slug = params.get('slug') ?? '';
+  const [product, setProduct] = useState<Product | null>(null);
+  const [quantity, setQuantity] = useState(1);
+  const [pending, setPending] = useState(false);
+  const [productLoading, setProductLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [orderCode, setOrderCode] = useState('');
+  const request = useRef<{ details: string; key: string } | null>(null);
+  const submitting = useRef(false);
 
   useEffect(() => {
-    // Cari produk di data lokal terlebih dahulu
-    const found = SAMPLE_DIGITAL_PRODUCTS.find((p) => p.slug === slug || p.id === slug);
-    if (found) {
-      setProduct(found);
-    } else {
-      // Coba fetch dari API jika tidak ada di sampel
-      let token: string | null = null;
-      const match = document.cookie.match(/(?:^|;\s*)sb-access-token=([^;]+)/);
-      if (match) token = decodeURIComponent(match[1]);
-
-      fetch(`${DIGITAL_API_ENDPOINTS.PRODUCTS}/${encodeURIComponent(slug)}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+    const controller = new AbortController();
+    setProduct(null);
+    setError('');
+    setOrderCode('');
+    setProductLoading(true);
+    if (!/^[a-z0-9-]+$/.test(slug)) {
+      setError('Pilih produk digital terlebih dahulu.');
+      setProductLoading(false);
+      return;
+    }
+    fetch(DIGITAL_API_ENDPOINTS.PRODUCTS + '/' + encodeURIComponent(slug), { signal: controller.signal })
+      .then(async response => {
+        const data = await response.json();
+        if (!response.ok || !data.product) throw new Error(data.error || 'Produk digital tidak tersedia.');
+        return data.product as Product;
       })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.product) {
-            setProduct({
-              id: data.product.id,
-              c: data.product.kategori || 'ai',
-              n: data.product.nama,
-              pv: 'JOKI.IN Store',
-              ds: data.product.deskripsi || '',
-              pr: Number(data.product.harga_dasar) * (1 - (Number(data.product.diskon_persen) || 0) / 100),
-              st: Number(data.product.stok) || 1,
-              slug: data.product.slug,
-            });
-          }
-        })
-        .catch(() => {});
-    }
-  }, [slug]);
+      .then(item => {
+        setProduct(item);
+        const limit = Math.min(10, item.stok, item.batas_beli_per_orang || 10);
+        setQuantity(Math.max(1, Math.min(limit, parseInt(params.get('qty') || '1', 10) || 1)));
+      })
+      .catch(error => { if (!controller.signal.aborted) setError(error.message || 'Katalog gagal dimuat.'); })
+      .finally(() => { if (!controller.signal.aborted) setProductLoading(false); });
+    return () => controller.abort();
+  }, [slug, params]);
 
-  const unitPrice = product ? product.pr : 50000;
-  const totalPrice = unitPrice * quantity;
+  const limit = product ? Math.min(10, product.stok, product.batas_beli_per_orang || 10) : 0;
+  const unitPrice = product ? Math.round(product.harga_dasar * (1 - (product.diskon_persen || 0) / 100)) : 0;
+  const total = unitPrice * quantity;
+  const orderUrl = '/produk-digital/pesanan/?order=';
 
-  const handleSubmitOrder = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) {
-      setErrorMessage('Nama lengkap wajib diisi.');
+  async function pay(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (submitting.current || !product || quantity > limit || total < 500 || orderCode) return;
+    const form = new FormData(event.currentTarget);
+    const customer = {
+      name: String(form.get('name') || '').trim(),
+      email: String(form.get('email') || '').trim(),
+      whatsapp: String(form.get('whatsapp') || '').replace(/[+()\s-]/g, ''),
+    };
+    if (!customer.name || !/^(?:08[0-9]{7,12}|628[0-9]{7,11})$/.test(customer.whatsapp)) {
+      setError('Isi nama dan nomor WhatsApp Indonesia yang valid.');
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setErrorMessage('Format email tidak valid.');
-      return;
+    const details = { slug, qty: quantity, customer, expected_total: total };
+    const fingerprint = JSON.stringify(details);
+    if (request.current?.details !== fingerprint) {
+      request.current = { details: fingerprint, key: 'digital-' + crypto.randomUUID() };
     }
-    const cleanWa = whatsapp.replace(/\D/g, '');
-    if (cleanWa.length < 9 || cleanWa.length > 15) {
-      setErrorMessage('Nomor WhatsApp harus valid (9-15 digit).');
-      return;
-    }
-
-    setLoading(true);
-    setErrorMessage(null);
-
+    submitting.current = true;
+    setPending(true);
+    setError('');
     try {
-      let token: string | null = null;
-      const match = document.cookie.match(/(?:^|;\s*)sb-access-token=([^;]+)/);
-      if (match) token = decodeURIComponent(match[1]);
-
-      const res = await fetch(DIGITAL_API_ENDPOINTS.CHECKOUT, {
+      const response = await fetch(DIGITAL_API_ENDPOINTS.CHECKOUT, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          slug: product?.slug || slug,
-          qty: quantity,
-          customer: {
-            name: name.trim(),
-            email: email.trim(),
-            whatsapp: cleanWa,
-          },
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...details, request_key: request.current.key }),
       });
-
-      const resData = await res.json();
-      if (!res.ok || !resData.ok) {
-        throw new Error(resData.error || 'Terjadi kesalahan saat memproses checkout.');
+      const data = await response.json();
+      if (response.ok && data.payment_status === 'PAID') {
+        window.location.assign(orderUrl + encodeURIComponent(data.order_code));
+        return;
       }
-
-      if (resData.payment_url) {
-        window.location.href = resData.payment_url;
-      } else {
-        router.push(`/produk-digital/pesanan?order=${encodeURIComponent(resData.order_code)}`);
+      if (response.ok && data.payment_url) {
+        window.location.assign(data.payment_url);
+        return;
       }
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Gagal membuat pesanan digital.');
-      setLoading(false);
+      if (data.order_code) setOrderCode(data.order_code);
+      setError(data.error || 'Tautan pembayaran tidak tersedia.');
+    } catch {
+      setError('Koneksi terputus. Coba lagi dengan data yang sama untuk memeriksa permintaan ini.');
+    } finally {
+      submitting.current = false;
+      setPending(false);
     }
-  };
+  }
 
   return (
     <div className={styles.container}>
-      <div className={styles.adminBar}>
-        Mode ADMIN_ONLY : etalase privat khusus Admin Kayla : data katalog dan gateway pembayaran terisolasi
-      </div>
-
       <header className={styles.header}>
         <div className={styles.navWrap}>
-          <Link href="/produk-digital" className={styles.logo} aria-label="JOKI.IN Digital Store">
-            <i className={styles.logoIcon}>J</i>
-            JOKI.IN
-            <small className={styles.logoTag}>Digital Store</small>
+          <Link href="/produk-digital/" className={styles.logo} aria-label="Kembali ke Produk Digital">
+            <img className={styles.logoImage} width={124} height={40} src="/assets/produk-digital/jokiin-logo-white.png" alt="JOKI.IN Digital Store" />
           </Link>
-          <Link href="/produk-digital" className={styles.backLink} style={{ marginLeft: 'auto' }}>
-            Kembali ke Etalase
-          </Link>
+          <Link href="/produk-digital/" className={styles.ordersLink}>Kembali ke etalase</Link>
         </div>
       </header>
-
-      <main className={styles.mainContent} style={{ maxWidth: '900px' }}>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: '20px 0 24px' }}>
-          Konfirmasi Checkout Produk Digital
-        </h1>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
-          {/* Formulir Data Pemesan */}
-          <div
-            style={{
-              background: 'var(--card, #ffffff)',
-              border: '1px solid var(--line, #e2e7f1)',
-              borderRadius: '16px',
-              padding: '24px',
-            }}
-          >
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 700, margin: '0 0 16px' }}>Data Pembeli</h2>
-            <form onSubmit={handleSubmitOrder}>
-              <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
-                  Nama Lengkap
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    borderRadius: '8px',
-                    border: '1px solid #cbd5e1',
-                    fontSize: '14px',
-                  }}
-                />
-              </div>
-
-              <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
-                  Alamat Email (Untuk Pengiriman Lisensi/Akun)
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    borderRadius: '8px',
-                    border: '1px solid #cbd5e1',
-                    fontSize: '14px',
-                  }}
-                />
-              </div>
-
-              <div style={{ marginBottom: '18px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
-                  Nomor WhatsApp
-                </label>
-                <input
-                  type="tel"
-                  required
-                  value={whatsapp}
-                  onChange={(e) => setWhatsapp(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    borderRadius: '8px',
-                    border: '1px solid #cbd5e1',
-                    fontSize: '14px',
-                  }}
-                />
-              </div>
-
-              {errorMessage && (
-                <div
-                  style={{
-                    background: '#fef2f2',
-                    color: '#b91c1c',
-                    border: '1px solid #fecaca',
-                    padding: '10px 14px',
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    marginBottom: '16px',
-                  }}
-                >
-                  {errorMessage}
+      <main className={styles.checkoutPage}>
+        <h1>Checkout Produk Digital</h1>
+        {productLoading && <p role="status">Memuat rincian produk...</p>}
+        {error && <p className={styles.checkoutError} role="alert">{error}</p>}
+        {orderCode && <Link href={orderUrl + encodeURIComponent(orderCode)}>Lihat status pesanan</Link>}
+        {product && (
+          <div className={styles.checkoutGrid}>
+            <section className={styles.checkoutPanel} aria-label="Ringkasan pesanan">
+              <h2>Ringkasan pesanan</h2>
+              <p>{product.nama}</p>
+              <span>{formatRupiah(unitPrice)} / item</span>
+              <div className={styles.checkoutLine}>
+                <span>Jumlah</span>
+                <div className={styles.quantityControl}>
+                  <button type="button" aria-label="Kurangi jumlah" disabled={pending || quantity <= 1} onClick={() => setQuantity(quantity - 1)}>−</button>
+                  <output>{quantity}</output>
+                  <button type="button" aria-label="Tambah jumlah" disabled={pending || quantity >= limit} onClick={() => setQuantity(quantity + 1)}>+</button>
                 </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className={styles.btnPrimary}
-                style={{ width: '100%', padding: '12px', fontSize: '15px' }}
-              >
-                {loading ? 'Memproses Pesanan...' : 'Bayar Sekarang via Mayar'}
+              </div>
+              <div className={styles.checkoutLine}><span>Total</span><strong>{formatRupiah(total)}</strong></div>
+              {limit < 1 && <p role="status">Stok produk habis.</p>}
+            </section>
+            <form className={styles.checkoutPanel} onSubmit={pay} aria-busy={pending}>
+              <h2>Data pembeli</h2>
+              <label>Nama lengkap<input name="name" autoComplete="name" maxLength={100} required disabled={pending} /></label>
+              <label>Email tujuan pengiriman<input name="email" type="email" autoComplete="email" maxLength={254} required disabled={pending} /></label>
+              <label>Nomor WhatsApp<input name="whatsapp" type="tel" autoComplete="tel" maxLength={24} required disabled={pending} /></label>
+              <button className={styles.checkoutPay} disabled={pending || quantity > limit || total < 500 || !!orderCode}>
+                {pending && <span className={styles.checkoutSpinner} aria-hidden="true" />}
+                {pending ? 'Menyiapkan tautan Mayar…' : 'Lanjut ke Mayar'}
               </button>
+              <p className={styles.checkoutHint}>Pilih metode pembayaran di halaman Mayar.</p>
             </form>
           </div>
-
-          {/* Ringkasan Pesanan */}
-          <div
-            style={{
-              background: 'var(--card, #ffffff)',
-              border: '1px solid var(--line, #e2e7f1)',
-              borderRadius: '16px',
-              padding: '24px',
-              height: 'fit-content',
-            }}
-          >
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 700, margin: '0 0 16px' }}>Ringkasan Pesanan</h2>
-            <div style={{ paddingBottom: '16px', borderBottom: '1px solid #e2e7f1', marginBottom: '16px' }}>
-              <div style={{ fontWeight: 800, fontSize: '16px', marginBottom: '4px' }}>
-                {product ? product.n : 'Memuat produk...'}
-              </div>
-              <div style={{ fontSize: '13px', color: '#64748b' }}>
-                {product?.pv} · {product?.c}
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '14px' }}>
-              <span style={{ color: '#64748b' }}>Harga Satuan</span>
-              <span style={{ fontWeight: 600 }}>{formatRupiah(unitPrice)}</span>
-            </div>
-
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '16px',
-                fontSize: '14px',
-              }}
-            >
-              <span style={{ color: '#64748b' }}>Jumlah Item</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <button
-                  type="button"
-                  style={{
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: '6px',
-                    border: '1px solid #cbd5e1',
-                    background: '#f8fafc',
-                    cursor: 'pointer',
-                    fontWeight: 700,
-                  }}
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                >
-                  -
-                </button>
-                <span style={{ fontWeight: 700, minWidth: '20px', textAlign: 'center' }}>{quantity}</span>
-                <button
-                  type="button"
-                  style={{
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: '6px',
-                    border: '1px solid #cbd5e1',
-                    background: '#f8fafc',
-                    cursor: 'pointer',
-                    fontWeight: 700,
-                  }}
-                  onClick={() => setQuantity(Math.min(product?.st || 10, quantity + 1))}
-                >
-                  +
-                </button>
-              </div>
-            </div>
-
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                paddingTop: '16px',
-                borderTop: '1px solid #e2e7f1',
-                fontSize: '17px',
-                fontWeight: 800,
-              }}
-            >
-              <span>Total Pembayaran</span>
-              <span style={{ color: '#1d4ed8' }}>{formatRupiah(totalPrice)}</span>
-            </div>
-          </div>
-        </div>
+        )}
       </main>
     </div>
   );
 }
 
 export default function CheckoutPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className={styles.deniedWrap}>
-          <p style={{ color: '#64748b', fontWeight: 600 }}>Memuat halaman checkout...</p>
-        </div>
-      }
-    >
-      <CheckoutContent />
-    </Suspense>
-  );
+  return <Suspense fallback={<p role="status">Memuat checkout...</p>}><CheckoutContent /></Suspense>;
 }

@@ -9,21 +9,16 @@ import {
   ADMIN_KAYLA_ID,
   DEFAULT_DIGITAL_CATEGORIES,
   DIGITAL_API_ENDPOINTS,
-  SAMPLE_DIGITAL_PRODUCTS,
   formatRupiah,
   normalizeDigitalCategory,
 } from '../../data/digital-data';
 
-const PRODUCT_ART: Record<string, string> = {
-  'pembuatan-cv': 'document',
-  'joki-skripsi': 'book',
-  'joki-ppt': 'presentation',
-  'joki-proposal-skripsi': 'writing',
-  'cek-turnitin': 'receipt',
-};
-
 const CATEGORY_ICONS: Record<string, string> = {
-  game: 'M6 12h2m-1-1v2m9-1h.01M18 13h.01M7.5 6h9a3 3 0 0 1 2.9 2.3l1.1 5.2a2.5 2.5 0 0 1-4.2 2.2L14 13h-4l-2.3 2.7a2.5 2.5 0 0 1-4.2-2.2l1.1-5.2A3 3 0 0 1 7.5 6Z',
+  all: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z',
+  search: 'M15.5 15.5 21 21M18 10.5a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z',
+  close: 'm6 6 12 12M18 6 6 18',
+
+  game: 'M7 10h4m-2-2v4m6-2h.01m3 2h.01M7.5 5h9a4 4 0 0 1 3.9 3.2l1.3 6a3 3 0 0 1-5 2.8l-2.5-2.5H9.8L7.3 17a3 3 0 0 1-5-2.8l1.3-6A4 4 0 0 1 7.5 5Z',
   topup: 'M12 3 21 12l-9 9-9-9 9-9Zm0 4-5 5 5 5 5-5-5-5Z',
   voucher: 'M4 6h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4V6Zm5 0v3m0 3v2m0 3v1',
   pulsa: 'M7 3h10v18H7zM10 6h4m-3 12h2',
@@ -46,10 +41,11 @@ function DigitalStoreContent() {
   const searchParams = useSearchParams();
 
   const [authStatus, setAuthStatus] = useState<'loading' | 'authorized' | 'forbidden' | 'unauthenticated'>('loading');
-  const [products, setProducts] = useState<DigitalProduct[]>(SAMPLE_DIGITAL_PRODUCTS);
+  const [products, setProducts] = useState<DigitalProduct[]>([]);
+  const [catalogStatus, setCatalogStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [cart, setCart] = useState<DigitalCartItem[]>([]);
+  const [storedCart, setCart] = useState<DigitalCartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const [selectedProduct, setSelectedProduct] = useState<DigitalProduct | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
@@ -131,20 +127,22 @@ function DigitalStoreContent() {
   }, [router]);
 
   const loadLiveProducts = async (token?: string) => {
+    setCatalogStatus('loading');
     try {
       const res = await fetch(DIGITAL_API_ENDPOINTS.PRODUCTS, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      if (res.ok) {
+      if (!res.ok) throw new Error('Catalog fetch failed');
+      {
         const data = await res.json();
-        if (Array.isArray(data.products) && data.products.length > 0) {
+        if (Array.isArray(data.products)) {
           const mapped: DigitalProduct[] = data.products.map((p: any) => ({
             id: p.id,
             c: normalizeDigitalCategory(p.kategori || p.category),
             n: p.nama,
             pv: 'JOKI.IN Store',
             ds: p.deskripsi || '',
-            pr: Number(p.harga_dasar) * (1 - (Number(p.diskon_persen) || 0) / 100),
+            pr: Math.round(Number(p.harga_dasar) * (1 - (Number(p.diskon_persen) || 0) / 100)),
             st: Number(p.stok) || 0,
             old: p.diskon_persen ? Number(p.harga_dasar) : undefined,
             slug: p.slug,
@@ -152,9 +150,12 @@ function DigitalStoreContent() {
             is_active: p.is_active,
           }));
           setProducts(mapped);
+          setCatalogStatus('ready');
+        } else {
+          setCatalogStatus('error');
         }
       }
-    } catch (_) {}
+    } catch (_) { setCatalogStatus('error'); }
   };
 
   // Muat keranjang dari local storage
@@ -164,6 +165,8 @@ function DigitalStoreContent() {
       if (raw) setCart(JSON.parse(raw));
     } catch (_) {}
   }, []);
+
+  const cart = storedCart.filter(item => products.some(product => product.slug === item.slug && product.st > 0));
 
   const saveCart = (newCart: DigitalCartItem[]) => {
     setCart(newCart);
@@ -202,10 +205,6 @@ function DigitalStoreContent() {
 
   const cartTotalCount = useMemo(() => {
     return cart.reduce((sum, item) => sum + item.quantity, 0);
-  }, [cart]);
-
-  const cartTotalPrice = useMemo(() => {
-    return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   }, [cart]);
 
   const filteredProducts = useMemo(() => {
@@ -262,10 +261,11 @@ function DigitalStoreContent() {
         <div className={styles.navWrap}>
           <Link href="/produk-digital" className={styles.logo} aria-label="JOKI.IN Digital Store">
             <img className={styles.logoImage} src="/assets/produk-digital/jokiin-logo-white.png" alt="JOKI.IN" width="124" height="40" />
-            <small className={styles.logoTag}>Digital Store</small>
+
           </Link>
 
-          <form className={styles.searchForm} onSubmit={(e) => e.preventDefault()}>
+          <form className={styles.searchForm} role="search" onSubmit={(e) => { e.preventDefault(); document.getElementById('catalogGrid')?.scrollIntoView(); }}>
+            <CategoryIcon id="search" />
             <input
               className={styles.searchInput}
               type="search"
@@ -281,7 +281,7 @@ function DigitalStoreContent() {
                 onClick={() => setSearchQuery('')}
                 aria-label="Hapus pencarian"
               >
-                x
+                <CategoryIcon id="close" />
               </button>
             )}
           </form>
@@ -313,18 +313,20 @@ function DigitalStoreContent() {
           <button
             type="button"
             className={`${styles.catBtn} ${selectedCategory === 'all' ? styles.catBtnActive : ''}`}
-            onClick={() => setSelectedCategory('all')}
+            aria-pressed={selectedCategory === 'all'}
+            onClick={() => { setSelectedCategory('all'); document.getElementById('catalogGrid')?.scrollIntoView(); }}
           >
-            Semua Produk
+            <CategoryIcon id="all" /> Semua Produk
           </button>
           {DEFAULT_DIGITAL_CATEGORIES.filter((cat) => cat.id !== 'software' && cat.id !== 'giftcard').map((cat) => (
             <button
               key={cat.id}
               type="button"
               className={`${styles.catBtn} ${selectedCategory === cat.id ? styles.catBtnActive : ''}`}
-              onClick={() => setSelectedCategory(cat.id)}
+              aria-pressed={selectedCategory === cat.id}
+              onClick={() => { setSelectedCategory(cat.id); setSearchQuery(''); document.getElementById('catalogGrid')?.scrollIntoView(); }}
             >
-              {cat.t}
+              <CategoryIcon id={cat.id} /> {cat.t}
             </button>
           ))}
         </nav>
@@ -332,8 +334,7 @@ function DigitalStoreContent() {
 
       <main className={styles.mainContent}>
         <div className={styles.adminBar}>
-          <strong>INFO</strong><span>Transaksi otomatis 24 jam, proses cepat &amp; aman.</span><i aria-hidden="true" />
-          <span>Top up game, voucher, dan kebutuhan digital kamu, lengkap di JOKI.IN!</span>
+          <strong>Produk Digital</strong><span>Cek harga dan stok sebelum lanjut ke pembayaran.</span>
         </div>
         <section className={styles.hero} aria-label="Top up game dan beli produk digital">
           <div className={styles.heroCopy}>
@@ -341,26 +342,36 @@ function DigitalStoreContent() {
             <h1 className={styles.heroTitle}>Top Up Game &amp;<br />Beli Produk Digital<br /><strong>Lebih Cepat, Aman, dan Praktis</strong></h1>
             <p className={styles.heroDesc}>Lengkap untuk kebutuhan gamer dan hiburan digital kamu, dari top up game, voucher, langganan premium, hingga pulsa &amp; tagihan.</p>
             <div className={styles.heroActions}>
-              <button type="button" className={styles.heroBtn} onClick={() => document.getElementById('catalogGrid')?.scrollIntoView({ behavior: 'smooth' })}>
-                <span aria-hidden="true">↯</span> Top Up Sekarang
+              <button type="button" className={styles.heroBtn} onClick={() => { setSelectedCategory('topup'); setSearchQuery(''); document.getElementById('catalogGrid')?.scrollIntoView(); }}>
+                <CategoryIcon id="pln" /> Top Up Sekarang
               </button>
-              <button type="button" className={styles.heroSecondaryBtn} onClick={() => { setSelectedCategory('all'); setSearchQuery(''); document.getElementById('catalogGrid')?.scrollIntoView({ behavior: 'smooth' }); }}>
-                <span aria-hidden="true">⠿</span> Lihat Semua Produk
+              <button type="button" className={styles.heroSecondaryBtn} onClick={() => { setSelectedCategory('all'); setSearchQuery(''); document.getElementById('catalogGrid')?.scrollIntoView({ behavior: 'auto' }); }}>
+                <CategoryIcon id="all" /> Lihat Semua Produk
               </button>
             </div>
           </div>
-          <img className={styles.heroArtwork} src="/assets/produk-digital/store-hero.webp" alt="" fetchPriority="high" />
+          <img className={styles.heroArtwork} src="/assets/produk-digital/store-hero-hd.webp" alt="" fetchPriority="high" />
         </section>
 
         {/* Section Header */}
         <div className={styles.sectionHeader} id="catalogGrid">
           <div>
             <h2 className={styles.sectionTitle}>{selectedCategory === 'all' ? 'Rekomendasi Produk untuk Kamu' : DEFAULT_DIGITAL_CATEGORIES.find((c) => c.id === selectedCategory)?.t || 'Produk Digital'}</h2>
-            <p className={styles.sectionSubTitle}>Produk pilihan yang paling banyak dicari, siap dibeli sekarang juga.</p>
+            <p className={styles.sectionSubTitle}>{searchQuery ? 'Hasil pencarian' : 'Harga dan stok terkini dari katalog digital.'}</p>
           </div>
           <button type="button" className={styles.seeAll} onClick={() => { setSelectedCategory('all'); setSearchQuery(''); }}>Lihat Semua Produk <span aria-hidden="true">→</span></button>
         </div>
 
+        {catalogStatus !== 'ready' || filteredProducts.length === 0 ? (
+          <div className={styles.catalogEmpty} role="status">
+            <CategoryIcon id={catalogStatus === 'ready' ? 'search' : 'all'} />
+            <div>
+              <strong>{catalogStatus === 'loading' ? 'Memuat katalog…' : catalogStatus === 'error' ? 'Katalog gagal dimuat' : searchQuery ? 'Produk tidak ditemukan' : 'Belum ada produk di kategori ini'}</strong>
+              {catalogStatus === 'ready' && <p>Coba kategori lain atau ubah kata pencarian.</p>}
+            </div>
+            {catalogStatus === 'error' && <button className={styles.btnSecondary} onClick={() => window.location.reload()}>Muat ulang</button>}
+          </div>
+        ) : null}
         {/* Product Grid */}
         <div className={styles.productGrid}>
           {filteredProducts.map((prod) => (
@@ -369,7 +380,7 @@ function DigitalStoreContent() {
                 {prod.gambar_url ? <img className={styles.cardImage} src={prod.gambar_url} alt="" loading="lazy" /> : (
                   <div className={styles.cardArtwork}>
                     <b>{prod.n}</b>
-                    <img src={`/assets/ui-art/${PRODUCT_ART[prod.slug ?? ''] ?? 'folder'}.png`} alt="" loading="lazy" />
+                    <CategoryIcon id={prod.c} />
                   </div>
                 )}
                 {prod.old && <span className={styles.discountTag}>-{Math.max(1, Math.round((1 - prod.pr / prod.old) * 100))}%</span>}
@@ -420,7 +431,7 @@ function DigitalStoreContent() {
               <button
                 key={cat.id}
                 type="button"
-                className={styles.categoryTile}
+                className={`${styles.categoryTile} ${selectedCategory === cat.id ? styles.categoryTileActive : ''}`}
                 onClick={() => setSelectedCategory(cat.id)}
               >
                 <CategoryIcon id={cat.id} />
@@ -443,7 +454,7 @@ function DigitalStoreContent() {
                 onClick={() => setSelectedProduct(null)}
                 aria-label="Tutup modal"
               >
-                x
+                <CategoryIcon id="close" />
               </button>
             </div>
             <p style={{ color: '#a4b0b4', fontSize: '14px', lineHeight: 1.5, margin: '0 0 16px' }}>
@@ -484,7 +495,7 @@ function DigitalStoreContent() {
                 className={styles.btnPrimary}
                 onClick={() => {
                   router.push(
-                    `/produk-digital/checkout?slug=${encodeURIComponent(
+                    `/produk-digital/checkout/?slug=${encodeURIComponent(
                       selectedProduct.slug || selectedProduct.id || ''
                     )}&qty=${selectedQuantity}`
                   );
@@ -516,7 +527,7 @@ function DigitalStoreContent() {
                 onClick={() => setIsCartOpen(false)}
                 aria-label="Tutup keranjang"
               >
-                x
+                <CategoryIcon id="close" />
               </button>
             </div>
 
@@ -562,40 +573,12 @@ function DigitalStoreContent() {
                         >
                           Hapus
                         </button>
+                        <Link className={styles.btnSecondary} href={'/produk-digital/checkout/?slug=' + encodeURIComponent(item.slug || '') + '&qty=' + item.quantity}>Checkout</Link>
                       </div>
                     </div>
                   ))}
                 </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    fontWeight: 800,
-                    fontSize: '16px',
-                    margin: '16px 0',
-                  }}
-                >
-                  <span>Total Pesanan:</span>
-                  <span style={{ color: '#55d9b0' }}>{formatRupiah(cartTotalPrice)}</span>
-                </div>
-                <button
-                  type="button"
-                  className={styles.btnPrimary}
-                  style={{ width: '100%' }}
-                  onClick={() => {
-                    setIsCartOpen(false);
-                    const firstItem = cart[0];
-                    if (firstItem) {
-                      router.push(
-                        `/produk-digital/checkout?slug=${encodeURIComponent(
-                          firstItem.slug || firstItem.productId
-                        )}&qty=${firstItem.quantity}`
-                      );
-                    }
-                  }}
-                >
-                  Lanjut ke Pembayaran
-                </button>
+                <p className={styles.checkoutHint}>Pilih Checkout pada produk yang ingin dibayar.</p>
               </div>
             )}
           </div>
