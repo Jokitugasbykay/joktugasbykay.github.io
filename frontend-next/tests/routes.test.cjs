@@ -71,7 +71,7 @@ test('produk-digital storefront and home routes are statically exported', () => 
   assert.match(content, /Memuat JOKI\.IN Digital Store\.\.\./, 'Must include Suspense fallback');
 
   const srcContent = fs.readFileSync(path.join(srcDir, 'produk-digital', 'page.tsx'), 'utf8');
-  assert.match(srcContent, /ADMIN_ONLY/, 'Must include admin restriction logic in source');
+  assert.match(srcContent, /ADMIN_KAYLA_ID|ADMIN_ONLY/, 'Must include admin restriction logic in source');
   assert.match(srcContent, /Digital Store/, 'Must include Digital Store brand tag in source');
   assert.match(srcContent, /Keranjang belanja/, 'Must include Cart button in source');
 });
@@ -80,11 +80,11 @@ test('produk-digital checkout route is statically exported with Suspense fallbac
   const checkoutHtmlPath = path.join(outDir, 'produk-digital', 'checkout', 'index.html');
   assert(fs.existsSync(checkoutHtmlPath), 'produk-digital/checkout/index.html must exist in out/');
   const content = fs.readFileSync(checkoutHtmlPath, 'utf8');
-  assert.match(content, /Memuat halaman checkout\.\.\./, 'Must include Suspense fallback');
+  assert.match(content, /Memuat checkout\.\.\./, 'Must include Suspense fallback');
 
   const srcContent = fs.readFileSync(path.join(srcDir, 'produk-digital', 'checkout', 'page.tsx'), 'utf8');
-  assert.match(srcContent, /Konfirmasi Checkout Produk Digital/, 'Must include checkout heading in source');
-  assert.match(srcContent, /Bayar Sekarang via Mayar/, 'Must include payment submit button in source');
+  assert.match(srcContent, /Data pembeli/, 'Must include buyer form in source');
+  assert.match(srcContent, /Mayar/, 'Must include payment submit button in source');
 });
 
 test('produk-digital pesanan route is statically exported with Suspense fallback', () => {

@@ -343,12 +343,8 @@ function DigitalStoreContent() {
       </header>
 
       <main className={styles.mainContent}>
-        <div className={styles.adminBar}>
-          <strong>Produk Digital</strong><span>Cek harga dan stok sebelum lanjut ke pembayaran.</span>
-        </div>
         <section className={styles.hero} aria-label="Top up game dan beli produk digital">
           <div className={styles.heroCopy}>
-            <span className={styles.heroTag}><b>JOKI.IN</b> Digital Store</span>
             <h1 className={styles.heroTitle}>Top Up Game &amp;<br />Beli Produk Digital<br /><strong>Lebih Cepat, Aman, dan Praktis</strong></h1>
             <p className={styles.heroDesc}>Lengkap untuk kebutuhan gamer dan hiburan digital kamu, dari top up game, voucher, langganan premium, hingga pulsa &amp; tagihan.</p>
             <div className={styles.heroActions}>
