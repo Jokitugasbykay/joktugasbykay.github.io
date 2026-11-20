@@ -346,18 +346,18 @@ function DigitalStoreContent() {
       <main className={styles.mainContent}>
         <section className={styles.hero} aria-label="Top up game dan beli produk digital">
           <div className={styles.heroCopy}>
-            <h1 className={styles.heroTitle}>Top Up Game &amp;<br />Beli Produk Digital<br /><strong>Lebih Cepat, Aman, dan Praktis</strong></h1>
-            <p className={styles.heroDesc}>Lengkap untuk kebutuhan gamer dan hiburan digital kamu, dari top up game, voucher, langganan premium, hingga pulsa &amp; tagihan.</p>
+            <div className={styles.heroTag}><b>JOKI.IN Digital Store</b></div><h1 className={styles.heroTitle}>Top Up Game, Langganan<br />Premium, &amp; Voucher Digital</h1>
+            <p className={styles.heroDesc}>Proses cepat, aman, dan terpercaya untuk semua kebutuhan digital kamu.</p>
             <div className={styles.heroActions}>
               <button type="button" className={styles.heroBtn} onClick={() => { setSelectedCategory('topup'); setSearchQuery(''); document.getElementById('catalogGrid')?.scrollIntoView(); }}>
-                <CategoryIcon id="pln" /> Top Up Sekarang
+                <CategoryIcon id="pln" /> Beli Sekarang
               </button>
-              <button type="button" className={styles.heroSecondaryBtn} onClick={() => { setSelectedCategory('all'); setSearchQuery(''); document.getElementById('catalogGrid')?.scrollIntoView({ behavior: 'auto' }); }}>
-                <CategoryIcon id="all" /> Lihat Semua Produk
+              <button type="button" className={styles.heroSecondaryBtn} onClick={() => { setSelectedCategory('all'); setSearchQuery(''); document.getElementById('categoryTitle')?.scrollIntoView({ behavior: 'auto' }); }}>
+                <CategoryIcon id="all" /> Lihat Kategori
               </button>
             </div>
           </div>
-          <img className={styles.heroArtwork} src="/assets/produk-digital/store-hero-1080p.webp" alt="" fetchPriority="high" />
+          <img className={styles.heroArtwork} src="/assets/produk-digital/hero-warrior.png" alt="" fetchPriority="high" />
         </section>
 
         {/* Section Header */}
@@ -366,7 +366,7 @@ function DigitalStoreContent() {
             <h2 className={styles.sectionTitle}>{showFeaturedPreview ? 'Pilihan Produk Digital' : selectedCategory === 'all' ? 'Rekomendasi Produk untuk Kamu' : DEFAULT_DIGITAL_CATEGORIES.find((c) => c.id === selectedCategory)?.t || 'Produk Digital'}</h2>
             <p className={styles.sectionSubTitle}>{searchQuery ? 'Hasil pencarian' : showFeaturedPreview ? 'Pratinjau etalase. Harga dan stok belum tersedia.' : 'Harga dan stok terkini dari katalog digital.'}</p>
           </div>
-          {!showFeaturedPreview && <button type="button" className={styles.seeAll} onClick={() => { setSelectedCategory('all'); setSearchQuery(''); }}>Lihat Semua Produk <span aria-hidden="true">→</span></button>}
+          {!showFeaturedPreview && <button type="button" className={styles.seeAll} onClick={() => { setSelectedCategory('all'); setSearchQuery(''); }}>Lihat Kategori <span aria-hidden="true">→</span></button>}
         </div>
 
         {showFeaturedPreview ? (
