@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
-import HeaderNav from '../../components/HeaderNav';
-import Footer from '../../components/Footer';
+import Storefront from '@/components/Storefront';
 
 export const metadata: Metadata = {
   title: 'Pusat Informasi',
@@ -8,11 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function InformationLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="container">
-      <HeaderNav />
-      <main>{children}</main>
-      <Footer />
-    </div>
-  );
+  return <Storefront information={children} />;
 }

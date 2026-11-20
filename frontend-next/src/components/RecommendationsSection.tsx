@@ -14,6 +14,7 @@ export default function RecommendationsSection({ products, onSelectProduct }: Re
 
   // Auto slide every 4 seconds unless reduced motion
   useEffect(() => {
+    if (total < 2) return;
     if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       return;
     }

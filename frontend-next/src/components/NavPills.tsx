@@ -49,7 +49,10 @@ export default function NavPills({ activeTab, onTabChange }: NavPillsProps) {
       if (!nav || !indicator || !active) return;
       const navRect = nav.getBoundingClientRect();
       const activeRect = active.getBoundingClientRect();
-      const nextX = activeRect.left - navRect.left + nav.scrollLeft - nav.clientLeft - indicator.offsetLeft;
+      if (activeTab === 'informasi' && (activeRect.left < navRect.left || activeRect.right > navRect.right)) {
+        nav.scrollLeft += activeRect.left - navRect.left - (nav.clientWidth - activeRect.width) / 2;
+      }
+      const nextX = active.getBoundingClientRect().left - navRect.left + nav.scrollLeft - nav.clientLeft - indicator.offsetLeft;
       indicator.style.width = `${activeRect.width}px`;
       indicator.style.transform = `translateX(${nextX}px)`;
     };

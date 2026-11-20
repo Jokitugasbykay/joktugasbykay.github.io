@@ -13,9 +13,9 @@ export default function InformationPage() {
 
       <div className="info-layout">
         <section className="info-main">
+          <AnnouncementCard />
           <AboutJokiin />
           <UpdateFeed />
-          <AnnouncementCard />
           <ChangelogFeed />
         </section>
 
