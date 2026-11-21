@@ -1046,11 +1046,11 @@ export default { async fetch(request, env) {
           targetFile = url.pathname;
         } else if (url.pathname === '/produk-digital/checkout' || url.pathname.startsWith('/produk-digital/checkout/')) {
           targetFile = '/produk-digital/checkout/';
-        } else if (url.pathname.startsWith('/produk-digital/produk/')) {
+        } else if (url.pathname === '/produk-digital/produk' || url.pathname.startsWith('/produk-digital/produk/')) {
           targetFile = '/produk-digital/produk/';
-        } else if (url.pathname.startsWith('/produk-digital/pesanan/')) {
+        } else if (url.pathname === '/produk-digital/pesanan' || url.pathname.startsWith('/produk-digital/pesanan/')) {
           targetFile = '/produk-digital/pesanan/';
-        } else if (url.pathname.startsWith('/produk-digital/kategori/')) {
+        } else if (url.pathname === '/produk-digital/kategori' || url.pathname.startsWith('/produk-digital/kategori/')) {
           targetFile = '/produk-digital/kategori/';
         } else if (url.pathname === '/produk-digital' || url.pathname === '/produk-digital/' || url.pathname === '/produk-digital/home') {
           targetFile = '/produk-digital/home/';
