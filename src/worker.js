@@ -1067,7 +1067,30 @@ export default { async fetch(request, env) {
           }
         }
         const headers = new Headers(assetRes.headers);
-        if (!isStaticAsset) {
+        if (isStaticAsset) {
+          const extMatch = url.pathname.match(/\.([a-z0-9]+)$/i);
+          if (extMatch) {
+            const ext = extMatch[1].toLowerCase();
+            const mimeMap = {
+              css: 'text/css; charset=utf-8',
+              js: 'application/javascript; charset=utf-8',
+              mjs: 'application/javascript; charset=utf-8',
+              json: 'application/json; charset=utf-8',
+              svg: 'image/svg+xml',
+              png: 'image/png',
+              jpg: 'image/jpeg',
+              jpeg: 'image/jpeg',
+              webp: 'image/webp',
+              ico: 'image/x-icon',
+              woff2: 'font/woff2',
+              woff: 'font/woff',
+              ttf: 'font/ttf'
+            };
+            if (mimeMap[ext]) {
+              headers.set('content-type', mimeMap[ext]);
+            }
+          }
+        } else {
           headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
           headers.set('pragma', 'no-cache');
         }

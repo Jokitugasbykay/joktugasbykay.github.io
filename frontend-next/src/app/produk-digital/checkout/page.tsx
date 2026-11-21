@@ -40,10 +40,23 @@ function getAuthToken(): string | null {
 function CheckoutContent() {
   const params = useSearchParams();
   const slug = params.get('slug') ?? '';
-  const [product, setProduct] = useState<Product | null>(null);
-  const [quantity, setQuantity] = useState(1);
+  const qtyParam = params.get('qty') ?? '1';
+
+  // Fallback sinkron dari DEFAULT_DIGITAL_PRODUCTS untuk menghindari tampilan loading tak berujung
+  const fallbackProduct = DEFAULT_DIGITAL_PRODUCTS.find(p => p.slug === slug);
+  const initialProduct: Product | null = fallbackProduct ? {
+    nama: fallbackProduct.n,
+    harga_dasar: fallbackProduct.pr,
+    diskon_persen: 0,
+    stok: fallbackProduct.st,
+    batas_beli_per_orang: 10
+  } : null;
+
+  const [product, setProduct] = useState<Product | null>(initialProduct);
+  const initialQty = Math.max(1, Math.min(10, parseInt(qtyParam, 10) || 1));
+  const [quantity, setQuantity] = useState(initialQty);
   const [pending, setPending] = useState(false);
-  const [productLoading, setProductLoading] = useState(true);
+  const [productLoading, setProductLoading] = useState(!initialProduct);
   const [error, setError] = useState('');
   const [orderCode, setOrderCode] = useState('');
   const request = useRef<{ details: string; key: string } | null>(null);
@@ -51,15 +64,32 @@ function CheckoutContent() {
 
   useEffect(() => {
     const controller = new AbortController();
-    setProduct(null);
     setError('');
     setOrderCode('');
-    setProductLoading(true);
+
     if (!/^[a-z0-9-]+$/.test(slug)) {
       setError('Pilih produk digital terlebih dahulu.');
       setProductLoading(false);
       return;
     }
+
+    const fallback = DEFAULT_DIGITAL_PRODUCTS.find(p => p.slug === slug);
+    if (fallback) {
+      const fbItem: Product = {
+        nama: fallback.n,
+        harga_dasar: fallback.pr,
+        diskon_persen: 0,
+        stok: fallback.st,
+        batas_beli_per_orang: 10
+      };
+      setProduct(fbItem);
+      const limit = Math.min(10, fbItem.stok, fbItem.batas_beli_per_orang || 10);
+      setQuantity(Math.max(1, Math.min(limit, parseInt(qtyParam || '1', 10) || 1)));
+      setProductLoading(false);
+    } else {
+      setProductLoading(true);
+    }
+
     const token = getAuthToken();
     const headers: Record<string, string> = {};
     if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -71,7 +101,6 @@ function CheckoutContent() {
       .then(async response => {
         const data = await response.json();
         if (!response.ok || !data.product) {
-          const fallback = DEFAULT_DIGITAL_PRODUCTS.find(p => p.slug === slug);
           if (fallback) {
             return {
               nama: fallback.n,
@@ -88,12 +117,21 @@ function CheckoutContent() {
       .then(item => {
         setProduct(item);
         const limit = Math.min(10, item.stok, item.batas_beli_per_orang || 10);
-        setQuantity(Math.max(1, Math.min(limit, parseInt(params.get('qty') || '1', 10) || 1)));
+        setQuantity(Math.max(1, Math.min(limit, parseInt(qtyParam || '1', 10) || 1)));
       })
-      .catch(error => { if (!controller.signal.aborted) setError(error.message || 'Katalog gagal dimuat.'); })
-      .finally(() => { if (!controller.signal.aborted) setProductLoading(false); });
+      .catch(err => {
+        if (!controller.signal.aborted) {
+          if (!fallback) {
+            setError(err.message || 'Katalog gagal dimuat.');
+          }
+        }
+      })
+      .finally(() => {
+        setProductLoading(false);
+      });
+
     return () => controller.abort();
-  }, [slug, params]);
+  }, [slug, qtyParam]);
 
   const limit = product ? Math.min(10, product.stok, product.batas_beli_per_orang || 10) : 0;
   const unitPrice = product ? Math.round(product.harga_dasar * (1 - (product.diskon_persen || 0) / 100)) : 0;

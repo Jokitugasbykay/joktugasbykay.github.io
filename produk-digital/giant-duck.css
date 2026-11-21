@@ -95,7 +95,7 @@ template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + p[role="status"] { min-
 :is(.pd-duck, [class*="digital_checkoutSpinner__"], #btn-submit-order[aria-busy="true"],
   template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_deniedWrap__"], p[role="status"]),
   [aria-label="Memuat katalog produk"][aria-busy="true"])::after {
-  --pd-color: #ffffff;
+  --pd-color: #10b981;
   --pd-diagonal: calc(-1 * var(--pd-step));
   --pd-delay: .5s;
 }
@@ -138,8 +138,8 @@ template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_de
   padding-top: calc(40vh + var(--pd-tile) + 24px);
 }
 
-[class*="digital_cube_x__"] { background: #51e2b7; animation: pd-original-pulse 1s infinite; }
-[class*="digital_cube_y__"] { background: #ffffff; animation: pd-original-pulse 1s .5s infinite; }
+[class*="digital_cube_x__"] { background: #51e2b7; box-shadow: 0 0 14px rgba(81, 226, 183, 0.45); animation: pd-original-pulse 1s infinite; }
+[class*="digital_cube_y__"] { background: #10b981; box-shadow: 0 0 14px rgba(16, 185, 129, 0.45); animation: pd-original-pulse 1s .5s infinite; }
 
 @keyframes pd-original-pulse { 0%, 100% { transform: scale(.8); } 50% { transform: scale(1.2); } }
 @keyframes pd-duck-pulse {
