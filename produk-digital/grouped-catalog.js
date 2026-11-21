@@ -58,9 +58,10 @@ function renderDigitalCatalog(react, products, renderCard, showFeatured) {
     ] })]
   }, entry.name));
   if (showFeatured && entries.length) {
+    tiles.unshift(jsx('h3', { className: 'pd-catalog-title', children: 'Semua produk' }, 'catalog-title'));
     tiles.unshift(jsxs('section', { className: 'pd-catalog-featured', 'aria-labelledby': 'pd-featured-title', children: [
-      jsx('h3', { id: 'pd-featured-title', children: 'Pilihan top up' }),
-      jsx('div', { children: entries.slice(0, 3).map(entry => jsxs('a', {
+      jsx('h3', { id: 'pd-featured-title', children: 'Populer sekarang' }),
+      jsx('div', { children: ['mlbb', 'ff', 'pubg', 'hok', 'genshin'].map(key => entries.find(entry => entry.href.endsWith('game=' + key))).filter(Boolean).map(entry => jsxs('a', {
         ...newTab, href: entry.href, children: [artwork(entry), jsxs('span', { children: [
           jsx('strong', { children: entry.name }), jsx('small', { children: entry.price })
         ] })]

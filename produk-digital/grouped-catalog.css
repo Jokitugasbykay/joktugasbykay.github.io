@@ -156,3 +156,6 @@
 .pd-services > div { display: flex; gap: 8px; flex-wrap: wrap; }
 .pd-services a { display: inline-flex; align-items: center; min-height: 44px; border: 1px solid #36544a; border-radius: 8px; padding: 8px 12px; color: #d8fff0; text-decoration: none; }
 .pd-services a:focus-visible { outline: 2px solid #8ff1d1; outline-offset: 2px; }
+
+.pd-catalog-title { grid-column: 1 / -1; margin: 12px 0 2px; font-size: 1.05rem; }
+@media (max-width: 600px) { .pd-catalog-featured > div { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
