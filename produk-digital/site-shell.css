@@ -20,3 +20,9 @@
   [class*="digital_navWrap__"] [class*="digital_logoImage__"],
   .digital-store-header-logo img { width: 126px; height: 42px; }
 }
+
+/* Keep the shared header neutral across storefront and order pages. */
+.pd-site-header, [class*="digital_header__"], body.digital-store-page .digital-store-header { background: #111516 !important; }
+body:has([class*="digital_deniedWrap__"] [class*="digital_loaderContainer__"]) .pd-site-footer,
+body:has(template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + p[role="status"]) .pd-site-footer,
+body:has([aria-label="Memuat katalog produk"][aria-busy="true"]) .pd-site-footer { visibility: hidden; }
