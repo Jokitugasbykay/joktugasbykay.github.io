@@ -30,12 +30,28 @@ function renderDigitalCatalog(react, products, renderCard, showFeatured) {
     return { ...entry, art: catalogArt[index % catalogArt.length], price: prices.length ? 'Mulai ' + rupiah.format(Math.min(...prices)) : 'Belum tersedia',
       href: '/produk-digital/produk/?' + new URLSearchParams({ provider: entry.name }) };
   });
+  if (showFeatured) {
+    const requestedGames = [
+      ['mlbb', 'Mobile Legends', /mobile legends?|mlbb/i],
+      ['ff', 'Free Fire', /free fire/i],
+      ['genshin', 'Genshin Impact', /genshin/i],
+      ['hsr', 'Honkai: Star Rail', /honkai.*star.?rail|\bhsr\b/i],
+      ['zzz', 'Zenless Zone Zero', /zenless|\bzzz\b/i],
+      ['pubg', 'PUBG Mobile', /pubg/i],
+      ['hok', 'Honor of Kings', /honou?r of kings|\bhok\b/i]
+    ];
+    for (const [key, name, pattern] of requestedGames) {
+      const existing = entries.find(entry => pattern.test(entry.name));
+      if (existing) existing.href = '/produk-digital/produk/?game=' + key;
+      else entries.push({ name, products: [], art: catalogArt[entries.length % catalogArt.length], price: 'Belum tersedia', href: '/produk-digital/produk/?game=' + key });
+    }
+  }
   const newTab = { target: '_blank', rel: 'noopener' };
   const artwork = entry => jsx('img', { src: entry.art, loading: 'lazy', alt: '' });
   const tiles = entries.map(entry => jsxs('a', {
     ...newTab, href: entry.href, className: 'pd-game-cover',
     children: [artwork(entry), jsxs('span', { className: 'pd-game-label', children: [
-      jsx('small', { children: entry.products.length + ' paket top up' }),
+      jsx('small', { children: entry.products.length ? entry.products.length + ' paket top up' : 'Paket belum tersedia' }),
       jsx('strong', { children: entry.name }),
       jsx('span', { children: entry.price }),
       jsx('span', { className: 'pd-game-open', children: 'Lihat paket' })
