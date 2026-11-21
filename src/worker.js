@@ -458,8 +458,8 @@ function generateCryptoOrderId(tipe = 'REGULER') {
   const normTipe = String(tipe || '').toUpperCase();
   const isSpecial = normTipe === 'SPESIAL';
   const isDigital = normTipe === 'DIGITAL';
-  const prefix = isDigital ? 'DGT' : (isSpecial ? 'SPCL' : 'NUG');
-  const targetLen = isDigital ? 24 : (isSpecial ? 23 : 26);
+  const prefix = isDigital ? 'PRGDGTL' : (isSpecial ? 'SPCL' : 'NUG');
+  const targetLen = isDigital ? 13 : (isSpecial ? 23 : 26);
   let suffix = '';
   while (suffix.length < targetLen) {
     const bytes = crypto.getRandomValues(new Uint8Array(64));
@@ -933,10 +933,12 @@ async function handleDigitalStoreApi(request, env, url) {
     const expiresAt = new Date(Date.now() + 86400000).toISOString();
     let payment;
     try {
-      payment = await mayar(env, 'POST', 'payments/create', {
-        name: customerName, amount: total, email: customerEmail, mobile: customerWa,
+      payment = await mayar(env, 'POST', 'invoices/create', {
+        name: customerName, email: customerEmail, mobile: customerWa,
         redirectUrl: 'https://jokiin.my.id/produk-digital/pesanan/?order=' + orderCode,
         description: 'JOKI.IN Digital Store ' + orderCode + ' - ' + prod.nama,
+        items: [{ quantity: qty, rate: unitPrice, description: prod.nama }],
+        extraData: { noCustomer: orderCode, idProd: String(prod.id) },
         expiredAt: expiresAt,
       });
     } catch {

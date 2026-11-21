@@ -54,6 +54,7 @@ function setupWorkerEnv() {
 
   const mockOrders = [];
   const mockOrderItems = [];
+  const mockMayarRequests = [];
 
   const ctx = context({
     fetch: async (url, options = {}) => {
@@ -65,6 +66,11 @@ function setupWorkerEnv() {
           return jsonResponse({ id: ADMIN_KAYLA_ID, email: 'kaylafisika24@gmail.com' });
         }
         return jsonResponse({ error: 'invalid token' }, 401);
+      }
+
+      if (u.hostname === 'api.mayar.id') {
+        mockMayarRequests.push({ path: u.pathname, body: JSON.parse(options.body || '{}') });
+        return jsonResponse({ data: { transactionId: 'test-mayar-transaction', link: 'https://pay.mayar.test/invoices/test' } });
       }
 
       if (u.pathname.includes('/rest/v1/products')) {
@@ -133,6 +139,7 @@ function setupWorkerEnv() {
       ctx.worker.fetch(req, {
         SUPABASE_URL: 'https://db.example',
         SUPABASE_SERVICE_ROLE_KEY: 'test-service-key',
+        MAYAR_API_KEY: 'test-mayar-key',
         ASSETS: {
           fetch: async () => new Response('<html>index.html shell</html>', { status: 200, headers: { 'content-type': 'text/html' } }),
         },
@@ -140,6 +147,7 @@ function setupWorkerEnv() {
       }),
     mockOrders,
     mockOrderItems,
+    mockMayarRequests,
   };
 }
 
@@ -154,6 +162,8 @@ test('Digital Store Checkout: calculates trusted price (Rp50.000 - 30% = Rp35.00
     body: JSON.stringify({
       slug: 'gemini-pro-18-bulan',
       qty: 2,
+      expected_total: 70000,
+      request_key: 'digital-00000000-0000-4000-8000-000000000001',
       customer: {
         name: 'Admin Kayla',
         email: 'kaylafisika24@gmail.com',
@@ -166,8 +176,10 @@ test('Digital Store Checkout: calculates trusted price (Rp50.000 - 30% = Rp35.00
   assert.equal(res.status, 201);
   const data = await res.json();
   assert.equal(data.ok, true);
-  assert.equal(data.total, 70000);
-  assert.ok(data.order_code.startsWith('DGT'), 'Order code should start with DGT prefix');
+  assert.match(data.order_code, /^PRGDGTL[A-HJ-NP-Z2-9]{13}$/, 'Order code should use the PRGDGTL format');
+  assert.equal(w.mockMayarRequests[0].path, '/hl/v2/invoices/create');
+  assert.deepEqual(w.mockMayarRequests[0].body.items, [{ quantity: 2, rate: 35000, description: 'Gemini Pro 18 Bulan' }]);
+  assert.equal(w.mockMayarRequests[0].body.redirectUrl, `https://jokiin.my.id/produk-digital/pesanan/?order=${data.order_code}`);
 
   // Verify saved order in mock db
   assert.equal(w.mockOrders.length, 1);
@@ -175,6 +187,8 @@ test('Digital Store Checkout: calculates trusted price (Rp50.000 - 30% = Rp35.00
   assert.equal(w.mockOrders[0].tipe, 'DIGITAL');
   assert.equal(w.mockOrders[0].user_id, ADMIN_KAYLA_ID);
   assert.equal(w.mockOrders[0].payment_status, 'PENDING');
+  assert.equal(w.mockOrders[0].payment_url, 'https://pay.mayar.test/invoices/test');
+  assert.equal(w.mockOrders[0].mayar_transaction_id, 'test-mayar-transaction');
 });
 
 test('Digital Store Checkout: rejects out-of-stock product with 409', async () => {
@@ -188,6 +202,8 @@ test('Digital Store Checkout: rejects out-of-stock product with 409', async () =
     body: JSON.stringify({
       slug: 'akun-habis-test',
       qty: 1,
+      expected_total: 100000,
+      request_key: 'digital-00000000-0000-4000-8000-000000000002',
       customer: {
         name: 'Admin Kayla',
         email: 'kaylafisika24@gmail.com',
@@ -213,6 +229,12 @@ test('Digital Store Checkout: rejects non-existent product with 404', async () =
     body: JSON.stringify({
       slug: 'produk-palsu-123',
       qty: 1,
+      request_key: 'digital-00000000-0000-4000-8000-000000000003',
+      customer: {
+        name: 'Admin Kayla',
+        email: 'kaylafisika24@gmail.com',
+        whatsapp: '081234567890',
+      },
     }),
   });
 
@@ -234,9 +256,12 @@ test('Digital Store Order Status: returns digital order details for Admin Kayla'
       body: JSON.stringify({
         slug: 'gemini-pro-18-bulan',
         qty: 1,
+        expected_total: 35000,
+        request_key: 'digital-00000000-0000-4000-8000-000000000004',
         customer: {
           name: 'Admin Kayla',
           email: 'kaylafisika24@gmail.com',
+          whatsapp: '081234567890',
         },
       }),
     })
