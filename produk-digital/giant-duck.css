@@ -1,0 +1,155 @@
+/*
+ * Giant Duck by jamik-dev (Jamshid Toshov), Uiverse.io, adapted for Produk Digital.
+ * https://uiverse.io/jamik-dev/giant-duck-87
+ * Copyright (c) 2026 jamik-dev (Jamshid Toshov)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+/* Match the existing Next export without changing its hydration markup. */
+template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_deniedWrap__"], p[role="status"]),
+[aria-label="Memuat katalog produk"][aria-busy="true"] {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 16px;
+  text-align: center;
+}
+template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + p[role="status"] { min-height: 45vh; }
+[aria-label="Memuat katalog produk"][aria-busy="true"] {
+  grid-template-columns: 1fr;
+  min-height: 180px;
+}
+[aria-label="Memuat katalog produk"] > article[aria-hidden="true"] { display: none; }
+
+:is(.pd-duck, [class*="digital_checkoutSpinner__"],
+  #btn-submit-order[aria-busy="true"],
+  template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_deniedWrap__"], p[role="status"]),
+  [aria-label="Memuat katalog produk"][aria-busy="true"]) {
+  --pd-tile: 40px;
+  --pd-gap: 6px;
+  --pd-radius: 10px;
+  --pd-step: calc(var(--pd-tile) + var(--pd-gap));
+}
+.pd-duck, [class*="digital_checkoutSpinner__"] {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: calc(2 * var(--pd-tile) + var(--pd-gap));
+  height: calc(2 * var(--pd-tile) + var(--pd-gap));
+}
+.pd-duck[hidden] { display: none; }
+[role="status"] > .pd-duck, #legacy-product-loader, #legacy-order-loader {
+  --pd-tile: 12px;
+  --pd-gap: 2px;
+  --pd-radius: 3px;
+  vertical-align: middle;
+}
+[class*="digital_checkoutSpinner__"], #btn-submit-order[aria-busy="true"] {
+  --pd-tile: 7px;
+  --pd-gap: 1px;
+  --pd-radius: 2px;
+}
+[class*="digital_checkoutSpinner__"] { border: 0; animation: none; }
+#btn-submit-order[aria-busy="true"] { position: relative; padding-inline-start: 30px; }
+
+:is(.pd-duck, [class*="digital_checkoutSpinner__"], #btn-submit-order[aria-busy="true"])::before,
+:is(.pd-duck, [class*="digital_checkoutSpinner__"], #btn-submit-order[aria-busy="true"])::after,
+:is(template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_deniedWrap__"], p[role="status"]),
+    [aria-label="Memuat katalog produk"][aria-busy="true"])::before,
+:is(template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_deniedWrap__"], p[role="status"]),
+    [aria-label="Memuat katalog produk"][aria-busy="true"])::after {
+  content: "";
+  display: block;
+  width: var(--pd-tile);
+  height: var(--pd-tile);
+  border-radius: var(--pd-radius);
+  translate: -50% -50%;
+  background: var(--pd-color);
+  box-shadow: var(--pd-diagonal) var(--pd-step) var(--pd-color);
+  animation: pd-duck-pulse 1s var(--pd-delay) infinite;
+}
+:is(.pd-duck, [class*="digital_checkoutSpinner__"], #btn-submit-order[aria-busy="true"],
+  template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_deniedWrap__"], p[role="status"]),
+  [aria-label="Memuat katalog produk"][aria-busy="true"])::before {
+  --pd-color: blueviolet;
+  --pd-diagonal: var(--pd-step);
+  --pd-delay: 0s;
+}
+:is(.pd-duck, [class*="digital_checkoutSpinner__"], #btn-submit-order[aria-busy="true"],
+  template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_deniedWrap__"], p[role="status"]),
+  [aria-label="Memuat katalog produk"][aria-busy="true"])::after {
+  --pd-color: aqua;
+  --pd-diagonal: calc(-1 * var(--pd-step));
+  --pd-delay: .5s;
+}
+:is(.pd-duck, [class*="digital_checkoutSpinner__"], #btn-submit-order[aria-busy="true"])::before,
+:is(.pd-duck, [class*="digital_checkoutSpinner__"], #btn-submit-order[aria-busy="true"])::after {
+  position: absolute;
+  top: calc(var(--pd-tile) / 2);
+  left: calc(var(--pd-tile) / 2);
+}
+:is(.pd-duck, [class*="digital_checkoutSpinner__"], #btn-submit-order[aria-busy="true"])::after {
+  left: calc(var(--pd-step) + var(--pd-tile) / 2);
+}
+#btn-submit-order[aria-busy="true"]::before, #btn-submit-order[aria-busy="true"]::after {
+  top: calc(50% - var(--pd-step) / 2);
+  margin-left: 8px;
+}
+:is(template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_deniedWrap__"], p[role="status"]),
+    [aria-label="Memuat katalog produk"][aria-busy="true"])::before,
+:is(template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_deniedWrap__"], p[role="status"]),
+    [aria-label="Memuat katalog produk"][aria-busy="true"])::after {
+  grid-area: 1 / 1;
+  position: absolute;
+  top: calc(var(--pd-tile) / 2);
+  left: calc(50% - var(--pd-step) / 2);
+}
+:is(template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_deniedWrap__"], p[role="status"]),
+    [aria-label="Memuat katalog produk"][aria-busy="true"])::after {
+  left: calc(50% + var(--pd-step) / 2);
+}
+:is(template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_deniedWrap__"], p[role="status"]),
+    [aria-label="Memuat katalog produk"][aria-busy="true"]) {
+  position: relative;
+  align-content: start;
+  padding-top: calc(var(--pd-tile) * 2 + var(--pd-gap) + 16px);
+}
+template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_deniedWrap__"], p[role="status"]) {
+  margin-top: 30vh;
+  min-height: unset;
+}
+
+[class*="digital_cube_x__"] { background: blueviolet; animation: pd-original-pulse 1s infinite; }
+[class*="digital_cube_y__"] { background: aqua; animation: pd-original-pulse 1s .5s infinite; }
+
+@keyframes pd-original-pulse { 0%, 100% { transform: scale(.8); } 50% { transform: scale(1.2); } }
+@keyframes pd-duck-pulse {
+  0%, 100% { width: calc(var(--pd-tile) * .8); height: calc(var(--pd-tile) * .8); }
+  50% { width: calc(var(--pd-tile) * 1.2); height: calc(var(--pd-tile) * 1.2); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [class*="digital_cube_x__"], [class*="digital_cube_y__"],
+  :is(.pd-duck, [class*="digital_checkoutSpinner__"], #btn-submit-order[aria-busy="true"],
+    template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_deniedWrap__"], p[role="status"]),
+    [aria-label="Memuat katalog produk"][aria-busy="true"])::before,
+  :is(.pd-duck, [class*="digital_checkoutSpinner__"], #btn-submit-order[aria-busy="true"],
+    template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_deniedWrap__"], p[role="status"]),
+    [aria-label="Memuat katalog produk"][aria-busy="true"])::after { animation: none; }
+}

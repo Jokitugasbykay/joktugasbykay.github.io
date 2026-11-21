@@ -65,7 +65,7 @@
       }
     }
   </style>
-</head>
+<link rel="stylesheet" href="/produk-digital/giant-duck.css"></head>
 <body class="digital-store-page digital-store">
   <div class="admin digital-store__admin-bar">
     Mode ADMIN_ONLY : etalase privat khusus Admin Kayla
@@ -109,7 +109,7 @@
         <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 17px;">Ringkasan Pesanan</h3>
         <div id="checkout-item-summary">
           <div class="summary-row">
-            <span id="sum-prod-name">Memuat produk...</span>
+            <span class="pd-duck" id="legacy-product-loader" aria-hidden="true"></span><span id="sum-prod-name" role="status">Memuat produk...</span>
             <span id="sum-prod-price">-</span>
           </div>
           <div class="summary-row">
@@ -138,6 +138,7 @@
 
     let product = SAMPLE_PRODUCTS.find(p => p.slug === slug || p.n === slug) || SAMPLE_PRODUCTS[0];
 
+    document.getElementById('legacy-product-loader').hidden = true;
     document.getElementById('sum-prod-name').textContent = product.n;
     document.getElementById('sum-prod-price').textContent = formatRupiah(product.pr);
     document.getElementById('sum-total-price').textContent = formatRupiah(product.pr);
@@ -148,6 +149,7 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       submitBtn.disabled = true;
+      submitBtn.setAttribute('aria-busy', 'true');
       submitBtn.textContent = 'Memproses ke Gateway...';
 
       const formData = {
@@ -164,6 +166,7 @@
       } else {
         showToast(result.error || 'Gagal memproses pesanan');
         submitBtn.disabled = false;
+        submitBtn.removeAttribute('aria-busy');
         submitBtn.textContent = 'Bayar Sekarang via Mayar';
       }
     });

@@ -48,7 +48,7 @@
       font-size: 14px;
     }
   </style>
-</head>
+<link rel="stylesheet" href="/produk-digital/giant-duck.css"></head>
 <body class="digital-store-page digital-store">
   <div class="admin digital-store__admin-bar">
     Mode ADMIN_ONLY : etalase privat khusus Admin Kayla
@@ -67,7 +67,8 @@
 
   <main class="wrap digital-store__wrap">
     <div class="order-box">
-      <div id="order-status-badge" class="status-badge pending">Memeriksa Status...</div>
+      <span class="pd-duck" id="legacy-order-loader" aria-hidden="true"></span>
+      <div role="status" id="order-status-badge" class="status-badge pending">Memeriksa Status...</div>
       <h2 id="order-code-title" style="margin: 0 0 8px; font-size: 22px;">Pesanan Produk Digital</h2>
       <p id="order-subtitle" style="color: var(--mut); margin: 0 0 20px; font-size: 14px;">Detail transaksi pesanan Anda</p>
 
@@ -104,7 +105,9 @@
     document.getElementById('det-code').textContent = code;
 
     async function load() {
-      const data = await fetchOrderDetails(code);
+      const data = await fetchOrderDetails(code).finally(() => {
+        document.getElementById('legacy-order-loader').hidden = true;
+      });
       if (data) {
         document.getElementById('det-cust').textContent = data.customer_name || 'Admin Kayla';
         document.getElementById('det-total').textContent = formatRupiah(data.total_amount || 0);
