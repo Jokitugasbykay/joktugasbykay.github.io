@@ -249,3 +249,27 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { width: 0; height: 0; }
 
 [aria-label="Memuat katalog produk"][aria-busy="true"] > article { display: none !important; }
 [aria-label="Memuat katalog produk"][aria-busy="true"] > [class*="digital_srOnly__"] { overflow: visible; white-space: normal; }
+
+/* Viewport coordinates keep the tile group independent of the catalog grid. */
+:is(template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_deniedWrap__"], p[role="status"]),
+    [aria-label="Memuat katalog produk"][aria-busy="true"])::before,
+:is(template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_deniedWrap__"], p[role="status"]),
+    [aria-label="Memuat katalog produk"][aria-busy="true"])::after {
+  position: fixed !important;
+  grid-area: auto;
+  top: calc(50dvh - var(--pd-step) / 2) !important;
+}
+#notice[aria-busy="true"] {
+  position: fixed; inset: 0; z-index: 9000; margin: 0; padding: 0;
+  border: 0; border-radius: 0; background: var(--bg);
+}
+#notice[aria-busy="true"] .pd-duck,
+body[data-page="checkout"] #status[aria-busy="true"] .pd-duck {
+  position: absolute; top: 50%; left: 50%; translate: -50% -50%;
+  --pd-tile: 32px; --pd-gap: 6px; --pd-radius: 8px;
+}
+#notice[aria-busy="true"] #status,
+body[data-page="checkout"] #status[aria-busy="true"] .pd-loading-label {
+  position: absolute; top: calc(50% + 48px); left: 0; right: 0;
+  text-align: center;
+}
