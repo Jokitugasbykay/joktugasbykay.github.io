@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
-const script = fs.readFileSync(path.join(__dirname, 'order-flow.js'), 'utf8');
+const script = fs.readFileSync(path.join(__dirname, 'order-flow.js'), 'utf8').replace('export { showCheckout };', '');
 async function check(game, expected, products, expectedPackages) {
   const title = {textContent: ''};
   const status = {textContent: '', hidden: false};

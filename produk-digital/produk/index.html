@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="/css/produk-digital/main.css">
-  <link rel="stylesheet" href="/produk-digital/game-detail.css">
-  <link rel="stylesheet" href="/produk-digital/site-shell.css">
+  <link rel="stylesheet" href="/produk-digital/game-detail.css?v=store3">
+  <link rel="stylesheet" href="/produk-digital/site-shell.css?v=store3">
   <style>
     :root { --bg-body: #090e12; --card-bg: #101720; --card-inner: #151f2b; --accent-green: #00e599; --text-main: #f8fafc; --text-muted: #94a3b8; --border-color: rgba(255, 255, 255, 0.08); }
     body.digital-store-page { background: var(--bg-body); color: var(--text-main); font-family: 'Plus Jakarta Sans', system-ui, sans-serif; margin: 0; min-height: 100vh; -webkit-font-smoothing: antialiased; }
@@ -19,13 +19,13 @@
     .digital-store-layout { display: grid; grid-template-columns: 360px 1fr; gap: 24px; align-items: start; }
     @media (max-width: 900px) { .digital-store-layout { grid-template-columns: 1fr; } }
   </style>
-  <script defer src="/produk-digital/site-shell.js"></script>
+  <script defer src="/produk-digital/site-shell.js?v=store3"></script>
 <style>
 body.digital-store-page.digital-store {--bg-body:#08110f;--bg-header:#101b17;--card-bg:#111f1b;--card-inner:#172b24;--card-hover:#1d352b;--accent-blue:#55d9b0;--accent-green:#55d9b0;--text-muted:#a7c1b5;--border-color:#29483d}
 .digital-store [stroke="#38bdf8"]{stroke:#55d9b0}.digital-store [fill="rgba(56, 189, 248, 0.15)"]{fill:rgba(85,217,176,.15)}
 .digital-store-diamond-glow{filter:drop-shadow(0 0 12px rgba(85,217,176,.35))!important}.digital-store-package-card{cursor:pointer}
-</style></head>
-<body class="digital-store-page digital-store" data-page="produk">
+</style><link rel="stylesheet" href="/produk-digital/order-flow.css?v=store3"></head>
+<body class="digital-store-page digital-store" data-page="product-detail">
 
   <header class="digital-store-header">
     <div class="digital-store-header-container">
@@ -53,7 +53,7 @@ body.digital-store-page.digital-store {--bg-body:#08110f;--bg-header:#101b17;--c
 
     <div class="digital-store-layout">
       <aside class="digital-store-left-col">
-        <div class="digital-store-panel-card"><div class="digital-store-step-header"><div class="digital-store-step-badge">1</div><h2 class="digital-store-step-title">Data tujuan</h2></div><p>Data akun atau nomor tujuan akan diminta di halaman checkout.</p></div>
+        <div class="digital-store-panel-card"><div class="digital-store-step-header"><div class="digital-store-step-badge">1</div><h2 class="digital-store-step-title">Data tujuan</h2></div><p>Data akun atau nomor tujuan akan diminta setelah memilih paket.</p></div>
 
         <div class="digital-store-panel-card">
           <div class="digital-store-step-header">
@@ -69,7 +69,7 @@ body.digital-store-page.digital-store {--bg-body:#08110f;--bg-header:#101b17;--c
               <polyline points="9 2 7 9" stroke="#38bdf8" stroke-width="1.2"></polyline>
               <polyline points="15 2 17 9" stroke="#38bdf8" stroke-width="1.2"></polyline>
             </svg>
-            <p>Pilih nominal paket di sebelah kanan</p>
+            <p>Pilih nominal dari daftar paket</p>
           </div>
 
           <div id="selection-active" class="digital-store-selection-active">
@@ -108,10 +108,10 @@ body.digital-store-page.digital-store {--bg-body:#08110f;--bg-header:#101b17;--c
 
       </section>
     </div>
-  </main>
+  <section id="inline-checkout" class="pd-inline-checkout" aria-labelledby="inline-checkout-title" hidden><h2 id="inline-checkout-title">Pembayaran</h2><p id="inline-checkout-status" role="status"></p></section></main>
 
   <div id="toast" class="digital-store-toast" role="status" aria-live="polite"></div>
 
-  <script type="module" src="/produk-digital/product-detail.js"></script>
+  <script type="module" src="/produk-digital/product-detail.js?v=store3"></script>
 </body>
 </html>

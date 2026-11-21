@@ -83,15 +83,14 @@ function field(form, name, title, kind) {
   form.append(label);
   return input;
 }
-async function showCheckout() {
-  const slug = query.get('slug') || '';
+async function showCheckout({ slug = query.get('slug') || '', root: mount = root, status: feedback = status } = {}) {
   if (!/^[a-z0-9-]{1,80}$/.test(slug)) throw new Error('Pilih paket terlebih dahulu.');
   const { product } = await api('products/' + encodeURIComponent(slug));
   if (!Array.isArray(product.recipient_fields)) throw new Error('Checkout sedang diperbarui. Muat ulang untuk mencoba lagi.');
   const price = unit(product);
   const limit = Math.min(10, stock(product), Number(product.batas_beli_per_orang) || 10);
   if (!Number.isSafeInteger(price) || price < 500 || limit < 1) throw new Error('Paket ini belum bisa dibeli.');
-  status.hidden = true;
+  feedback.hidden = true;
   const layout = node('div', '', 'layout');
   const summary = node('section', '', 'panel');
   const total = node('strong', '', 'total');
@@ -123,7 +122,7 @@ async function showCheckout() {
   notice.setAttribute('role', 'status');
   form.append(node('p', 'Metode pembayaran dipilih di halaman Mayar.'), button, notice);
   layout.append(summary, form);
-  root.append(layout);
+  mount.append(layout);
   let request;
   let pending = false;
   form.addEventListener('submit', async event => {
@@ -162,9 +161,11 @@ async function showCheckout() {
 }
 const isCheckout = document.body.dataset.page === 'checkout';
 const load = isCheckout ? showCheckout : showProducts;
-load().catch(error => {
+if (document.body.dataset.page !== 'product-detail') load().catch(error => {
   status.hidden = false;
   status.textContent = error.name === 'TimeoutError' ? 'Permintaan terlalu lama. Muat ulang untuk mencoba lagi.' : error.message;
 }).finally(() => {
   if (isCheckout) status.removeAttribute('aria-busy');
 });
+
+export { showCheckout };

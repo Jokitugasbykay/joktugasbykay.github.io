@@ -15,6 +15,9 @@ const container = el('packages-container');
 const format = new Intl.NumberFormat('id-ID', { style:'currency', currency:'IDR', maximumFractionDigits:0 });
 const node = (tag, text, className) => { const n = document.createElement(tag); n.textContent = text; if (className) n.className = className; return n; };
 let selected = null;
+const checkout = el('inline-checkout');
+const checkoutStatus = el('inline-checkout-status');
+const checkoutButton = el('btn-pay-now');
 if (title) { el('game-hero-title').textContent = title; document.title = title + ' · JOKI.IN'; }
 el('nominal-section-title').textContent = 'Pilih paket';
 const status = node('p', 'Memuat paket…');
@@ -40,6 +43,10 @@ async function load() {
     if (!available) card.append(node('small', Number(product.stok) > 0 ? 'Belum bisa dibeli' : 'Stok habis'));
     card.addEventListener('click', () => {
       container.querySelectorAll('.digital-store-package-card').forEach(item => item.classList.remove('selected'));
+      if (selected?.slug !== product.slug) {
+        checkout.hidden = true;
+        checkout.querySelector('.layout')?.remove();
+      }
       card.classList.add('selected'); selected = product;
       el('selection-empty').style.display = 'none'; el('selection-active').style.display = 'block';
       el('summary-title').textContent = product.nama; el('summary-desc').textContent = product.deskripsi || 'Periksa detail paket sebelum melanjutkan.';
@@ -49,5 +56,24 @@ async function load() {
     container.append(card);
   }
 }
-el('btn-pay-now').addEventListener('click', () => { if (selected) location.assign('/produk-digital/checkout/?slug=' + encodeURIComponent(selected.slug) + '&qty=1'); });
+checkoutButton.addEventListener('click', async () => {
+  if (!selected || checkoutButton.disabled) return;
+  checkout.hidden = false;
+  checkout.scrollIntoView({ block: 'start' });
+  if (checkout.querySelector('.layout')) return;
+  checkoutStatus.hidden = false;
+  checkoutStatus.textContent = 'Memuat checkout…';
+  checkoutButton.disabled = true;
+  const choices = [...container.querySelectorAll('button:not(:disabled)')];
+  choices.forEach(choice => { choice.disabled = true; });
+  try {
+    const { showCheckout } = await import('./order-flow.js?v=store3');
+    await showCheckout({ slug: selected.slug, root: checkout, status: checkoutStatus });
+  } catch (error) {
+    checkoutStatus.textContent = error.name === 'TimeoutError' ? 'Checkout terlalu lama. Coba lagi.' : error.message;
+  } finally {
+    checkoutButton.disabled = false;
+    choices.forEach(choice => { choice.disabled = false; });
+  }
+});
 load().catch(error => { status.textContent = error.name === 'TimeoutError' ? 'Permintaan terlalu lama. Muat ulang halaman.' : error.message; });

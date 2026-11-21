@@ -93,8 +93,8 @@ body.digital-store-page {
   border-radius: 20px;
   overflow: hidden;
   margin-bottom: 32px;
-  background: linear-gradient(90deg, #0e1622 0%, rgba(14, 22, 34, 0.95) 45%, rgba(14, 22, 34, 0.75) 70%, rgba(14, 22, 34, 0.35) 100%),
-              url('/assets/produk-digital/hero-warrior.png') right center / contain no-repeat #0e1622;
+  background: linear-gradient(90deg, #10211c 0%, rgba(16, 33, 28, 0.95) 45%, rgba(16, 33, 28, 0.75) 70%, rgba(16, 33, 28, 0.35) 100%),
+              url('/assets/produk-digital/hero-warrior.png') right center / contain no-repeat #10211c;
   border: 1px solid var(--border-color);
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
   padding: 36px 40px;
@@ -191,7 +191,7 @@ body.digital-store-page {
 .digital-store-step-badge {
   width: 28px;
   height: 28px;
-  background: linear-gradient(135deg, #0284c7, #00e599);
+  background: linear-gradient(135deg, #168568, #00e599);
   color: #04251a;
   font-size: 14px;
   font-weight: 800;
@@ -404,7 +404,7 @@ body.digital-store-page {
   font-weight: 800;
   cursor: pointer;
   transition: all 0.25s ease;
-  background: #334155;
+  background: #294039;
   color: #94a3b8;
 }
 .digital-store-btn-buy.ready {
@@ -656,7 +656,7 @@ body.digital-store-page {
   font-size: 13px;
   font-weight: 700;
   color: #ffffff;
-  background: #0284c7;
+  background: #168568;
   border: none;
   padding: 8px 16px;
   border-radius: 20px;
@@ -692,7 +692,7 @@ body.digital-store-page {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0284c7, #00e599);
+  background: linear-gradient(135deg, #168568, #00e599);
   color: #04251a;
   font-weight: 800;
   font-size: 13px;
@@ -773,9 +773,11 @@ body.digital-store-page {
   }
   .digital-store-hero-banner {
     padding: 28px 20px;
-    background: #0e1622;
+    background: #10211c;
   }
   .digital-store-hero-title {
     font-size: 26px;
   }
 }
+
+body.digital-store-page .digital-store-header, body.digital-store-page .pd-site-footer { background: #151b1b; }
