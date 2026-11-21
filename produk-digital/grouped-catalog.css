@@ -1,0 +1,61 @@
+
+.pd-game-folder {
+  grid-column: span 2;
+  min-width: 0;
+  align-self: start;
+  border: 1px solid var(--line, #33464a);
+  border-radius: 14px;
+  background: var(--card, #121c1e);
+}
+.pd-game-folder > summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  min-height: 84px;
+  padding: 14px 18px;
+  cursor: pointer;
+  list-style: none;
+  border-radius: inherit;
+}
+.pd-game-folder > summary::-webkit-details-marker { display: none; }
+.pd-game-folder > summary:focus-visible { outline: 2px solid #4de1ba; outline-offset: 3px; }
+.pd-game-mark {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: #143632;
+  color: #55e4bf;
+  font-weight: 800;
+}
+.pd-game-heading { display: grid; gap: 4px; overflow-wrap: anywhere; }
+.pd-game-heading small { opacity: .78; }
+.pd-game-chevron {
+  width: 9px;
+  height: 9px;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.pd-game-folder[open] .pd-game-chevron { transform: rotate(225deg); }
+.pd-game-packages { display: grid; gap: 8px; padding: 0 12px 12px; }
+.pd-game-packages > article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px 14px;
+  padding: 12px;
+}
+.pd-game-packages > article > :is([class*="digital_cardVisual__"], [class*="digital_cardDesc__"], [class*="digital_cardTags__"]) { display: none; }
+.pd-game-packages [class*="digital_cardTitle__"] { margin: 0; grid-column: 1; }
+.pd-game-packages [class*="digital_cardPricing__"] { margin: 0; padding: 0; grid-column: 1; }
+.pd-game-packages [class*="digital_cardActions__"] { grid-column: 2; grid-row: 1 / span 2; margin: 0; }
+.pd-game-packages [class*="digital_btnPrimary__"] { min-height: 42px; }
+@media (max-width: 680px) {
+  .pd-game-folder { grid-column: 1 / -1; }
+  .pd-game-folder > summary { padding: 12px; min-height: 72px; }
+  .pd-game-packages > article { grid-template-columns: minmax(0, 1fr); }
+  .pd-game-packages [class*="digital_cardActions__"] { grid-column: 1; grid-row: auto; }
+}

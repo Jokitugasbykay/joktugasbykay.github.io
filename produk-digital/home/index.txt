@@ -3,7 +3,7 @@
 3:I[3866,[],""]
 4:I[8173,["173","static/chunks/173-0de12511cec970fb.js","345","static/chunks/app/not-found-b8152c5122aeadd8.js"],""]
 5:I[7033,[],"ClientPageRoot"]
-6:I[9090,["173","static/chunks/173-0de12511cec970fb.js","90","static/chunks/90-81aadf4d3d68369b.js","111","static/chunks/app/produk-digital/home/page-511d4a34b682347b.js"],"default"]
+6:I[9090,["173","static/chunks/173-0de12511cec970fb.js","90","../produk-digital/grouped-catalog.js","111","static/chunks/app/produk-digital/home/page-511d4a34b682347b.js"],"default"]
 9:I[6213,[],"OutletBoundary"]
 b:I[6213,[],"MetadataBoundary"]
 d:I[6213,[],"ViewportBoundary"]
