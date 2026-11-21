@@ -30,6 +30,7 @@ const jsonResponse = (data, status = 200) =>
 
 function setupWorkerEnv() {
   const mockProducts = [
+    { id: 'test-mlbb', nama: 'Mobile Legends 5 Diamonds', slug: 'mlbb-test', kategori: 'Top Up Game', harga_dasar: 5000, stok: 5, is_active: true },
     {
       id: '03d664e2-a799-45f8-8952-3e1e1a7efe59',
       nama: 'Gemini Pro 18 Bulan',
@@ -179,7 +180,7 @@ test('Digital Store Checkout: calculates trusted price (Rp50.000 - 30% = Rp35.00
   assert.match(data.order_code, /^PRGDGTL[A-HJ-NP-Z2-9]{13}$/, 'Order code should use the PRGDGTL format');
   assert.equal(w.mockMayarRequests[0].path, '/hl/v2/invoices/create');
   assert.deepEqual(w.mockMayarRequests[0].body.items, [{ quantity: 2, rate: 35000, description: 'Gemini Pro 18 Bulan' }]);
-  assert.equal(w.mockMayarRequests[0].body.redirectUrl, `https://jokiin.my.id/produk-digital/pesanan/?order=${data.order_code}`);
+  assert.equal(w.mockMayarRequests[0].body.redirectUrl, undefined);
 
   // Verify saved order in mock db
   assert.equal(w.mockOrders.length, 1);
@@ -281,4 +282,24 @@ test('Digital Store Order Status: returns digital order details for Admin Kayla'
   assert.equal(data.ok, true);
   assert.equal(data.order.order_code, orderCode);
   assert.equal(data.order.tipe, 'DIGITAL');
+});
+
+
+test('MLBB checkout requires and stores User ID and Zone ID', async () => {
+  const w = setupWorkerEnv();
+  const checkout = recipient => w.run(new Request('https://jokiin.my.id/api/digital-store/checkout', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer kayla-token', 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      slug: 'mlbb-test', qty: 1, expected_total: 5000, recipient,
+      request_key: 'digital-00000000-0000-4000-8000-000000000005',
+      customer: { name: 'Contoh Pembeli', email: 'buyer@example.test', whatsapp: '081234567890' }
+    })
+  }));
+  assert.equal((await checkout({ player_id: '12345' })).status, 400);
+  assert.equal(w.mockMayarRequests.length, 0);
+  assert.equal((await checkout({ player_id: '12345', server: '0012' })).status, 201);
+  assert.deepEqual(w.mockOrders[0].task.recipient, { player_id: '12345', server: '0012' });
+  assert.equal((await checkout({ player_id: '12345', server: '0013' })).status, 409);
+  assert.equal(w.mockMayarRequests.length, 1);
 });

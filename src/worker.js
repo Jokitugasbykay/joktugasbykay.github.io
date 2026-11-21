@@ -799,6 +799,30 @@ const DIGITAL_PRODUCT_FILTER = 'is_active=eq.true&or=(' + [
   'Akun AI & Produktivitas', 'E-book & Digital Assets'
 ].map(value => 'kategori.ilike.' + encodeURIComponent(value)).join(',') + ')';
 
+
+function digitalRecipientFields(product) {
+  const identity = [product.slug, product.nama, product.provider, product.brand].filter(Boolean).join(' ').toLowerCase();
+  const id = label => ({ key: 'player_id', label, kind: 'id' });
+  if (/\b(mlbb|mobile[ -]legends)\b/.test(identity)) return [id('User ID'), { key: 'server', label: 'Zone ID (Server ID)', kind: 'id' }];
+  if (/\b(genshin|hsr|honkai[ :-]+star[ -]rail|zzz|zenless[ -]zone[ -]zero)\b/.test(identity)) return [id('UID'), { key: 'server', label: 'Server akun', kind: 'region' }];
+  if (/\bpubg\b/.test(identity)) return [id('Character ID')];
+  if (/\b(free[ -]fire|ff|hok|honor[ -]of[ -]kings)\b/.test(identity)) return [id('Player ID')];
+  if (/\bpulsa\b|^(axis|tri|telkomsel)-/.test(identity)) return [{ key: 'phone', label: 'Nomor HP tujuan isi pulsa', kind: 'phone' }];
+  return [];
+}
+
+function readDigitalRecipient(product, input) {
+  const recipient = {};
+  for (const { key, kind } of digitalRecipientFields(product)) {
+    const value = clean(input?.[key], 32);
+    if (kind === 'id' && !/^\d{1,24}$/.test(value)) return null;
+    if (kind === 'phone' && !/^(?:08\d{7,12}|628\d{7,11})$/.test(value)) return null;
+    if (kind === 'region' && !['Asia', 'America', 'Europe', 'TW, HK, MO'].includes(value)) return null;
+    recipient[key] = value;
+  }
+  return recipient;
+}
+
 async function handleDigitalStoreApi(request, env, url) {
   const auth = await verifyAdminKayla(request, env);
   if (!auth.ok) {
@@ -830,7 +854,7 @@ async function handleDigitalStoreApi(request, env, url) {
     const slug = prodMatch[1];
     const rows = await supabase(env, `products?${DIGITAL_PRODUCT_FILTER}&slug=eq.${encodeURIComponent(slug)}&limit=1`);
     if (!rows || !rows.length) return json({ error: 'Produk tidak ditemukan.' }, 404);
-    return json({ ok: true, product: rows[0] });
+    return json({ ok: true, product: { ...rows[0], recipient_fields: digitalRecipientFields(rows[0]) } });
   }
 
   // POST /api/digital-store/checkout
@@ -859,7 +883,8 @@ async function handleDigitalStoreApi(request, env, url) {
     if (saved) {
       if (saved.items?.[0]?.slug === slug && saved.items?.[0]?.quantity === qty &&
           saved.customer?.email === customerEmail && saved.customer?.name === customerName &&
-          saved.customer?.whatsapp === customerWa && saved.total_price == body.expected_total) {
+          saved.customer?.whatsapp === customerWa && saved.total_price == body.expected_total &&
+          ['player_id', 'server', 'phone'].every(key => (saved.task?.recipient?.[key] || '') === (body.recipient?.[key] || ''))) {
         if (saved.payment_status === 'PAID') return json({ ok: true, order_code: saved.order_code, payment_status: 'PAID' });
         if (saved.payment_status === 'PENDING' && saved.payment_url && Date.parse(saved.expires_at) > Date.now()) {
           return json({ ok: true, order_code: saved.order_code, payment_url: saved.payment_url });
@@ -870,6 +895,8 @@ async function handleDigitalStoreApi(request, env, url) {
     const rows = await supabase(env, `products?${DIGITAL_PRODUCT_FILTER}&slug=eq.${encodeURIComponent(slug)}&limit=1`);
     if (!rows || !rows.length) return json({ error: 'Produk tidak ditemukan.' }, 404);
     const prod = rows[0];
+    const recipient = readDigitalRecipient(prod, body.recipient);
+    if (!recipient) return json({ error: 'Periksa kembali ID pemain, server, atau nomor tujuan.' }, 400);
 
     const basePrice = Number(prod.harga_dasar) || 0;
     const discountPercent = Math.max(0, Math.min(100, Number(prod.diskon_persen) || 0));
@@ -908,7 +935,7 @@ async function handleDigitalStoreApi(request, env, url) {
       status: 'pending',
       customer: { name: customerName, email: customerEmail, whatsapp: customerWa },
       items: [lineItem],
-      task: { notes: `Pemesanan Produk Digital: ${prod.nama} (${qty}x)` },
+      task: { notes: `Pemesanan Produk Digital: ${prod.nama} (${qty}x)`, recipient },
       promo: ''
     };
 
@@ -935,7 +962,6 @@ async function handleDigitalStoreApi(request, env, url) {
     try {
       payment = await mayar(env, 'POST', 'invoices/create', {
         name: customerName, email: customerEmail, mobile: customerWa,
-        redirectUrl: 'https://jokiin.my.id/produk-digital/pesanan/?order=' + orderCode,
         description: 'JOKI.IN Digital Store ' + orderCode + ' - ' + prod.nama,
         items: [{ quantity: qty, rate: unitPrice, description: prod.nama }],
         extraData: { noCustomer: orderCode, idProd: String(prod.id) },
@@ -953,7 +979,10 @@ async function handleDigitalStoreApi(request, env, url) {
       if ([400, 401, 403, 422].includes(payment.response.status)) {
         await supabase(env, orderPath, { method: 'PATCH', body: JSON.stringify({ payment_status: 'CANCELED' }) });
       }
-      return json({ error: 'Mayar belum menyediakan tautan pembayaran.', order_code: orderCode }, 502);
+      const error = [401, 403].includes(payment.response.status)
+        ? 'Mayar menolak akses pembayaran. Hubungi admin dengan kode pesanan.'
+        : 'Mayar belum menyediakan tautan pembayaran. Periksa status pesanan.';
+      return json({ error, order_code: orderCode }, 502);
     }
     await supabase(env, orderPath, {
       method: 'PATCH',

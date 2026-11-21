@@ -122,49 +122,37 @@
 .pd-catalog-featured { grid-column: 1 / -1; margin-bottom: 12px; }
 .pd-catalog-featured h3 { margin: 0 0 10px; font-size: 1.05rem; }
 .pd-catalog-featured > div { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-.pd-catalog-featured button, .pd-game-cover {
+.pd-catalog-featured a, .pd-game-cover {
   position: relative; isolation: isolate; overflow: hidden; width: 100%;
   display: flex; align-items: end; text-align: left; color: #f6fffb;
   font: inherit; cursor: pointer; padding: 0;
   border: 1px solid #34514b; border-radius: 14px; background: #122522;
 }
-.pd-catalog-featured button { min-height: 112px; }
+.pd-catalog-featured a { min-height: 112px; }
 .pd-game-cover { min-height: 220px; aspect-ratio: 5 / 6; }
 :is(.pd-catalog-featured, .pd-game-cover) img { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; }
-.pd-catalog-featured button img { object-position: center 55%; }
-.pd-catalog-featured button::before, .pd-game-cover::before {
+.pd-catalog-featured a img { object-position: center 55%; }
+.pd-catalog-featured a::before, .pd-game-cover::before {
   content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(0deg,#071813 8%,#071813e8 23%,transparent 95%);
 }
-.pd-catalog-featured button:hover, .pd-game-cover:hover { border-color: #6ff0c6; }
-:is(.pd-catalog-featured, .pd-game-cover, .pd-package-dialog) button:focus-visible, .pd-game-cover:focus-visible {
+.pd-catalog-featured a:hover, .pd-game-cover:hover { border-color: #6ff0c6; }
+.pd-catalog-featured a:focus-visible, .pd-game-cover:focus-visible {
   outline: 2px solid #8ff1d1; outline-offset: 3px;
 }
-.pd-catalog-featured button > span, .pd-game-label { display: grid; gap: 4px; width: 100%; padding: 14px; }
+.pd-catalog-featured a > span, .pd-game-label { display: grid; gap: 4px; width: 100%; padding: 14px; }
 .pd-game-label strong { font-size: clamp(1rem,2vw,1.35rem); line-height: 1.2; overflow-wrap: anywhere; }
 .pd-game-label small, .pd-catalog-featured small { color: #c7e2d9; }
 .pd-game-open { color: #87e8c8; font-weight: 750; margin-top: 6px; }
-.pd-package-dialog {
-  width: min(820px, calc(100% - 24px)); max-height: 85dvh; padding: 0;
-  color: #f6fffb; background: #101e1a; border: 1px solid #36544a; border-radius: 16px;
-}
-.pd-package-dialog::backdrop { background: #030b09ce; }
-.pd-package-header {
-  display: flex; gap: 12px; align-items: center; justify-content: space-between;
-  position: sticky; top: 0; z-index: 1; background: #101e1a; padding: 16px 20px; border-bottom: 1px solid #36544a;
-}
-.pd-package-header h3, .pd-package-header p { margin: 0; }
-.pd-package-header p { color: #c7e2d9; margin-top: 3px; }
-.pd-package-list { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(180px, 100%),1fr)); gap: 12px; padding: 16px; }
-.pd-package-option { display: grid; grid-template-rows: 1fr auto auto; gap: 9px; padding: 12px; border: 1px solid #36544a; border-radius: 10px; background: #192b25; }
-.pd-package-option > span { color: #87e8c8; }
-.pd-package-dialog button { min-height: 44px; cursor: pointer; font: inherit; font-weight: 700; border-radius: 8px; border: 1px solid #71e3bf; padding: 8px 12px; }
-.pd-package-header button { color: #eafff7; background: transparent; }
-.pd-package-option button { color: #072019; background: #71e3bf; }
-.pd-package-option button:disabled { opacity: .65; cursor: default; }
 @media (max-width:680px) {
   [class*="digital_productGrid__"].pd-catalog-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
   .pd-catalog-featured > div { grid-template-columns: minmax(0,1fr); gap: 8px; }
-  .pd-catalog-featured button { min-height: 68px; }
+  .pd-catalog-featured a { min-height: 68px; }
   .pd-game-cover { min-height: 192px; }
   .pd-game-label { padding: 10px; }
 }
+
+.pd-game-cover, .pd-catalog-featured a { text-decoration: none; }
+.pd-services { grid-column: 1 / -1; margin-top: 12px; }
+.pd-services > div { display: flex; gap: 8px; flex-wrap: wrap; }
+.pd-services a { display: inline-flex; align-items: center; min-height: 44px; border: 1px solid #36544a; border-radius: 8px; padding: 8px 12px; color: #d8fff0; text-decoration: none; }
+.pd-services a:focus-visible { outline: 2px solid #8ff1d1; outline-offset: 2px; }
