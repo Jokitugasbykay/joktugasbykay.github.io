@@ -88,14 +88,14 @@ template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + p[role="status"] { min-
 :is(.pd-duck, [class*="digital_checkoutSpinner__"], #btn-submit-order[aria-busy="true"],
   template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_deniedWrap__"], p[role="status"]),
   [aria-label="Memuat katalog produk"][aria-busy="true"])::before {
-  --pd-color: blueviolet;
+  --pd-color: #51e2b7;
   --pd-diagonal: var(--pd-step);
   --pd-delay: 0s;
 }
 :is(.pd-duck, [class*="digital_checkoutSpinner__"], #btn-submit-order[aria-busy="true"],
   template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_deniedWrap__"], p[role="status"]),
   [aria-label="Memuat katalog produk"][aria-busy="true"])::after {
-  --pd-color: aqua;
+  --pd-color: #ffffff;
   --pd-diagonal: calc(-1 * var(--pd-step));
   --pd-delay: .5s;
 }
@@ -138,8 +138,8 @@ template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_de
   padding-top: calc(40vh + var(--pd-tile) + 24px);
 }
 
-[class*="digital_cube_x__"] { background: blueviolet; animation: pd-original-pulse 1s infinite; }
-[class*="digital_cube_y__"] { background: aqua; animation: pd-original-pulse 1s .5s infinite; }
+[class*="digital_cube_x__"] { background: #51e2b7; animation: pd-original-pulse 1s infinite; }
+[class*="digital_cube_y__"] { background: #ffffff; animation: pd-original-pulse 1s .5s infinite; }
 
 @keyframes pd-original-pulse { 0%, 100% { transform: scale(.8); } 50% { transform: scale(1.2); } }
 @keyframes pd-duck-pulse {
@@ -177,4 +177,50 @@ template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_de
 @media (prefers-reduced-motion: reduce) {
   [aria-label="Memuat katalog produk"][aria-busy="true"]::before,
   [aria-label="Memuat katalog produk"][aria-busy="true"]::after { animation: pd-show-catalog-loader 0s 220ms forwards; }
+}
+
+/* The catalog placeholder follows the shape of the product folders. */
+[aria-label="Memuat katalog produk"][aria-busy="true"] {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  min-height: 0;
+  padding: 0;
+  align-content: start;
+}
+[aria-label="Memuat katalog produk"][aria-busy="true"]::before,
+[aria-label="Memuat katalog produk"][aria-busy="true"]::after { content: none; animation: none; }
+[aria-label="Memuat katalog produk"][aria-busy="true"] > article[aria-hidden="true"] {
+  display: grid;
+  height: 164px;
+  border: 1px solid #263b38;
+  border-radius: 14px;
+  background: #111c1a;
+  overflow: hidden;
+}
+[aria-label="Memuat katalog produk"][aria-busy="true"] > article:nth-of-type(n+4) { display: none; }
+[aria-label="Memuat katalog produk"] [class*="digital_skeletonMedia__"] {
+  width: 44px;
+  height: 44px;
+  margin: 18px 18px 0;
+  border-radius: 10px;
+}
+[aria-label="Memuat katalog produk"] [class*="digital_skeletonBody__"] { padding: 12px 18px 18px; }
+[aria-label="Memuat katalog produk"] :is([class*="digital_skeletonTag__"], [class*="digital_skeletonDesc1__"], [class*="digital_skeletonDesc2__"], [class*="digital_skeletonPriceRow__"], [class*="digital_skeletonButton__"]) { display: none; }
+[aria-label="Memuat katalog produk"] [class*="digital_skeletonTitle__"] { height: 12px; width: 58%; border-radius: 6px; }
+[aria-label="Memuat katalog produk"] [class*="digital_skeletonSk__"] {
+  background: #294039;
+  animation: pd-catalog-pulse 1.4s ease-in-out infinite alternate;
+}
+@keyframes pd-catalog-pulse { from { opacity: .55; } to { opacity: 1; } }
+@media(max-width: 1040px) {
+  [aria-label="Memuat katalog produk"][aria-busy="true"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  [aria-label="Memuat katalog produk"][aria-busy="true"] > article:nth-of-type(n+3) { display: none; }
+}
+@media(max-width: 680px) {
+  [aria-label="Memuat katalog produk"][aria-busy="true"] { grid-template-columns: minmax(0, 1fr); }
+  [aria-label="Memuat katalog produk"][aria-busy="true"] > article:nth-of-type(n+2) { display: none; }
+}
+@media(prefers-reduced-motion: reduce) {
+  [aria-label="Memuat katalog produk"] [class*="digital_skeletonSk__"] { animation: none; }
 }
