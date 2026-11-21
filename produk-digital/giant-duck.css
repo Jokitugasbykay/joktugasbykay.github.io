@@ -287,3 +287,7 @@ template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_de
   [aria-label="Memuat katalog produk"][aria-busy="true"]::before,
   [aria-label="Memuat katalog produk"][aria-busy="true"]::after { animation: none; }
 }
+
+/* Hide the page scrollbar while preserving wheel, touch, and keyboard scrolling. */
+html, body { scrollbar-width: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { width: 0; height: 0; }
