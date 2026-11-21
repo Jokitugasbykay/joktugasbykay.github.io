@@ -95,7 +95,9 @@ async function showCheckout() {
   const layout = node('div', '', 'layout');
   const summary = node('section', '', 'panel');
   const total = node('strong', '', 'total');
+  total.setAttribute('aria-live', 'polite');
   const form = node('form', '', 'panel payment');
+  summary.classList.add('checkout-summary');
   const quantity = field(summary, 'quantity', 'Jumlah paket', 'number');
   quantity.type = 'number';
   quantity.min = 1;
@@ -158,5 +160,11 @@ async function showCheckout() {
     } finally { pending = false; }
   });
 }
-const load = document.body.dataset.page === 'checkout' ? showCheckout : showProducts;
-load().catch(error => { status.hidden = false; status.textContent = error.name === 'TimeoutError' ? 'Permintaan terlalu lama. Muat ulang untuk mencoba lagi.' : error.message; });
+const isCheckout = document.body.dataset.page === 'checkout';
+const load = isCheckout ? showCheckout : showProducts;
+load().catch(error => {
+  status.hidden = false;
+  status.textContent = error.name === 'TimeoutError' ? 'Permintaan terlalu lama. Muat ulang untuk mencoba lagi.' : error.message;
+}).finally(() => {
+  if (isCheckout) status.removeAttribute('aria-busy');
+});
