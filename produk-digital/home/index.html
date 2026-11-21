@@ -1,4 +1,39 @@
-<!DOCTYPE html><html lang="id"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/_next/static/css/6658b19d1e04204c.css" data-precedence="next"/><link rel="stylesheet" href="/_next/static/css/657f247c6ac72639.css" data-precedence="next"/><link rel="stylesheet" href="/_next/static/css/6e7b3a58d4d721e3.css" data-precedence="next"/><link rel="preload" as="script" fetchPriority="low" href="/_next/static/chunks/webpack-48825d3684484f5e.js"/><script src="/_next/static/chunks/4bd1b696-72eb9a3e694c6ac3.js" async=""></script><script src="/_next/static/chunks/517-8932b301571c86c4.js" async=""></script><script src="/_next/static/chunks/main-app-f671aeb591ec6ad9.js" async=""></script><script src="/_next/static/chunks/173-0de12511cec970fb.js" async=""></script><script src="/_next/static/chunks/app/not-found-b8152c5122aeadd8.js" async=""></script><script src="/_next/static/chunks/90-81aadf4d3d68369b.js" async=""></script><script src="/_next/static/chunks/app/produk-digital/home/page-511d4a34b682347b.js" async=""></script><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/><title>Area Produk Digital</title><meta name="description" content="Area etalase produk digital JOKI.IN."/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><script id="jokiin-theme-init">
+<!DOCTYPE html><html lang="id"><head><script>
+(() => {
+  const fetchRequest = window.fetch.bind(window);
+  const authPath = '/api/digital-store/auth-verify';
+  window.fetch = function (input, options) {
+    if (input !== authPath || (options?.method && options.method !== 'GET')) {
+      return fetchRequest(input, options);
+    }
+    const deadline = new AbortController();
+    const timeout = window.setTimeout(() => {
+      deadline.abort();
+      if (document.getElementById('pd-auth-retry')) return;
+      const alert = document.createElement('aside');
+      alert.id = 'pd-auth-retry';
+      alert.setAttribute('role', 'alert');
+      Object.assign(alert.style, {
+        position: 'fixed', inset: '0', zIndex: '10000', display: 'grid',
+        placeContent: 'center', textAlign: 'center', padding: '24px',
+        background: '#0d1113', color: '#edf5f4'
+      });
+      const title = document.createElement('h1');
+      title.textContent = 'Pemeriksaan akses terlalu lama';
+      const retry = document.createElement('button');
+      retry.type = 'button';
+      retry.textContent = 'Coba lagi';
+      Object.assign(retry.style, { padding: '12px', marginTop: '12px', cursor: 'pointer' });
+      retry.addEventListener('click', () => window.location.reload());
+      alert.append(title, retry);
+      document.body.append(alert);
+      retry.focus();
+    }, 8000);
+    return fetchRequest(input, { ...options, signal: deadline.signal })
+      .finally(() => window.clearTimeout(timeout));
+  };
+})();
+</script><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/_next/static/css/6658b19d1e04204c.css" data-precedence="next"/><link rel="stylesheet" href="/_next/static/css/657f247c6ac72639.css" data-precedence="next"/><link rel="stylesheet" href="/_next/static/css/6e7b3a58d4d721e3.css" data-precedence="next"/><link rel="preload" as="script" fetchPriority="low" href="/_next/static/chunks/webpack-48825d3684484f5e.js"/><script src="/_next/static/chunks/4bd1b696-72eb9a3e694c6ac3.js" async=""></script><script src="/_next/static/chunks/517-8932b301571c86c4.js" async=""></script><script src="/_next/static/chunks/main-app-f671aeb591ec6ad9.js" async=""></script><script src="/_next/static/chunks/173-0de12511cec970fb.js" async=""></script><script src="/_next/static/chunks/app/not-found-b8152c5122aeadd8.js" async=""></script><script src="/_next/static/chunks/90-81aadf4d3d68369b.js" async=""></script><script src="/_next/static/chunks/app/produk-digital/home/page-511d4a34b682347b.js" async=""></script><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/><title>Area Produk Digital</title><meta name="description" content="Area etalase produk digital JOKI.IN."/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><script id="jokiin-theme-init">
               try {
                 let theme = localStorage.getItem('jokiin_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
                 document.documentElement.dataset.theme = theme === 'dark' ? 'dark' : 'light';
