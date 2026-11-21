@@ -988,29 +988,34 @@ export default { async fetch(request, env) {
 
     // Digital Store Web Route Gate (Admin Kayla only)
     if (url.pathname === '/produk-digital' || url.pathname.startsWith('/produk-digital/')) {
-      const auth = await verifyAdminKayla(request, env);
-      if (!auth.ok) {
-        if (auth.reason === 'forbidden') {
-          return new Response(DIGITAL_LOCKED_HTML, {
-            status: 403,
-            headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }
-          });
+      const isStaticAsset = /\.(?:css|js|map|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|webp|txt)$/i.test(url.pathname);
+      if (!isStaticAsset) {
+        const auth = await verifyAdminKayla(request, env);
+        if (!auth.ok) {
+          if (auth.reason === 'forbidden') {
+            return new Response(DIGITAL_LOCKED_HTML, {
+              status: 403,
+              headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }
+            });
+          }
+          const accept = request.headers.get('accept') || '';
+          if (accept.includes('text/html') || request.method === 'GET') {
+            return new Response(null, {
+              status: 302,
+              headers: {
+                'location': `/login?redirect=${encodeURIComponent(url.pathname + url.search)}`,
+                'cache-control': 'no-store'
+              }
+            });
+          }
+          return json({ error: 'Login admin diperlukan.' }, 401);
         }
-        const accept = request.headers.get('accept') || '';
-        if (accept.includes('text/html') || request.method === 'GET') {
-          return new Response(null, {
-            status: 302,
-            headers: {
-              'location': `/login?redirect=${encodeURIComponent(url.pathname + url.search)}`,
-              'cache-control': 'no-store'
-            }
-          });
-        }
-        return json({ error: 'Login admin diperlukan.' }, 401);
       }
       if (env.ASSETS) {
         let targetFile = '/produk-digital/home/';
-        if (url.pathname === '/produk-digital/checkout' || url.pathname.startsWith('/produk-digital/checkout/')) {
+        if (isStaticAsset) {
+          targetFile = url.pathname;
+        } else if (url.pathname === '/produk-digital/checkout' || url.pathname.startsWith('/produk-digital/checkout/')) {
           targetFile = '/produk-digital/checkout/';
         } else if (url.pathname.startsWith('/produk-digital/produk/')) {
           targetFile = '/produk-digital/produk/';
@@ -1033,8 +1038,10 @@ export default { async fetch(request, env) {
           }
         }
         const headers = new Headers(assetRes.headers);
-        headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
-        headers.set('pragma', 'no-cache');
+        if (!isStaticAsset) {
+          headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
+          headers.set('pragma', 'no-cache');
+        }
         return new Response(assetRes.body, {
           status: assetRes.status,
           statusText: assetRes.statusText,
@@ -1062,7 +1069,7 @@ export default { async fetch(request, env) {
     if (url.pathname === '/api/mayar-webhook' && request.method === 'POST') return await webhook(request, env);
     if (url.pathname === '/api/check-status' && request.method === 'GET') return await paymentStatus(request, env);
     if (url.pathname === '/api/promo' && request.method === 'GET') return await promo(request, env);
-    if (/^\/(?:\.|src\/|supabase\/|tests\/|worker\.js|wrangler\.|package(?:-lock)?\.json|README)/i.test(url.pathname)) return json({ error: 'Not found' }, 404);
+    if (/^\/(?:\.|src\/|supabase\/|tests\/|legacy\/|frontend-next\/|worker\.js|wrangler\.|package(?:-lock)?\.json|README)/i.test(url.pathname)) return json({ error: 'Not found' }, 404);
     if (/\.(?:php|sql|sqlite|env)$/i.test(url.pathname) || /^\/(?:database|storage|api)\//i.test(url.pathname)) return json({ error: 'Not found' }, 404);
     if (env.ASSETS) {
       const asset = await env.ASSETS.fetch(request);
