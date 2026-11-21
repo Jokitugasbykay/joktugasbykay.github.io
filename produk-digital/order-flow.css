@@ -24,3 +24,4 @@ body[data-page="checkout"] #status > .pd-duck { --pd-tile: 30px; --pd-gap: 6px; 
 .pd-inline-checkout > h2 { margin-bottom: 16px; }
 .pd-inline-checkout .layout { grid-template-columns: minmax(0, 4fr) minmax(0, 5fr); }
 @media (max-width: 680px) { .pd-inline-checkout .layout { grid-template-columns: minmax(0, 1fr); } }
+.pd-inline-checkout { --bg: #0d1714; --line: #365048; --muted: #c3d5ce; }
