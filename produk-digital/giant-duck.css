@@ -132,8 +132,10 @@ template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + p[role="status"] { min-
   padding-top: calc(var(--pd-tile) * 2 + var(--pd-gap) + 16px);
 }
 template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_deniedWrap__"], p[role="status"]) {
-  margin-top: 30vh;
-  min-height: unset;
+  box-sizing: border-box;
+  min-height: 80vh;
+  margin: 0;
+  padding-top: calc(40vh + var(--pd-tile) + 24px);
 }
 
 [class*="digital_cube_x__"] { background: blueviolet; animation: pd-original-pulse 1s infinite; }
@@ -159,4 +161,20 @@ template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_de
 [class*="digital_cube_item__"] { width: 100%; height: 100%; transition: none; box-shadow: none; }
 @media (prefers-reduced-motion: reduce) {
   [class*="digital_cube_item__"] { transform: none; }
+}
+
+/* Align the first fallback with the hydrated access loader. */
+template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_deniedWrap__"], p[role="status"])::before,
+template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + :is([class*="digital_deniedWrap__"], p[role="status"])::after {
+  top: calc(40vh - var(--pd-step) / 2 - 14px);
+}
+[aria-label="Memuat katalog produk"][aria-busy="true"]::before,
+[aria-label="Memuat katalog produk"][aria-busy="true"]::after {
+  visibility: hidden;
+  animation: pd-duck-pulse 1s var(--pd-delay) infinite, pd-show-catalog-loader 0s 220ms forwards;
+}
+@keyframes pd-show-catalog-loader { to { visibility: visible; } }
+@media (prefers-reduced-motion: reduce) {
+  [aria-label="Memuat katalog produk"][aria-busy="true"]::before,
+  [aria-label="Memuat katalog produk"][aria-busy="true"]::after { animation: pd-show-catalog-loader 0s 220ms forwards; }
 }
