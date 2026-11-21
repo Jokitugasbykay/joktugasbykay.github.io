@@ -1,61 +1,143 @@
 
+/* Storefront layout. Only the two catalog entry pages load this stylesheet. */
+[class*="digital_header__"] {
+  position: relative;
+  background: #101717;
+  backdrop-filter: none;
+}
+:is([class*="digital_navWrap__"], [class*="digital_subNavWrap__"], [class*="digital_mainContent__"]) {
+  max-width: 1232px;
+}
+[class*="digital_navWrap__"] [class*="digital_ordersLink__"] { margin-left: auto; }
+[class*="digital_catNav__"] { max-width: 100%; min-width: 0; }
+[class*="digital_mainContent__"] { margin-top: clamp(18px, 3vw, 32px); }
+#catalogGrid, #categoryTitle { scroll-margin-top: 20px; }
+
+[class*="digital_hero__"] {
+  min-height: 294px;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  padding: 30px clamp(22px, 4vw, 48px);
+  margin-bottom: 34px;
+  border-color: #2b4441;
+  background: #142320;
+  isolation: isolate;
+}
+[class*="digital_heroArtwork__"] {
+  z-index: -1;
+  width: 53%;
+  object-position: center 30%;
+  mask-image: linear-gradient(to right, transparent, black 26%);
+}
+[class*="digital_heroTag__"] { display: none; }
+[class*="digital_heroTitle__"] { font-size: clamp(1.85rem, 3.5vw, 3rem); line-height: 1.1; }
+[class*="digital_heroTitle__"] br { display: none; }
+[class*="digital_heroDesc__"] { font-size: .9rem; max-width: 36ch; margin-block: 14px 20px; }
+[class*="digital_heroActions__"] { flex-wrap: wrap; }
+[class*="digital_heroBtn__"]:hover { transform: none; }
+
+:is(#catalogGrid, .pd-upcoming) [class*="digital_sectionSubTitle__"] { font-size: .875rem; }
+:is(#catalogGrid, .pd-upcoming [class*="digital_sectionHeader__"]) > div {
+  border-left: 0;
+  padding-left: 0;
+}
+:is(#catalogGrid, .pd-upcoming) [class*="digital_sectionTitle__"] {
+  font-size: clamp(1.2rem, 2vw, 1.55rem) !important;
+}
+
+[class*="digital_productGrid__"].pd-catalog-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
 .pd-game-folder {
-  grid-column: span 2;
   min-width: 0;
   align-self: start;
-  border: 1px solid var(--line, #33464a);
+  border: 1px solid #2e4240;
   border-radius: 14px;
-  background: var(--card, #121c1e);
+  background: #131d1d;
+  color: #ecf6f2;
 }
 .pd-game-folder > summary {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 14px;
-  align-items: center;
-  min-height: 84px;
-  padding: 14px 18px;
+  padding: 18px;
+  min-height: 164px;
   cursor: pointer;
   list-style: none;
   border-radius: inherit;
 }
 .pd-game-folder > summary::-webkit-details-marker { display: none; }
-.pd-game-folder > summary:focus-visible { outline: 2px solid #4de1ba; outline-offset: 3px; }
+.pd-game-folder > summary:hover { background: #192725; }
+.pd-game-folder > summary:focus-visible { outline: 2px solid #74e5c5; outline-offset: 3px; }
 .pd-game-mark {
   display: grid;
   place-items: center;
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 10px;
-  background: #143632;
-  color: #55e4bf;
+  background: #1c3b34;
+  color: #8fecd1;
   font-weight: 800;
 }
+.pd-game-folder[data-game="genshin impact"] .pd-game-mark { background: #403722; color: #f4d88d; }
+.pd-game-folder[data-game="chronal nexus"] .pd-game-mark { background: #31324c; color: #d7cfff; }
 .pd-game-heading { display: grid; gap: 4px; overflow-wrap: anywhere; }
-.pd-game-heading small { opacity: .78; }
+.pd-game-heading strong { font-size: 1.03rem; }
+.pd-game-heading small { color: #b1c1bd; font-size: .8rem; }
+.pd-game-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #8fecd1;
+  border-top: 1px solid #2e4240;
+  padding-top: 11px;
+  font-size: .8rem;
+  font-weight: 700;
+}
 .pd-game-chevron {
-  width: 9px;
-  height: 9px;
+  width: 8px;
+  height: 8px;
+  margin: 0 4px 3px 0;
   border: solid currentColor;
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }
-.pd-game-folder[open] .pd-game-chevron { transform: rotate(225deg); }
+.pd-game-folder[open] .pd-game-chevron { transform: rotate(225deg); margin-bottom: 0; }
+.pd-game-folder[open] .pd-game-action [data-closed], .pd-game-folder:not([open]) .pd-game-action [data-open] { display: none; }
+
 .pd-game-packages { display: grid; gap: 8px; padding: 0 12px 12px; }
 .pd-game-packages > article {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 6px 14px;
+  gap: 6px 10px;
   padding: 12px;
 }
 .pd-game-packages > article > :is([class*="digital_cardVisual__"], [class*="digital_cardDesc__"], [class*="digital_cardTags__"]) { display: none; }
 .pd-game-packages [class*="digital_cardTitle__"] { margin: 0; grid-column: 1; }
 .pd-game-packages [class*="digital_cardPricing__"] { margin: 0; padding: 0; grid-column: 1; }
 .pd-game-packages [class*="digital_cardActions__"] { grid-column: 2; grid-row: 1 / span 2; margin: 0; }
-.pd-game-packages [class*="digital_btnPrimary__"] { min-height: 42px; }
+.pd-game-packages [class*="digital_btnPrimary__"] { min-height: 42px; white-space: normal; }
+.pd-game-packages [class*="digital_btnPrimary__"] svg { display: none; }
+.pd-upcoming [class*="digital_productGrid__"] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+@media (max-width: 1040px) {
+  [class*="digital_productGrid__"].pd-catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 @media (max-width: 680px) {
-  .pd-game-folder { grid-column: 1 / -1; }
-  .pd-game-folder > summary { padding: 12px; min-height: 72px; }
-  .pd-game-packages > article { grid-template-columns: minmax(0, 1fr); }
-  .pd-game-packages [class*="digital_cardActions__"] { grid-column: 1; grid-row: auto; }
+  [class*="digital_navWrap__"] { gap: 8px; flex-wrap: wrap; }
+  [class*="digital_navWrap__"] :is([class*="digital_ordersLink__"], [class*="digital_backLink__"]) { padding-inline: 8px; }
+  [class*="digital_subNavWrap__"] { min-width: 0; }
+  [class*="digital_hero__"] { padding: 24px 18px; min-height: 0; grid-template-columns: minmax(0, 1fr); margin-bottom: 28px; }
+  [class*="digital_heroArtwork__"] {
+    position: relative;
+    width: 100%;
+    height: 156px;
+    border-radius: 8px;
+    mask-image: none;
+    margin: 16px 0 0;
+    inset: auto;
+  }
+  [class*="digital_productGrid__"].pd-catalog-grid { grid-template-columns: minmax(0, 1fr); }
+  .pd-game-folder > summary { min-height: 0; padding: 14px; }
+  .pd-upcoming [class*="digital_productGrid__"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
