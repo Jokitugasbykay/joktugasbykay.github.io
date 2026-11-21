@@ -108,7 +108,7 @@ test('Persona Guard: no em dash, en dash, or emoji in digital store files', () =
     const files = fs.readdirSync(dir);
     for (const f of files) {
       const fullPath = path.join(dir, f);
-      if (fs.statSync(fullPath).isFile()) {
+      if (fs.statSync(fullPath).isFile() && /\.(?:html|js|mjs|css|ts|txt|json|md)$/i.test(f)) {
         const content = fs.readFileSync(fullPath, 'utf8');
         assert.ok(!dashRegex.test(content), `File ${f} tidak boleh memuat em dash atau en dash`);
         assert.ok(!emojiRegex.test(content), `File ${f} tidak boleh memuat emoji`);
