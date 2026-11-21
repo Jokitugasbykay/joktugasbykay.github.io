@@ -1032,7 +1032,14 @@ export default { async fetch(request, env) {
             assetRes = await env.ASSETS.fetch(new Request(nextUrl, request));
           }
         }
-        return assetRes;
+        const headers = new Headers(assetRes.headers);
+        headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
+        headers.set('pragma', 'no-cache');
+        return new Response(assetRes.body, {
+          status: assetRes.status,
+          statusText: assetRes.statusText,
+          headers
+        });
       }
     }
     if (url.pathname === '/api/checkout/spesial' && request.method === 'POST') {
@@ -1059,7 +1066,18 @@ export default { async fetch(request, env) {
     if (/\.(?:php|sql|sqlite|env)$/i.test(url.pathname) || /^\/(?:database|storage|api)\//i.test(url.pathname)) return json({ error: 'Not found' }, 404);
     if (env.ASSETS) {
       const asset = await env.ASSETS.fetch(request);
-      if (asset.status !== 404 || url.pathname.startsWith('/_next/static/')) return asset;
+      if (asset.status !== 404 || url.pathname.startsWith('/_next/static/')) {
+        if (!url.pathname.startsWith('/_next/static/')) {
+          const contentType = asset.headers.get('content-type') || '';
+          if (contentType.includes('text/html')) {
+            const h = new Headers(asset.headers);
+            h.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
+            h.set('pragma', 'no-cache');
+            return new Response(asset.body, { status: asset.status, statusText: asset.statusText, headers: h });
+          }
+        }
+        return asset;
+      }
       return env.ASSETS.fetch(new Request(new URL('/', request.url), request));
     }
     return json({ error: 'Not found' }, 404);

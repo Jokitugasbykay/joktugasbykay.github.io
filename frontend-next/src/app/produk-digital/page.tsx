@@ -19,8 +19,6 @@ const CATEGORY_ICONS: Record<string, string> = {
   all: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z',
   search: 'M15.5 15.5 21 21M18 10.5a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z',
   close: 'm6 6 12 12M18 6 6 18',
-
-  game: 'M7 10h4m-2-2v4m6-2h.01m3 2h.01M7.5 5h9a4 4 0 0 1 3.9 3.2l1.3 6a3 3 0 0 1-5 2.8l-2.5-2.5H9.8L7.3 17a3 3 0 0 1-5-2.8l1.3-6A4 4 0 0 1 7.5 5Z',
   topup: 'M12 3 21 12l-9 9-9-9 9-9Zm0 4-5 5 5 5 5-5-5-5Z',
   voucher: 'M4 6h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4V6Zm5 0v3m0 3v2m0 3v1',
   pulsa: 'M7 3h10v18H7zM10 6h4m-3 12h2',
