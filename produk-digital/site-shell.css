@@ -26,3 +26,7 @@
 body:has([class*="digital_deniedWrap__"] [class*="digital_loaderContainer__"]) .pd-site-footer,
 body:has(template[data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"] + p[role="status"]) .pd-site-footer,
 body:has([aria-label="Memuat katalog produk"][aria-busy="true"]) .pd-site-footer { visibility: hidden; }
+
+/* Match the neutral header and footer surfaces of JOKI.IN. */
+.pd-site-header, [class*="digital_header__"], body.digital-store-page .digital-store-header { background: #15191e !important; border-color: #303741; }
+.pd-site-footer, body.digital-store-page .pd-site-footer { background: #15191e !important; border-color: #303741; }
