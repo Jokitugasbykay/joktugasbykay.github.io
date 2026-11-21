@@ -4,6 +4,7 @@ import React, { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import styles from '../digital.module.css';
+import CubeLoader from '../../../components/CubeLoader';
 import { DigitalOrderDetails } from '../../../types/digital';
 import { DIGITAL_API_ENDPOINTS, formatRupiah } from '../../../data/digital-data';
 
@@ -102,7 +103,7 @@ function PesananContent() {
           }}
         >
           {loading ? (
-            <p style={{ color: '#64748b', fontWeight: 600 }}>Memeriksa status pesanan...</p>
+            <CubeLoader text="Memeriksa status pesanan..." />
           ) : errorMessage ? (
             <div>
               <div

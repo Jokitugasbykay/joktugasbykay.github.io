@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { DIGITAL_API_ENDPOINTS, DEFAULT_DIGITAL_PRODUCTS, formatRupiah } from '../../../data/digital-data';
 import styles from '../digital.module.css';
+import CubeLoader from '../../../components/CubeLoader';
 
 type Product = { nama: string; harga_dasar: number; diskon_persen: number; stok: number; batas_beli_per_orang: number };
 
@@ -161,7 +162,7 @@ function CheckoutContent() {
       </header>
       <main className={styles.checkoutPage}>
         <h1>Checkout Produk Digital</h1>
-        {productLoading && <p role="status">Memuat rincian produk...</p>}
+        {productLoading && <CubeLoader text="Memuat rincian produk..." />}
         {error && <p className={styles.checkoutError} role="alert">{error}</p>}
         {orderCode && <Link href={orderUrl + encodeURIComponent(orderCode)}>Lihat status pesanan</Link>}
         {product && (

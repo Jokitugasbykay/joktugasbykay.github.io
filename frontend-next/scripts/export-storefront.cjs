@@ -92,6 +92,8 @@ function planStorefrontExport(outDir, destination) {
         file.startsWith('payment/') ||
         file.startsWith('information/') ||
         file.startsWith('produk-digital/') ||
+        file.startsWith('testimonials/') ||
+        file.startsWith('assets/') ||
         file.startsWith('_next/static/'),
         'Unexpected destination collision: ' + file
       );

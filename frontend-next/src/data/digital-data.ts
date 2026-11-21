@@ -14,7 +14,6 @@ export const formatRupiah = (amount: number): string => {
 };
 
 export const DEFAULT_DIGITAL_CATEGORIES: DigitalCategory[] = [
-  { id: 'game', t: 'Game', d: 'Top up dan kebutuhan gaming', hue: 160 },
   { id: 'topup', t: 'Top Up Game', d: 'Diamond dan mata uang game', hue: 160 },
   { id: 'voucher', t: 'Voucher & Langganan', d: 'Akun premium dan voucher', hue: 160 },
   { id: 'pulsa', t: 'Pulsa & Data', d: 'Pulsa dan paket internet', hue: 160 },
@@ -26,8 +25,7 @@ export const DEFAULT_DIGITAL_CATEGORIES: DigitalCategory[] = [
 
 export const normalizeDigitalCategory = (value: unknown): string => {
   const category = String(value || '').toLowerCase();
-  if (category.includes('top') || category.includes('diamond')) return 'topup';
-  if (category.includes('game')) return 'game';
+  if (category.includes('top') || category.includes('diamond') || category.includes('game')) return 'topup';
   if (category.includes('voucher') || category.includes('langganan') || category.includes('premium')) return 'voucher';
   if (category.includes('pulsa') || category.includes('data')) return 'pulsa';
   if (category.includes('pln') || category.includes('tagihan') || category.includes('listrik')) return 'pln';

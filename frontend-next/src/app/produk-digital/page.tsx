@@ -4,6 +4,7 @@ import React, { Suspense, useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import styles from './digital.module.css';
+import CubeLoader from '../../components/CubeLoader';
 import { DigitalProduct, DigitalCartItem } from '../../types/digital';
 import {
   ADMIN_KAYLA_ID,
@@ -241,7 +242,7 @@ function DigitalStoreContent() {
   if (authStatus === 'loading') {
     return (
       <div className={styles.deniedWrap}>
-        <p style={{ color: '#64748b', fontWeight: 600 }}>Memeriksa hak akses Admin Kayla...</p>
+        <CubeLoader text="Memeriksa hak akses Admin Kayla..." />
       </div>
     );
   }
@@ -397,79 +398,107 @@ function DigitalStoreContent() {
               </article>
             ))}
           </div>
-        ) : catalogStatus !== 'ready' || filteredProducts.length === 0 ? (
+        ) : catalogStatus === 'loading' ? (
+          <div className={styles.productGrid} role="status" aria-busy="true" aria-label="Memuat katalog produk">
+            <span className={styles.srOnly}>Memuat katalog produk...</span>
+            {Array.from({ length: 10 }).map((_, idx) => (
+              <article key={`skeleton-${idx}`} className={styles.skeletonCard} aria-hidden="true">
+                <div className={`${styles.skeletonMedia} ${styles.skeletonSk}`} />
+                <div className={styles.skeletonBody}>
+                  <div className={`${styles.skeletonTag} ${styles.skeletonSk}`} />
+                  <div className={`${styles.skeletonTitle} ${styles.skeletonSk}`} />
+                  <div className={`${styles.skeletonDesc1} ${styles.skeletonSk}`} />
+                  <div className={`${styles.skeletonDesc2} ${styles.skeletonSk}`} />
+                  <div className={styles.skeletonPriceRow}>
+                    <div className={`${styles.skeletonPrice} ${styles.skeletonSk}`} />
+                    <div className={`${styles.skeletonStock} ${styles.skeletonSk}`} />
+                  </div>
+                  <div className={`${styles.skeletonButton} ${styles.skeletonSk}`} />
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : catalogStatus === 'error' ? (
+          <div className={styles.catalogEmpty} role="status">
+            <CategoryIcon id="all" />
+            <div>
+              <strong>Katalog gagal dimuat</strong>
+              <p>Terjadi kendala saat mengambil data produk.</p>
+            </div>
+            <button className={styles.btnSecondary} onClick={() => window.location.reload()}>Muat ulang</button>
+          </div>
+        ) : filteredProducts.length === 0 ? (
           <div className={styles.catalogEmpty} role="status">
             <CategoryIcon id={catalogStatus === 'ready' ? 'search' : 'all'} />
             <div>
-              <strong>{catalogStatus === 'loading' ? 'Memuat katalog…' : catalogStatus === 'error' ? 'Katalog gagal dimuat' : searchQuery ? 'Produk tidak ditemukan' : 'Belum ada produk di kategori ini'}</strong>
-              {catalogStatus === 'ready' && <p>Coba kategori lain atau ubah kata pencarian.</p>}
+              <strong>{searchQuery ? 'Produk tidak ditemukan' : 'Belum ada produk di kategori ini'}</strong>
+              <p>Coba kategori lain atau ubah kata pencarian.</p>
             </div>
-            {catalogStatus === 'error' && <button className={styles.btnSecondary} onClick={() => window.location.reload()}>Muat ulang</button>}
           </div>
-        ) : null}
-        {/* Product Grid */}
-        <div className={styles.productGrid}>
-          {filteredProducts.map((prod) => (
-            <article key={prod.id || prod.slug} className={styles.productCard}>
-              <div className={styles.cardVisual} aria-hidden="true">
-                {prod.gambar_url ? (
-                  <img className={styles.cardImage} src={prod.gambar_url} alt="" loading="lazy" />
-                ) : prod.pv === 'Mobile Legends' ? (
-                  <div className={styles.previewVisual} data-brand="mlbb" style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}>
-                    <span className={styles.mlbbMark}>ML</span>
-                    <span className={styles.previewWordmark}>MOBILE LEGENDS</span>
-                  </div>
-                ) : prod.pv === 'Genshin Impact' ? (
-                  <div className={styles.previewVisual} data-brand="genshin" style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}>
-                    <span style={{ color: '#e0c068', fontSize: '26px', fontWeight: 900, letterSpacing: '-0.05em' }}>GI</span>
-                    <span className={styles.previewWordmark} style={{ color: '#e0c068', fontSize: '11px', letterSpacing: '0.08em' }}>GENSHIN IMPACT</span>
-                  </div>
-                ) : prod.pv === 'Chronal Nexus' ? (
-                  <div className={styles.previewVisual} data-brand="chronal" style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}>
-                    <span style={{ color: '#55d9b0', fontSize: '26px', fontWeight: 900, letterSpacing: '-0.05em' }}>CN</span>
-                    <span className={styles.previewWordmark} style={{ color: '#55d9b0', fontSize: '11px', letterSpacing: '0.08em' }}>CHRONAL NEXUS</span>
-                  </div>
-                ) : (
-                  <div className={styles.cardArtwork}>
-                    <b>{prod.n}</b>
-                    <CategoryIcon id={prod.c} />
-                  </div>
-                )}
-                {prod.old && <span className={styles.discountTag}>-{Math.max(1, Math.round((1 - prod.pr / prod.old) * 100))}%</span>}
-              </div>
-              <div className={styles.cardTags}>
-                <span className={styles.providerName}>{prod.pv}</span>
-                {prod.is_limited_edition && (
-                  <span className={styles.tagPill} style={{ background: '#fef3c7', color: '#b45309' }}>
-                    Best Value
-                  </span>
-                )}
-              </div>
-              <h3 className={styles.cardTitle}>
-                <button type="button" className={styles.cardTitleButton} onClick={() => { setSelectedProduct(prod); setSelectedQuantity(1); }}>
-                  {prod.n}
-                </button>
-              </h3>
-              <p className={styles.cardDesc}>{prod.ds}</p>
-              <div className={styles.cardPricing}>
-                <span className={styles.cardPrice}>{formatRupiah(prod.pr)}</span>
-                <span className={`${styles.cardStock} ${prod.st <= 0 ? styles.cardStockEmpty : prod.st <= 5 ? styles.cardStockLimited : ''}`}>{prod.st > 5 ? 'Stok Tersedia' : prod.st > 0 ? 'Stok Terbatas' : 'Stok habis'}</span>
-                {prod.old && <span className={styles.cardOldPrice}>{formatRupiah(prod.old)}</span>}
-              </div>
-              <div className={styles.cardActions}>
-                <button
-                  type="button"
-                  className={styles.btnPrimary}
-                  disabled={prod.st <= 0}
-                  onClick={() => handleAddToCart(prod, 1)}
-                >
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M3 4h2l2.4 11h10.2L20 7H6.2"/><circle cx="9" cy="19.5" r="1.5"/><circle cx="17" cy="19.5" r="1.5"/></svg>
-                  Beli Sekarang
-                </button>
-              </div>
-            </article>
-          ))}
-        </div>
+        ) : (
+          <div className={styles.productGrid}>
+            {filteredProducts.map((prod) => (
+              <article key={prod.id || prod.slug} className={styles.productCard}>
+                <div className={styles.cardVisual} aria-hidden="true">
+                  {prod.gambar_url ? (
+                    <img className={styles.cardImage} src={prod.gambar_url} alt="" loading="lazy" />
+                  ) : prod.pv === 'Mobile Legends' ? (
+                    <div className={styles.previewVisual} data-brand="mlbb" style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}>
+                      <span className={styles.mlbbMark}>ML</span>
+                      <span className={styles.previewWordmark}>MOBILE LEGENDS</span>
+                    </div>
+                  ) : prod.pv === 'Genshin Impact' ? (
+                    <div className={styles.previewVisual} data-brand="genshin" style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}>
+                      <span style={{ color: '#e0c068', fontSize: '26px', fontWeight: 900, letterSpacing: '-0.05em' }}>GI</span>
+                      <span className={styles.previewWordmark} style={{ color: '#e0c068', fontSize: '11px', letterSpacing: '0.08em' }}>GENSHIN IMPACT</span>
+                    </div>
+                  ) : prod.pv === 'Chronal Nexus' ? (
+                    <div className={styles.previewVisual} data-brand="chronal" style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}>
+                      <span style={{ color: '#55d9b0', fontSize: '26px', fontWeight: 900, letterSpacing: '-0.05em' }}>CN</span>
+                      <span className={styles.previewWordmark} style={{ color: '#55d9b0', fontSize: '11px', letterSpacing: '0.08em' }}>CHRONAL NEXUS</span>
+                    </div>
+                  ) : (
+                    <div className={styles.cardArtwork}>
+                      <b>{prod.n}</b>
+                      <CategoryIcon id={prod.c} />
+                    </div>
+                  )}
+                  {prod.old && <span className={styles.discountTag}>-{Math.max(1, Math.round((1 - prod.pr / prod.old) * 100))}%</span>}
+                </div>
+                <div className={styles.cardTags}>
+                  <span className={styles.providerName}>{prod.pv}</span>
+                  {prod.is_limited_edition && (
+                    <span className={styles.tagPill} style={{ background: '#fef3c7', color: '#b45309' }}>
+                      Best Value
+                    </span>
+                  )}
+                </div>
+                <h3 className={styles.cardTitle}>
+                  <button type="button" className={styles.cardTitleButton} onClick={() => { setSelectedProduct(prod); setSelectedQuantity(1); }}>
+                    {prod.n}
+                  </button>
+                </h3>
+                <p className={styles.cardDesc}>{prod.ds}</p>
+                <div className={styles.cardPricing}>
+                  <span className={styles.cardPrice}>{formatRupiah(prod.pr)}</span>
+                  <span className={`${styles.cardStock} ${prod.st <= 0 ? styles.cardStockEmpty : prod.st <= 5 ? styles.cardStockLimited : ''}`}>{prod.st > 5 ? 'Stok Tersedia' : prod.st > 0 ? 'Stok Terbatas' : 'Stok habis'}</span>
+                  {prod.old && <span className={styles.cardOldPrice}>{formatRupiah(prod.old)}</span>}
+                </div>
+                <div className={styles.cardActions}>
+                  <button
+                    type="button"
+                    className={styles.btnPrimary}
+                    disabled={prod.st <= 0}
+                    onClick={() => handleAddToCart(prod, 1)}
+                  >
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M3 4h2l2.4 11h10.2L20 7H6.2"/><circle cx="9" cy="19.5" r="1.5"/><circle cx="17" cy="19.5" r="1.5"/></svg>
+                    Beli Sekarang
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
 
         {/* Segera Hadir Section */}
         {selectedCategory === 'all' && !searchQuery.trim() && UPCOMING_PREVIEW.length > 0 && (
