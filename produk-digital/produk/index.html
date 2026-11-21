@@ -1,26 +1,117 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pilih paket · JOKI.IN</title>
-  <link rel="stylesheet" href="/produk-digital/giant-duck.css">
-  <link rel="stylesheet" href="/produk-digital/order-flow.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Top Up Game Digital - JOKI.IN Digital Store</title>
+  <meta name="description" content="Top up Diamond MLBB, Genesis Crystal Genshin Impact, dan game digital resmi, murah, dan instan langsung ke akun di JOKI.IN Digital Store.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="/css/produk-digital/main.css">
+  <link rel="stylesheet" href="/produk-digital/game-detail.css">
   <link rel="stylesheet" href="/produk-digital/site-shell.css">
   <style>
-    .product-hero{border:1px solid #294840;border-radius:16px;padding:clamp(24px,4vw,42px);margin-bottom:24px;background:linear-gradient(90deg,#10251feD,#10251fb8),url('/produk-digital/catalog-controller.webp') center/cover}
-    .product-hero .eyebrow{color:#73e3bd;font-size:.8rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px}
-    .product-hero h1{margin-bottom:8px}.product-hero p{max-width:55ch}.packages{margin-top:16px}
+    :root { --bg-body: #090e12; --card-bg: #101720; --card-inner: #151f2b; --accent-green: #00e599; --text-main: #f8fafc; --text-muted: #94a3b8; --border-color: rgba(255, 255, 255, 0.08); }
+    body.digital-store-page { background: var(--bg-body); color: var(--text-main); font-family: 'Plus Jakarta Sans', system-ui, sans-serif; margin: 0; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+    .digital-store-diamond-glow { width: 48px; height: 48px; max-width: 48px; max-height: 48px; margin: 0 auto 12px; display: block; filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.5)); }
+    .digital-store-diamond-sm { width: 24px; height: 24px; max-width: 24px; max-height: 24px; flex-shrink: 0; }
+    .digital-store-layout { display: grid; grid-template-columns: 360px 1fr; gap: 24px; align-items: start; }
+    @media (max-width: 900px) { .digital-store-layout { grid-template-columns: 1fr; } }
   </style>
   <script defer src="/produk-digital/site-shell.js"></script>
-  <script type="module" src="/produk-digital/order-flow.js"></script>
-</head>
-<body data-page="produk">
-  <header class="pd-site-header"><div class="pd-site-header-inner"><a class="pd-site-brand" href="/produk-digital/" aria-label="JOKI.IN Digital Store"><img src="/assets/produk-digital/jokiin-logo-white.png" alt="JOKI.IN"><span>Digital Store</span></a><nav aria-label="Navigasi produk digital"><a href="/produk-digital/">Katalog</a><a href="/">Beranda</a></nav></div></header>
-  <main class="wrap">
-    <section class="product-hero"><p class="eyebrow">JOKI.IN Digital Store</p><h1>Pilih layanan</h1><p>Pilih paket yang tersedia. Data tujuan akan diminta pada halaman checkout.</p></section>
-    <h2>Pilih paket</h2>
-    <p id="status" role="status">Memuat paket…</p>
+<style>
+body.digital-store-page.digital-store {--bg-body:#08110f;--bg-header:#101b17;--card-bg:#111f1b;--card-inner:#172b24;--card-hover:#1d352b;--accent-blue:#55d9b0;--accent-green:#55d9b0;--text-muted:#a7c1b5;--border-color:#29483d}
+.digital-store [stroke="#38bdf8"]{stroke:#55d9b0}.digital-store [fill="rgba(56, 189, 248, 0.15)"]{fill:rgba(85,217,176,.15)}
+.digital-store-diamond-glow{filter:drop-shadow(0 0 12px rgba(85,217,176,.35))!important}.digital-store-package-card{cursor:pointer}
+</style></head>
+<body class="digital-store-page digital-store" data-page="produk">
+
+  <header class="digital-store-header">
+    <div class="digital-store-header-container">
+      <a href="/produk-digital/" class="digital-store-header-logo" aria-label="JOKI.IN Digital Store">
+        <img src="/assets/produk-digital/jokiin-logo-white.png" alt="JOKI.IN Digital Store" width="124" height="38">
+      </a>
+      <a href="/produk-digital/" class="digital-store-back-link">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Kembali ke etalase
+      </a>
+    </div>
+  </header>
+
+  <main class="digital-store-main-wrapper">
+    <section class="digital-store-hero-banner" aria-label="Game Hero Banner">
+      <div class="digital-store-hero-content">
+        <div class="digital-store-hero-pill">JOKI.IN Digital Store</div>
+        <h1 class="digital-store-hero-title" id="game-hero-title">Pilih layanan</h1>
+        <p class="digital-store-hero-desc" id="game-hero-desc">Pilih paket yang tersedia untuk melanjutkan.</p>
+      </div>
+    </section>
+
+    <div class="digital-store-layout">
+      <aside class="digital-store-left-col">
+        <div class="digital-store-panel-card"><div class="digital-store-step-header"><div class="digital-store-step-badge">1</div><h2 class="digital-store-step-title">Data tujuan</h2></div><p>Data akun atau nomor tujuan akan diminta di halaman checkout.</p></div>
+
+        <div class="digital-store-panel-card">
+          <div class="digital-store-step-header">
+            <div class="digital-store-step-badge">2</div>
+            <h2 class="digital-store-step-title">Pilih Nominal</h2>
+          </div>
+
+          <div id="selection-empty" class="digital-store-selection-empty">
+            <svg class="digital-store-diamond-glow" width="48" height="48" viewBox="0 0 24 24" fill="none">
+              <polygon points="12 2 2 9 12 22 22 9 12 2" stroke="#38bdf8" stroke-width="1.8" fill="rgba(56, 189, 248, 0.15)"></polygon>
+              <line x1="2" y1="9" x2="22" y2="9" stroke="#38bdf8" stroke-width="1.2"></line>
+              <polyline points="7 9 12 22 17 9" stroke="#38bdf8" stroke-width="1.2"></polyline>
+              <polyline points="9 2 7 9" stroke="#38bdf8" stroke-width="1.2"></polyline>
+              <polyline points="15 2 17 9" stroke="#38bdf8" stroke-width="1.2"></polyline>
+            </svg>
+            <p>Pilih nominal paket di sebelah kanan</p>
+          </div>
+
+          <div id="selection-active" class="digital-store-selection-active">
+            <div class="digital-store-summary-box">
+              <div class="digital-store-summary-top">
+                <span class="digital-store-summary-badge">Paket dipilih</span>
+                <span id="summary-price" class="digital-store-summary-price">Rp 0</span>
+              </div>
+              <h3 id="summary-title" class="digital-store-summary-title">-</h3>
+              <p id="summary-desc" class="digital-store-summary-desc">Periksa detail paket sebelum melanjutkan.</p>
+            </div>
+            <div class="digital-store-summary-total-row">
+              <span>Total Pembayaran:</span>
+              <strong id="summary-total">Rp 0</strong>
+            </div>
+          </div>
+
+          <button type="button" id="btn-pay-now" class="digital-store-btn-buy disabled" disabled>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+            <span id="btn-pay-label">Pilih Paket Dulu</span>
+          </button>
+        </div>
+      </aside>
+
+      <section class="digital-store-right-col">
+        <div class="digital-store-panel-card">
+          <div class="digital-store-step-header" style="margin-bottom: 16px;">
+            <h2 class="digital-store-step-title" id="nominal-section-title" style="font-size: 17px;">Pilih paket</h2>
+          </div>
+
+          <div class="digital-store-filter-row" id="filter-tabs-container" role="tablist"></div>
+          <div id="packages-container" class="digital-store-packages-grid"></div>
+        </div>
+
+      </section>
+    </div>
   </main>
+
+  <div id="toast" class="digital-store-toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="/produk-digital/product-detail.js"></script>
 </body>
 </html>
