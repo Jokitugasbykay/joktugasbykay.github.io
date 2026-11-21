@@ -182,6 +182,7 @@
 }
 
 .ordersLink {
+  margin-left: auto;
   flex: 0 0 auto;
   color: var(--text);
   font-size: 13px;
@@ -887,9 +888,8 @@
 }
 @media (max-width: 640px) {
   .navWrap { gap: 8px; padding: 8px 12px; }
-  .navWrap .actionBtn { margin-left: auto; }
   .subNavWrap { padding: 6px 12px 10px; }
-  .navWrap .ordersLink { font-size: 12px; padding: 0 8px; }
+  .navWrap .ordersLink { margin-left: auto; font-size: 12px; padding: 0 8px; }
   .searchInput { font-size: 16px; }
   .hero { padding: 16px 14px 12px; }
   .heroTitle strong { display: block; }

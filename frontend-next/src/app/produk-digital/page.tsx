@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import styles from './digital.module.css';
 import CubeLoader from '../../components/CubeLoader';
-import { DigitalProduct, DigitalCartItem } from '../../types/digital';
+import { DigitalProduct } from '../../types/digital';
 import {
   ADMIN_KAYLA_ID,
   DEFAULT_DIGITAL_CATEGORIES,
@@ -54,8 +54,6 @@ function DigitalStoreContent() {
   const [catalogStatus, setCatalogStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [storedCart, setCart] = useState<DigitalCartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const [selectedProduct, setSelectedProduct] = useState<DigitalProduct | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -177,54 +175,10 @@ function DigitalStoreContent() {
     }
   };
 
-  // Muat keranjang dari local storage
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem('jokiin_digital_cart');
-      if (raw) setCart(JSON.parse(raw));
-    } catch (_) {}
-  }, []);
-
-  const cart = storedCart.filter(item => products.some(product => product.slug === item.slug && product.st > 0));
-
-  const saveCart = (newCart: DigitalCartItem[]) => {
-    setCart(newCart);
-    try {
-      localStorage.setItem('jokiin_digital_cart', JSON.stringify(newCart));
-    } catch (_) {}
+  const handleBuyNow = (product: DigitalProduct, quantity: number = 1) => {
+    const slug = product.slug || product.id || '';
+    router.push(`/produk-digital/checkout/?slug=${encodeURIComponent(slug)}&qty=${quantity}`);
   };
-
-  const handleAddToCart = (product: DigitalProduct, quantity: number = 1) => {
-    const existingIndex = cart.findIndex((item) => item.productId === (product.id || product.slug));
-    let nextCart: DigitalCartItem[];
-    if (existingIndex >= 0) {
-      nextCart = [...cart];
-      nextCart[existingIndex].quantity += quantity;
-    } else {
-      nextCart = [
-        ...cart,
-        {
-          productId: product.id || product.slug || 'prod',
-          productName: product.n,
-          price: product.pr,
-          quantity,
-          slug: product.slug,
-        },
-      ];
-    }
-    saveCart(nextCart);
-    showToast(`${product.n} berhasil ditambahkan ke keranjang.`);
-    if (selectedProduct) setSelectedProduct(null);
-  };
-
-  const handleRemoveFromCart = (productId: string) => {
-    const nextCart = cart.filter((item) => item.productId !== productId);
-    saveCart(nextCart);
-  };
-
-  const cartTotalCount = useMemo(() => {
-    return cart.reduce((sum, item) => sum + item.quantity, 0);
-  }, [cart]);
 
   const filteredProducts = useMemo(() => {
     return products.filter((prod) => {
@@ -284,20 +238,6 @@ function DigitalStoreContent() {
             <img className={styles.logoImage} src="/assets/produk-digital/jokiin-logo-white.png" alt="JOKI.IN" width="124" height="40" />
 
           </Link>
-
-          <button
-            className={styles.actionBtn}
-            type="button"
-            onClick={() => setIsCartOpen(true)}
-            aria-label="Keranjang belanja"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 4h2l2.4 11h10.2L20 7H6.2" />
-              <circle cx="9" cy="19.5" r="1.5" />
-              <circle cx="17" cy="19.5" r="1.5" />
-            </svg>
-            {cartTotalCount > 0 && <span className={styles.badge}>{cartTotalCount}</span>}
-          </button>
 
           <Link href="/produk-digital/pesanan" className={styles.ordersLink}>
             Pesanan Saya
@@ -489,9 +429,9 @@ function DigitalStoreContent() {
                     type="button"
                     className={styles.btnPrimary}
                     disabled={prod.st <= 0}
-                    onClick={() => handleAddToCart(prod, 1)}
+                    onClick={() => handleBuyNow(prod, 1)}
                   >
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M3 4h2l2.4 11h10.2L20 7H6.2"/><circle cx="9" cy="19.5" r="1.5"/><circle cx="17" cy="19.5" r="1.5"/></svg>
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                     Beli Sekarang
                   </button>
                 </div>
@@ -599,98 +539,19 @@ function DigitalStoreContent() {
                 Subtotal: {formatRupiah(selectedProduct.pr * selectedQuantity)}
               </span>
             </div>
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div>
               <button
                 type="button"
                 className={styles.btnPrimary}
+                style={{ width: '100%', minHeight: '42px', fontSize: '13px' }}
                 onClick={() => {
-                  router.push(
-                    `/produk-digital/checkout/?slug=${encodeURIComponent(
-                      selectedProduct.slug || selectedProduct.id || ''
-                    )}&qty=${selectedQuantity}`
-                  );
+                  handleBuyNow(selectedProduct, selectedQuantity);
                 }}
               >
-                Beli Langsung Sekarang
-              </button>
-              <button
-                type="button"
-                className={styles.btnSecondary}
-                onClick={() => handleAddToCart(selectedProduct, selectedQuantity)}
-              >
-                + Keranjang
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                Beli Sekarang
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Cart Drawer / Modal */}
-      {isCartOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsCartOpen(false)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800 }}>Keranjang Belanja</h3>
-              <button
-                type="button"
-                className={styles.modalClose}
-                onClick={() => setIsCartOpen(false)}
-                aria-label="Tutup keranjang"
-              >
-                <CategoryIcon id="close" />
-              </button>
-            </div>
-
-            {cart.length === 0 ? (
-              <p style={{ textAlign: 'center', color: '#a4b0b4', margin: '24px 0' }}>
-                Keranjang belanja masih kosong.
-              </p>
-            ) : (
-              <div>
-                <div style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '16px' }}>
-                  {cart.map((item) => (
-                    <div
-                      key={item.productId}
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        padding: '10px 0',
-                        borderBottom: '1px solid #2b343a',
-                      }}
-                    >
-                      <div>
-                        <div style={{ fontWeight: 700, fontSize: '14px' }}>{item.productName}</div>
-                        <div style={{ color: '#a4b0b4', fontSize: '12px' }}>
-                          {item.quantity} x {formatRupiah(item.price)}
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontWeight: 800, color: '#55d9b0', fontSize: '14px' }}>
-                          {formatRupiah(item.price * item.quantity)}
-                        </span>
-                        <button
-                          type="button"
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            color: '#ef4444',
-                            cursor: 'pointer',
-                            fontSize: '14px',
-                            fontWeight: 700,
-                          }}
-                          onClick={() => handleRemoveFromCart(item.productId)}
-                        >
-                          Hapus
-                        </button>
-                        <Link className={styles.btnSecondary} href={'/produk-digital/checkout/?slug=' + encodeURIComponent(item.slug || '') + '&qty=' + item.quantity}>Checkout</Link>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <p className={styles.checkoutHint}>Pilih Checkout pada produk yang ingin dibayar.</p>
-              </div>
-            )}
           </div>
         </div>
       )}
