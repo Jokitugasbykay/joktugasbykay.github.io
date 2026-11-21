@@ -5,6 +5,11 @@
   "vars": {
     "SUPABASE_URL": "https://xdbnwjvxqtpkoaigedsk.supabase.co"
   },
+  "routes": [
+    { "pattern": "jokiin.my.id/api/*", "zone_name": "jokiin.my.id" },
+    { "pattern": "jokiin.my.id/produk-digital*", "zone_name": "jokiin.my.id" },
+    { "pattern": "jokiin.my.id/_next/*", "zone_name": "jokiin.my.id" }
+  ],
   "assets": {
     "directory": ".",
     "binding": "ASSETS",
