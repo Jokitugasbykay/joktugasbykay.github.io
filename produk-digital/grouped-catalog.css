@@ -141,3 +141,52 @@
   .pd-game-folder > summary { min-height: 0; padding: 14px; }
   .pd-upcoming [class*="digital_productGrid__"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* The supplied banner includes its own headline and button artwork. */
+[class*="digital_hero__"] {
+  display: block;
+  min-height: 0;
+  aspect-ratio: 2172 / 724;
+  padding: 0;
+  background: #063e35 url("/produk-digital/banner-store.png") center / 100% 100% no-repeat;
+  border-radius: 14px;
+}
+[class*="digital_heroArtwork__"], [class*="digital_heroTag__"] { display: none; }
+[class*="digital_heroCopy__"] { position: static; max-width: none; }
+[class*="digital_heroTitle__"], [class*="digital_heroDesc__"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+[class*="digital_heroActions__"] { display: contents; }
+[class*="digital_heroActions__"] button {
+  position: absolute;
+  top: 62%;
+  height: 11.4%;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: none;
+  color: transparent;
+  opacity: 0;
+}
+[class*="digital_heroActions__"] button:first-child { left: 3.5%; width: 14.8%; }
+[class*="digital_heroActions__"] button:nth-child(2) { left: 19.4%; width: 14.6%; }
+[class*="digital_heroActions__"] button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+  opacity: 1;
+}
+@media (max-width: 680px) {
+  [class*="digital_hero__"] {
+    width: 100%;
+    aspect-ratio: 2172 / 724;
+    min-height: 0;
+    padding: 0;
+    background: #063e35 url("/produk-digital/banner-store.png") center / contain no-repeat;
+  }
+  [class*="digital_heroActions__"] button { min-height: 0; }
+}
