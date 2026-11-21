@@ -15,7 +15,17 @@ function renderDigitalCatalog(react, products, renderCard, showFeatured) {
   const { jsx, jsxs } = react;
   const games = new Map();
   const standalone = [];
+  const services = [
+    ['gemini', 'Google AI Pro', /gemini|google[ -]ai[ -]pro/i],
+    ['claude', 'Claude', /claude/i],
+    ['axis', 'Pulsa AXIS', /axis/i],
+    ['tri', 'Pulsa Tri', /(?:^|[\s-])(?:tri|three)(?:$|[\s-])/i],
+    ['telkomsel', 'Pulsa Telkomsel', /telkomsel/i]
+  ];
+  const serviceProducts = new Map(services.map(([key]) => [key, []]));
   for (const product of products) {
+    const service = showFeatured && services.find(([, , pattern]) => pattern.test([product.n, product.pv, product.slug].join(' ')));
+    if (service) { serviceProducts.get(service[0]).push(product); continue; }
     const name = product.pv?.trim();
     if (product.c !== 'topup' || !name || name === 'JOKI.IN Store') {
       standalone.push(renderCard(product));
@@ -45,13 +55,18 @@ function renderDigitalCatalog(react, products, renderCard, showFeatured) {
       if (existing) existing.href = '/produk-digital/produk/?game=' + key;
       else entries.push({ name, products: [], art: catalogArt[entries.length % catalogArt.length], price: 'Belum tersedia', href: '/produk-digital/produk/?game=' + key });
     }
+    for (const [key, name] of services) {
+      const items = serviceProducts.get(key);
+      const prices = items.filter(p => p.st > 0 && p.pr >= 500).map(p => p.pr);
+      entries.push({ name, products: items, art: catalogArt[entries.length % catalogArt.length], price: prices.length ? 'Mulai ' + rupiah.format(Math.min(...prices)) : 'Belum tersedia', href: '/produk-digital/produk/?game=' + key });
+    }
   }
   const newTab = { target: '_blank', rel: 'noopener' };
   const artwork = entry => jsx('img', { src: entry.art, loading: 'lazy', alt: '' });
   const tiles = entries.map(entry => jsxs('a', {
     ...newTab, href: entry.href, className: 'pd-game-cover',
     children: [artwork(entry), jsxs('span', { className: 'pd-game-label', children: [
-      jsx('small', { children: entry.products.length ? entry.products.length + ' paket top up' : 'Paket belum tersedia' }),
+      jsx('small', { children: entry.products.length ? entry.products.length + ' paket tersedia' : 'Paket belum tersedia' }),
       jsx('strong', { children: entry.name }),
       jsx('span', { children: entry.price }),
       jsx('span', { className: 'pd-game-open', children: 'Lihat paket' })
@@ -67,19 +82,6 @@ function renderDigitalCatalog(react, products, renderCard, showFeatured) {
         ] })]
       }, entry.name)) })
     ] }, 'featured'));
-  }
-  if (showFeatured) {
-    const services = [
-      ['mlbb','Mobile Legends'], ['ff','Free Fire'], ['genshin','Genshin Impact'], ['hsr','Honkai: Star Rail'],
-      ['zzz','Zenless Zone Zero'], ['pubg','PUBG Mobile'], ['gemini','Google AI Pro'], ['claude','Claude'],
-      ['axis','Pulsa AXIS'], ['tri','Pulsa Tri'], ['telkomsel','Pulsa Telkomsel'], ['hok','Honor of Kings']
-    ];
-    standalone.push(jsxs('section', { className: 'pd-services', children: [
-      jsx('h3', { children: 'Cari layanan' }),
-      jsx('div', { children: services.map(([key, label]) => jsx('a', {
-        ...newTab, href: '/produk-digital/produk/?game=' + key, children: label
-      }, key)) })
-    ] }, 'service-directory'));
   }
   return [...tiles, ...standalone];
 }
