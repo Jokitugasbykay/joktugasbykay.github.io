@@ -17,7 +17,7 @@ const status = document.querySelector('#status');
 const query = new URLSearchParams(location.search);
 const format = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
 const unit = p => Math.round(Number(p.harga_dasar) * (1 - Math.min(100, Math.max(0, Number(p.diskon_persen) || 0)) / 100));
-const stock = p => p.stok == null ? 10 : Number(p.stok);
+const stock = p => Number(p.stok) || 0;
 function node(tag, text, className) {
   const element = document.createElement(tag);
   if (text) element.textContent = text;

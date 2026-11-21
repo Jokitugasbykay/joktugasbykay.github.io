@@ -20,7 +20,7 @@ const catalogServices = [
   ];
 const catalogGames = [
       ['mlbb', 'Mobile Legends', /mobile legends?|mlbb/i],
-      ['ff', 'Free Fire', /free fire/i],
+      ['ff', 'Free Fire', /free[ -]fire|(?:^|[\s-])ff(?:$|[\s-])/i],
       ['genshin', 'Genshin Impact', /genshin/i],
       ['hsr', 'Honkai: Star Rail', /honkai.*star.?rail|\bhsr\b/i],
       ['zzz', 'Zenless Zone Zero', /zenless|\bzzz\b/i],
@@ -52,19 +52,20 @@ function renderDigitalCatalog(react, products, renderCard, showFeatured, categor
   for (const product of products) {
     const service = services.find(([, , pattern]) => pattern.test([product.n, product.pv, product.slug].join(' ')));
     if (service) { serviceProducts.get(service[0]).push(product); continue; }
-    const name = product.pv?.trim();
-    if (product.c !== 'topup' || !name || name === 'JOKI.IN Store') {
+    const game = catalogGames.find(([, , pattern]) => pattern.test([product.n, product.pv, product.slug].join(' ')));
+    const name = game ? game[1] : product.pv?.trim();
+    if (catalogProductCategory(product) !== 'topup' || !name || name === 'JOKI.IN Store') {
       standalone.push(renderCard(product));
       continue;
     }
-    const key = name.toLocaleLowerCase('id');
-    if (!games.has(key)) games.set(key, { name, products: [] });
+    const key = game ? game[0] : name.toLocaleLowerCase('id');
+    if (!games.has(key)) games.set(key, { name, products: [], gameKey: game?.[0] });
     games.get(key).products.push(product);
   }
   const entries = Array.from(games.values()).map((entry, index) => {
     const prices = entry.products.filter(p => p.st > 0 && p.pr >= 500).map(p => p.pr);
     return { ...entry, art: catalogArt[index % catalogArt.length], price: prices.length ? 'Mulai ' + rupiah.format(Math.min(...prices)) : 'Belum tersedia',
-      href: '/produk-digital/produk/?' + new URLSearchParams({ provider: entry.name }) };
+      href: '/produk-digital/produk/?' + new URLSearchParams(entry.gameKey ? { game: entry.gameKey } : { provider: entry.name }) };
   });
   {
     const requestedGames = catalogGames.filter(([key, name, pattern]) => matchesCatalogOption(category, query, key, name, pattern));

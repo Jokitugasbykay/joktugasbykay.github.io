@@ -129,14 +129,15 @@ async function load() {
     if (!code) throw new Error('Kode pesanan tidak ditemukan di URL.');
     const token = accessToken();
     const response = await fetch('/api/digital-store/orders/' + encodeURIComponent(code), {
-      headers: token ? { Authorization: 'Bearer ' + token } : {}
+      headers: token ? { Authorization: 'Bearer ' + token } : {},
+      signal: AbortSignal.timeout(15000)
     });
     const data = await response.json();
     if (!response.ok || !data.ok || !data.order) throw new Error(data.error || 'Pesanan tidak ditemukan.');
     showOrder(data.order);
   } catch (error) {
     el('status').textContent = 'Status pesanan tidak dapat dimuat';
-    el('message').textContent = error.message;
+    el('message').textContent = error.name === 'TimeoutError' ? 'Permintaan terlalu lama. Coba perbarui status.' : error.message;
     el('guidance').textContent = code ? 'Coba perbarui status pesanan.' : 'Buka halaman ini dari tautan pesananmu.';
     el('refresh').hidden = !code;
   } finally {
