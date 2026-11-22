@@ -7,7 +7,7 @@ const MAYAR_BASE_URL = (Deno.env.get('MAYAR_BASE_URL') || 'https://api.mayar.id/
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') || '';
 
 const CORS = {
-  'Access-Control-Allow-Origin': '*',
+  'Vary': 'Origin',
   'Access-Control-Allow-Headers': 'authorization,apikey,content-type,x-client-info,x-cart-id',
   'Access-Control-Allow-Methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
   'Cache-Control': 'no-store',
@@ -486,7 +486,7 @@ function validateProduct(body: any, partial = false) {
   return out;
 }
 
-Deno.serve(async (req: Request) => {
+async function handleRequest(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
 
   const url = new URL(req.url);
@@ -801,21 +801,20 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // GET /api/orders/:orderCode - Public order lookup reading prefix (NUG vs SPCL)
+    // GET /api/orders/:orderCode - Owner-only order lookup
     const orderLookupMatch = path.match(/^\/api\/orders\/([^/]+)$/);
     if (method === 'GET' && orderLookupMatch) {
+      const user = await requireAuth(req);
       const code = decodeURIComponent(orderLookupMatch[1]).trim().toUpperCase();
       if (!ORDER_ID_RE.test(code)) {
         throw new ApiError(400, 'Format ID pesanan tidak valid.');
       }
       const tipe = getOrderTypeFromId(code)!;
-      const [ordersRows, itemsRows] = await Promise.all([
-        dbFetch(`orders?order_code=eq.${encodeURIComponent(code)}&select=order_code,tipe,status,payment_status,total,total_price,subtotal,nama,nim,whatsapp,gmail,judul_tugas,deadline,catatan,items,created_at&limit=1`),
-        dbFetch(`order_items?order_id=eq.${encodeURIComponent(code)}&select=produk,product_slug,qty,harga_satuan,subtotal`),
-      ]);
+      const ordersRows = await dbFetch(`orders?order_code=eq.${encodeURIComponent(code)}&user_id=eq.${encodeURIComponent(user.id)}&select=order_code,tipe,status,payment_status,total,total_price,subtotal,nama,nim,whatsapp,gmail,judul_tugas,deadline,catatan,items,created_at&limit=1`);
       if (!ordersRows?.length) {
         throw new ApiError(404, 'Pesanan tidak ditemukan.');
       }
+      const itemsRows = await dbFetch(`order_items?order_id=eq.${encodeURIComponent(code)}&select=produk,product_slug,qty,harga_satuan,subtotal`);
       return ok({
         order: {
           ...ordersRows[0],
@@ -1101,4 +1100,16 @@ Deno.serve(async (req: Request) => {
   } catch (error) {
     return err(error);
   }
+}
+
+const allowedOrigins = ['https://jokiin.my.id', 'https://www.jokiin.my.id', 'https://jokitugasbykay.github.io'];
+Deno.serve(async (req: Request) => {
+  const origin = req.headers.get('origin');
+  const extra = (Deno.env.get('JOKIIN_CORS_ORIGINS') ?? '').split(',').map((value) => value.trim());
+  const originAllowed = origin !== null && origin !== '' && origin !== 'null' && (allowedOrigins.includes(origin) || extra.includes(origin));
+  if (origin !== null && !originAllowed) return err(new ApiError(403, 'Origin tidak diizinkan.'));
+  const response = await handleRequest(req);
+  if (!originAllowed || origin === null) return response;
+  response.headers.set('Access-Control-Allow-Origin', origin);
+  return response;
 });

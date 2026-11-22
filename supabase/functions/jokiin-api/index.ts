@@ -2,7 +2,7 @@
 // Guest checkout/tracking are intentional. Every supplied user JWT is verified with Auth.
 const API = Deno.env.get('SUPABASE_URL')!;
 const SECRET = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const cors = {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization,apikey,content-type,x-client-info','Access-Control-Allow-Methods':'POST,OPTIONS','Cache-Control':'no-store','Content-Type':'application/json'};
+const corsDefaults = {'Vary':'Origin','Access-Control-Allow-Headers':'authorization,apikey,content-type,x-client-info','Access-Control-Allow-Methods':'POST,OPTIONS','Cache-Control':'no-store','Content-Type':'application/json'};
 class ApiError extends Error { constructor(public status:number,message:string) { super(message); } }
 async function db(path:string,method='GET',body?:unknown,prefer?:string) {
  const response=await fetch(`${API}/rest/v1/${path}`,{method,headers:{apikey:SECRET,Authorization:`Bearer ${SECRET}`,'Content-Type':'application/json',...(prefer?{Prefer:prefer}:{})},body:body===undefined?undefined:JSON.stringify(body)});
@@ -53,7 +53,14 @@ async function ensureProfile(user:any) {
  await db('profiles?on_conflict=id','POST',profile,'resolution=ignore-duplicates');return profile;
 }
 const ORDER_FIELDS='id,order_code,tipe,total,nama,nim,whatsapp,gmail,judul_tugas,deadline,catatan,user_id,service_id,items,customer,task,notes,status,total_price,subtotal,discount,service_fee,payment_fee,payment_method,payment_status,estimated_completion,created_at';
+const allowedOrigins = ['https://jokiin.my.id', 'https://www.jokiin.my.id', 'https://jokitugasbykay.github.io'];
 Deno.serve(async(req:Request)=>{
+  const origin = req.headers.get('origin');
+  const extra = (Deno.env.get('JOKIIN_CORS_ORIGINS') ?? '').split(',').map((value) => value.trim());
+  const originAllowed = origin !== null && origin !== '' && origin !== 'null' && (allowedOrigins.includes(origin) || extra.includes(origin));
+  const cors = new Headers(corsDefaults);
+  if (origin !== null && !originAllowed) return new Response(JSON.stringify({error:'Origin tidak diizinkan.'}), {status:403,headers:cors});
+  if (originAllowed && origin !== null) cors.set('Access-Control-Allow-Origin', origin);
  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
  try{
   if(req.method!=='POST')throw new ApiError(405,'Gunakan POST.');

@@ -1018,7 +1018,9 @@ export default { async fetch(request, env) {
     // Digital Store Web Route Gate (Admin Kayla only)
     if (url.pathname === '/produk-digital' || url.pathname.startsWith('/produk-digital/')) {
       const isStaticAsset = /\.(?:css|js|map|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|webp|txt)$/i.test(url.pathname);
-      if (!isStaticAsset) {
+      // Static export route payloads follow the same authorization gate as HTML.
+      const requiresAuth = !isStaticAsset || /\.txt$/i.test(url.pathname);
+      if (requiresAuth) {
         const auth = await verifyAdminKayla(request, env);
         if (!auth.ok) {
           if (auth.reason === 'forbidden') {
@@ -1067,7 +1069,7 @@ export default { async fetch(request, env) {
           }
         }
         const headers = new Headers(assetRes.headers);
-        if (isStaticAsset) {
+        if (!requiresAuth) {
           const extMatch = url.pathname.match(/\.([a-z0-9]+)$/i);
           if (extMatch) {
             const ext = extMatch[1].toLowerCase();

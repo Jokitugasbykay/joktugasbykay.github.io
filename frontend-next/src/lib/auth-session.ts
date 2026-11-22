@@ -24,7 +24,7 @@ function parseToken(value: string | undefined): string | undefined {
   } catch { /* Expired or malformed browser data can be replaced by a fresh login. */ }
 }
 
-function* accessTokens() {
+export function* accessTokens() {
   const values = cookies();
   yield parseToken(values.get('sb-access-token'));
   yield parseToken(values.get(storageKey));

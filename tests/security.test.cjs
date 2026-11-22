@@ -110,3 +110,34 @@ for (const failure of ['exit', 'spawn', 'missing', 'blank']) test('TypeScript ha
   assert.throws(() => compileTypeScript('const valid: number = 1;'), expected);
   assert.equal(fs.existsSync(directory), false, 'Temporary compiler files must be removed on failure');
 });
+
+for (const fn of ['jokiin-api', 'jokiin-catalog']) {
+  test(`${fn} CORS follows the origin allowlist`, async () => {
+    let handle;
+    const ctx = context({Deno:{env:{get:key => key === 'JOKIIN_CORS_ORIGINS' ? 'https://staging.example' : undefined},serve:h => {handle=h;}},
+      fetch: () => { throw new Error('Unexpected upstream request'); }});
+    const source = fs.readFileSync(path.join(root, 'supabase/functions', fn, 'index.ts'), 'utf8');
+    vm.runInContext(compileTypeScript(source).replace(/^export function /gm, "function "), ctx);
+    for (const origin of ['https://jokiin.my.id', 'https://www.jokiin.my.id', 'https://jokitugasbykay.github.io', 'https://staging.example', 'https://outside.example', null]) {
+      const headers = origin ? {origin} : {};
+      const allowed = origin !== 'https://outside.example';
+      for (const method of ['OPTIONS', 'GET']) {
+        const res = await handle(new Request('https://edge.example', {method,headers}));
+        assert.equal(res.headers.get('access-control-allow-origin'), allowed ? origin : null);
+        assert.match(res.headers.get('vary'), /(?:^|,\s*)Origin(?:,|$)/i);
+        if (!allowed) assert.equal(res.status, 403);
+        else if (method === 'OPTIONS') assert.equal(res.status, 204);
+      }
+    }
+  });
+}
+
+test('Digital Store route data requires the same session as the page', async () => {
+  const w=worker();
+  const res=await w.run(new Request('https://worker.example/produk-digital/home/__next._full.txt'), {
+    ASSETS:{fetch:()=>{throw new Error('Protected asset accessed before authorization');}},
+  });
+  assert.equal(res.status,302);
+  assert.match(res.headers.get('location'), /^\/login\?redirect=/);
+  assert.equal(w.requests.length,0);
+});

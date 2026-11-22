@@ -1,6 +1,5 @@
 import { DigitalCategory, DigitalHeroSlide, DigitalProduct } from '../types/digital';
 
-export const ADMIN_KAYLA_ID = '92e7a1cb-2136-496a-913b-00cd402c04f5';
 
 export const DIGITAL_API_ENDPOINTS = {
   AUTH_VERIFY: '/api/digital-store/auth-verify',

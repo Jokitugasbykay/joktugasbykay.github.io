@@ -1,5 +1,7 @@
 'use client';
 
+import { accessTokens } from '@/lib/auth-session';
+
 import React, { Suspense, useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -7,7 +9,6 @@ import styles from './digital.module.css';
 import CubeLoader from '../../components/CubeLoader';
 import { DigitalProduct } from '../../types/digital';
 import {
-  ADMIN_KAYLA_ID,
   DEFAULT_DIGITAL_CATEGORIES,
   DEFAULT_DIGITAL_PRODUCTS,
   DIGITAL_API_ENDPOINTS,
@@ -61,103 +62,51 @@ function DigitalStoreContent() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // Verifikasi Autentikasi Admin Kayla
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    // Izinkan development environment
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      setAuthStatus('authorized');
-      loadLiveProducts();
-      return;
-    }
-
-    try {
-      let token: string | null = null;
-      let userId: string | null = null;
-
-      // Periksa cookie sb-access-token
-      const match = document.cookie.match(/(?:^|;\s*)sb-access-token=([^;]+)/);
-      if (match) {
-        token = decodeURIComponent(match[1]);
-      }
-
-      // Periksa local storage untuk token Supabase Auth
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i) || '';
-        if (key.includes('auth-token')) {
-          try {
-            const raw = localStorage.getItem(key);
-            if (raw) {
-              const parsed = JSON.parse(raw);
-              userId = parsed?.user?.id || parsed?.id || null;
-              if (parsed?.access_token) token = parsed.access_token;
-            }
-          } catch (_) {}
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    let active = true;
+    async function verifyAccess() {
+      try {
+        let unauthorized = true;
+        for (const token of new Set([undefined, ...accessTokens()])) {
+          const response = await fetch(DIGITAL_API_ENDPOINTS.AUTH_VERIFY, {
+            credentials: 'same-origin',
+            cache: 'no-store',
+            redirect: 'error',
+            signal: controller.signal,
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          });
+          if (!active) return;
+          if (response.status === 401) continue;
+          unauthorized = false;
+          if (!response.ok || (await response.json()).authorized !== true) break;
+          if (!active) return;
+          setAuthStatus('authorized');
+          void loadLiveProducts(token);
+          return;
         }
-      }
-
-      if (!token && !userId) {
-        setAuthStatus('unauthenticated');
-        if (typeof window !== 'undefined') {
-          window.location.assign('/login?redirect=' + encodeURIComponent(window.location.pathname));
+        if (!active) return;
+        if (unauthorized) {
+          setAuthStatus('unauthenticated');
+          const redirect = window.location.pathname + window.location.search;
+          window.location.assign('/login?redirect=' + encodeURIComponent(redirect));
+        } else {
+          setAuthStatus('forbidden');
         }
-        return;
+      } catch {
+        if (active) setAuthStatus('forbidden');
+      } finally {
+        clearTimeout(timeout);
       }
-
-      if (userId && userId !== ADMIN_KAYLA_ID) {
-        setAuthStatus('forbidden');
-        return;
-      }
-
-      // Jika userId sudah terverifikasi sebagai Admin Kayla secara lokal, langsung beri akses
-      if (userId === ADMIN_KAYLA_ID) {
-        setAuthStatus('authorized');
-        loadLiveProducts(token || undefined);
-        return;
-      }
-
-      // Verifikasi token ke backend API dengan controller timeout guard
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2500);
-
-      fetch(DIGITAL_API_ENDPOINTS.AUTH_VERIFY, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        signal: controller.signal,
-      })
-        .then((res) => {
-          clearTimeout(timeoutId);
-          if (res.status === 403) {
-            setAuthStatus('forbidden');
-          } else if (res.status === 401) {
-            setAuthStatus('unauthenticated');
-            if (typeof window !== 'undefined') {
-              window.location.assign('/login?redirect=' + encodeURIComponent(window.location.pathname));
-            }
-          } else if (res.ok) {
-            setAuthStatus('authorized');
-            loadLiveProducts(token || undefined);
-          } else {
-            setAuthStatus('forbidden');
-          }
-        })
-        .catch(() => {
-          clearTimeout(timeoutId);
-          // Bila jaringan terhambat namun ada sesi/token yang valid, tetap izinkan akses
-          if (token || userId === ADMIN_KAYLA_ID) {
-            setAuthStatus('authorized');
-            loadLiveProducts(token || undefined);
-          } else {
-            setAuthStatus('unauthenticated');
-            if (typeof window !== 'undefined') {
-              window.location.assign('/login?redirect=' + encodeURIComponent(window.location.pathname));
-            }
-          }
-        });
-    } catch (_) {
-      setAuthStatus('forbidden');
     }
-  }, [router]);
+    void verifyAccess();
+    return () => {
+      active = false;
+      clearTimeout(timeout);
+      controller.abort();
+    };
+  }, []);
 
   const loadLiveProducts = async (token?: string) => {
     setCatalogStatus('loading');
