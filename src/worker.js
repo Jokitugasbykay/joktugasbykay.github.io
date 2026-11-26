@@ -290,28 +290,34 @@ async function createPayment(request, env) {
   const services = await supabase(env, `services?slug=in.(${filter})&select=id,slug,name,price,is_active,sale_percent,sale_amount,sale_label`);
   const catalog = new Map(services.filter(item => item.is_active !== false).map(item => [item.slug, item]));
   let total = 0;
+  let eligibleSubtotal = 0;
   const lines = [];
   for (const item of items) {
     const quantity = Number(item.quantity);
     const service = catalog.get(clean(item.productId, 80));
     if (!service || !Number.isSafeInteger(quantity) || quantity < 1) return json({ error: 'Layanan atau jumlah tidak valid.' }, 400);
     const originalPrice = Number(service.price);
-    const salePercent = Math.max(0, Math.min(100, Number(service.sale_percent) || 0));
+    const salePercent = Math.max(0, Math.min(99.99, Number(service.sale_percent) || 0));
     const saleAmount = Math.max(0, Number(service.sale_amount) || 0);
     const price = Math.max(1, Math.round(originalPrice - (saleAmount > 0 ? saleAmount : originalPrice * salePercent / 100)));
     if (!Number.isSafeInteger(originalPrice) || originalPrice <= 0 || !Number.isSafeInteger(price) || price < 0) return json({ error: 'Harga layanan belum valid.' }, 503);
     total += price * quantity;
     if (!Number.isSafeInteger(total)) return json({ error: 'Total pesanan tidak valid.' }, 400);
+    if (saleAmount === 0 && salePercent === 0) eligibleSubtotal += price * quantity;
     lines.push({ service_id: service.id, product_id: service.slug, name: service.name, quantity, unit_price: price, original_price: originalPrice, sale_percent: salePercent, sale_amount: saleAmount, sale_label: clean(service.sale_label, 50), tipe: 'REGULER' });
   }
-  const subtotal = total;
+  let promoRate = 0;
   const submittedPromo = clean(input.promo, 24).toUpperCase();
   if (submittedPromo) {
     const campaign = await activePromo(env);
     if (!campaign || submittedPromo !== campaign.coupon) return json({ error: 'Kode promo tidak berlaku atau sudah berakhir.' }, 409);
-    total = Math.round(total * (1 - campaign.discount_percent / 100));
+    promoRate = campaign.discount_percent / 100;
   }
-  if (subtotal > 1500000) total -= Math.round(total * 0.05);
+  total -= Math.round(total * promoRate);
+  if (eligibleSubtotal > 1500000) {
+    const eligibleAfterPromo = eligibleSubtotal - Math.round(eligibleSubtotal * promoRate);
+    total -= Math.round(eligibleAfterPromo * 0.05);
+  }
   if (Number(input.amount) !== total) return json({ error: 'Harga berubah. Muat ulang layanan sebelum membayar.' }, 409);
   const requestKey = clean(input.draftKey, 100);
   if (!/^(?:[0-9a-f-]{36}|req-[a-z0-9-]+)$/i.test(requestKey)) return json({ error: 'Identitas permintaan tidak valid.' }, 400);

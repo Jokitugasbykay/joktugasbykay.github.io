@@ -4,7 +4,6 @@
 (function () {
   'use strict';
 
-  const CATALOG_API = 'https://jokiin-payment-api.gamingyoga14.workers.dev';
 
   const state = {
     penawaranSpesialAktif: true,
@@ -396,7 +395,7 @@
 
   async function syncServerCartAdd(productId, qty) {
     try {
-      await fetch(`${CATALOG_API}/api/cart/items`, {
+      await fetch(`/api/cart/items`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -410,7 +409,7 @@
 
   async function syncServerCartClear() {
     try {
-      await fetch(`${CATALOG_API}/api/cart?cart_id=${encodeURIComponent(getCartSessionId())}`, {
+      await fetch(`/api/cart?cart_id=${encodeURIComponent(getCartSessionId())}`, {
         method: 'DELETE'
       });
     } catch (_) {}
@@ -941,7 +940,7 @@
     }
 
     try {
-      const res = await fetch(`${CATALOG_API}/api/checkout/spesial`, {
+      const res = await fetch(`/api/checkout/spesial`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1350,7 +1349,11 @@
         // Featured promo banner product stays in the top Penawaran Spesial banner
         if (limited && ap.slug === limited.slug) return;
 
-        const finalPrice = Math.round((ap.harga_dasar || 0) * (1 - (ap.diskon_persen || 0) / 100));
+        const basePrice = Number(ap.harga_dasar) || 0;
+        const saleAmount = Math.max(0, Number(ap.sale_amount) || 0);
+        const salePercent = Math.max(0, Math.min(99.99, Number(ap.diskon_persen) || 0));
+        const hasSale = saleAmount > 0 || salePercent > 0;
+        const finalPrice = Math.max(1, Math.round(basePrice - (saleAmount > 0 ? saleAmount : basePrice * salePercent / 100)));
         const mappedSlug = aliasMap[ap.slug] || ap.slug;
         const existing = products.find(
           cp => cp.id === ap.slug || cp.id === mappedSlug || cp.title.toLowerCase() === String(ap.nama || '').toLowerCase()
@@ -1360,13 +1363,18 @@
           ? Math.max(1, Number(ap.batas_beli_per_orang) || 1)
           : undefined;
         if (existing) {
-          existing.priceNum = finalPrice;
-          existing.originalPrice = ap.harga_dasar;
-          existing.hasSale = (ap.diskon_persen || 0) > 0;
-          existing.price = formatRupiah(finalPrice);
+          // Regular checkout uses the prices from public.services, the same source as the Worker.
+          if (existing.serviceId == null || isLimited) {
+            existing.priceNum = finalPrice;
+            existing.originalPrice = basePrice;
+            existing.hasSale = hasSale;
+            existing.price = formatRupiah(finalPrice);
+          }
           existing.stok = ap.stok;
-          existing.isLimitedEdition = isLimited;
-          existing.batasBeli = batasBeli;
+          if (existing.serviceId == null || isLimited) {
+            existing.isLimitedEdition = isLimited;
+            existing.batasBeli = batasBeli;
+          }
           if (typeof ap.total_sold === 'number') existing.total_sold = ap.total_sold;
         } else {
           products.push({
@@ -1375,8 +1383,8 @@
             category: ap.kategori || 'Akademik',
             price: formatRupiah(finalPrice),
             priceNum: finalPrice,
-            originalPrice: ap.harga_dasar,
-            hasSale: (ap.diskon_persen || 0) > 0,
+            originalPrice: basePrice,
+            hasSale,
             stok: ap.stok,
             isLimitedEdition: isLimited,
             batasBeli: batasBeli,
@@ -1503,8 +1511,8 @@
     // 2. Fetch live from Supabase jokiin-catalog Edge Function
     try {
       const [bannerRes, prodRes] = await Promise.all([
-        fetch(`${CATALOG_API}/api/promo/banner`).catch(() => null),
-        fetch(`${CATALOG_API}/api/products`).catch(() => null)
+        fetch(`/api/promo/banner`).catch(() => null),
+        fetch(`/api/products`).catch(() => null)
       ]);
 
       if (bannerRes && bannerRes.ok) {
@@ -1554,6 +1562,7 @@
                 deskripsi: s.description || '',
                 harga_dasar: Number(s.price || 0),
                 diskon_persen: Number(s.sale_percent || 0),
+                sale_amount: Number(s.sale_amount || 0),
                 stok: stokVal,
                 is_active: s.is_active !== false,
                 is_limited_edition: isLimited
