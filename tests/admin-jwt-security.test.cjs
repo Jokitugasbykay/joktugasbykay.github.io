@@ -77,6 +77,14 @@ function fixture(options = {}) {
 }
 
 const routes = ['/produk-digital/', '/api/digital-store/auth-verify'];
+
+async function authProblem(response, route, status, code) {
+  assert.equal(response.status, status);
+  assert.equal(response.headers.get('location'), null);
+  assert.equal(response.headers.get('cache-control'), 'no-store');
+  if (route.startsWith('/api/')) assert.equal((await response.json()).code, code);
+  else assert.match(await response.text(), /sesi admin/);
+}
 function denied(response, route, forbidden = false) {
   assert.equal(response.status, forbidden ? 403 : route.startsWith('/api/') ? 401 : 302);
   if (!forbidden && !route.startsWith('/api/')) {
@@ -137,7 +145,7 @@ for (const route of routes) {
   for (const behavior of ['throw', 'fetch-timeout', 'body-timeout']) {
     test(route + ' fails closed on ' + behavior, async () => {
       const f = fixture({ behavior, accelerateTimeout: true });
-      denied(await f.run(route, signed(claims())), route);
+      await authProblem(await f.run(route, signed(claims())), route, 503, 'AUTH_UNAVAILABLE');
       assert.deepEqual(f.deadlines, [5000]);
       assert.ok(f.signals.every(signal => signal.aborted));
       assert.deepEqual(f.assets, []);
@@ -145,6 +153,7 @@ for (const route of routes) {
   }
   for (const [name, response] of [
     ['Supabase unavailable', () => new Response(null, { status: 503 })],
+    ['Supabase rate limit', () => new Response(null, { status: 429 })],
     ['Supabase redirect', () => new Response(null, { status: 302, headers: { location: 'https://outside.invalid' } })],
     ['invalid JSON', () => new Response('not JSON')],
     ['missing ID', () => Response.json({ email: 'kaylafisika24@gmail.com' })],
@@ -152,14 +161,14 @@ for (const route of routes) {
   ]) {
     test(route + ' fails closed on ' + name, async () => {
       const f = fixture({ response });
-      denied(await f.run(route, signed(claims())), route);
+      await authProblem(await f.run(route, signed(claims())), route, 503, 'AUTH_UNAVAILABLE');
       assert.deepEqual(f.assets, []);
     });
   }
   test(route + ' fails closed when auth configuration is absent', async () => {
     for (const env of [{ SUPABASE_URL: '' }, { SUPABASE_ANON_KEY: '' }]) {
       const f = fixture();
-      denied(await f.run(route, signed(claims()), { env }), route);
+      await authProblem(await f.run(route, signed(claims()), { env }), route, 503, 'AUTH_UNAVAILABLE');
       assert.deepEqual(f.calls, []);
       assert.deepEqual(f.assets, []);
     }
@@ -170,6 +179,29 @@ for (const route of routes) {
       const f = fixture();
       assert.equal((await f.run(route, undefined, { headers: { cookie: 'sb-access-token=' + encodeURIComponent(value) } })).status, 200);
       assert.equal(f.calls.length, 1);
+    }
+  });
+  test(route + ' prefers the current session cookie over a legacy cookie', async () => {
+    const token = encodeURIComponent(signed(claims()));
+    for (const cookie of [
+      'sb-legacy-auth-token=old; sb-access-token=' + token,
+      'sb-access-token=' + token + '; sb-legacy-auth-token=old'
+    ]) {
+      const f = fixture();
+      assert.equal((await f.run(route, undefined, { headers: { cookie } })).status, 200);
+      assert.equal(f.calls.length, 1);
+    }
+  });
+  test(route + ' reports ambiguous session cookies without redirecting', async () => {
+    for (const cookie of [
+      'sb-access-token=current; sb-access-token=old',
+      'sb-project1-auth-token=old; sb-project2-auth-token=current'
+    ]) {
+      const f = fixture();
+      const response = await f.run(route, undefined, { headers: { cookie } });
+      await authProblem(response, route, 400, 'AMBIGUOUS_AUTH_COOKIE');
+      assert.deepEqual(f.calls, []);
+      assert.deepEqual(f.assets, []);
     }
   });
   test(route + ' denies malformed credentials without falling back to a valid cookie', async () => {
