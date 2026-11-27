@@ -708,37 +708,41 @@ async function handleSpecialCheckoutWithMayar(request, env, url) {
 
 const ADMIN_KAYLA_ID = '92e7a1cb-2136-496a-913b-00cd402c04f5';
 
+const AMBIGUOUS_ADMIN_COOKIE = Symbol('ambiguous admin cookie');
+
 function getAuthTokenFromRequest(request) {
   const authHeader = request.headers.get('authorization') || '';
-  const match = authHeader.match(/^Bearer\s+([^\s]+)$/i);
+  const match = authHeader.match(/^Bearer\s+([^\s,]+)$/i);
   if (request.headers.has('authorization')) return match ? match[1] : null;
 
   const cookie = request.headers.get('cookie') || '';
-  const cookieMatch = cookie.match(/(?:^|;\s*)(?:sb-access-token|sb-[a-z0-9]+-auth-token)=([^;]+)/i);
-  if (cookieMatch) {
-    try {
-      const decoded = decodeURIComponent(cookieMatch[1]);
-      if (decoded.startsWith('[') || decoded.startsWith('{')) {
-        const parsed = JSON.parse(decoded);
-        return parsed.access_token || parsed[0] || decoded;
-      }
-      return decoded;
-    } catch (_) {
-      return null;
+  const current = [...cookie.matchAll(/(?:^|;\s*)sb-access-token=([^;]*)/gi)];
+  const candidates = current.length ? current : [...cookie.matchAll(/(?:^|;\s*)sb-[a-z0-9]+-auth-token=([^;]*)/gi)];
+  if (candidates.length > 1) return AMBIGUOUS_ADMIN_COOKIE;
+  if (!candidates.length) return null;
+
+  try {
+    const decoded = decodeURIComponent(candidates[0][1]);
+    if (decoded.startsWith('[') || decoded.startsWith('{')) {
+      const parsed = JSON.parse(decoded);
+      return Array.isArray(parsed) ? parsed[0] : parsed.access_token;
     }
+    return decoded;
+  } catch (_) {
+    return null;
   }
-  return null;
 }
 
 async function verifyAdminKayla(request, env) {
   const token = getAuthTokenFromRequest(request);
+  if (token === AMBIGUOUS_ADMIN_COOKIE) return { ok: false, reason: 'ambiguous_cookie' };
   if (typeof token !== 'string' || !token.trim()) return { ok: false, reason: 'unauthenticated' };
 
   const controller = new AbortController();
   let timeout;
   try {
     const apikey = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_ANON_KEY;
-    if (!apikey || !env.SUPABASE_URL) return { ok: false, reason: 'error' };
+    if (!apikey || !env.SUPABASE_URL) return { ok: false, reason: 'unavailable' };
     const user = await Promise.race([
       (async () => {
         const res = await fetch(`${env.SUPABASE_URL.replace(/\/+$/, '')}/auth/v1/user`, {
@@ -746,8 +750,13 @@ async function verifyAdminKayla(request, env) {
           redirect: 'manual',
           signal: controller.signal
         });
-        if (!res.ok) return null;
-        return await res.json();
+        if (res.status === 401 || res.status === 403) return null;
+        if (!res.ok) throw new Error('Auth service rejected the request');
+        const user = await res.json();
+        if (!user || typeof user.id !== 'string' || !user.id) {
+          throw new Error('Auth service returned an invalid user');
+        }
+        return user;
       })(),
       new Promise((_, reject) => {
         timeout = setTimeout(() => {
@@ -756,11 +765,11 @@ async function verifyAdminKayla(request, env) {
         }, 5000);
       })
     ]);
-    if (!user || typeof user.id !== 'string' || !user.id) return { ok: false, reason: 'unauthenticated' };
+    if (!user) return { ok: false, reason: 'unauthenticated' };
     if (user.id !== ADMIN_KAYLA_ID) return { ok: false, reason: 'forbidden', userId: user.id };
     return { ok: true, user };
   } catch (_) {
-    return { ok: false, reason: 'error' };
+    return { ok: false, reason: 'unavailable' };
   } finally {
     clearTimeout(timeout);
     controller.abort();
@@ -823,9 +832,27 @@ function readDigitalRecipient(product, input) {
   return recipient;
 }
 
+function adminAuthFailureResponse(reason, isPage = false) {
+  const unavailable = reason === 'unavailable';
+  const status = unavailable ? 503 : 400;
+  const error = unavailable
+    ? 'Verifikasi sesi admin sedang tidak tersedia. Silakan coba lagi.'
+    : 'Cookie sesi admin ganda. Hapus cookie situs JOKI.IN, lalu masuk kembali.';
+  if (isPage) {
+    return new Response(error, {
+      status,
+      headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' }
+    });
+  }
+  return json({ error, code: unavailable ? 'AUTH_UNAVAILABLE' : 'AMBIGUOUS_AUTH_COOKIE' }, status);
+}
+
 async function handleDigitalStoreApi(request, env, url) {
   const auth = await verifyAdminKayla(request, env);
   if (!auth.ok) {
+    if (auth.reason === 'unavailable' || auth.reason === 'ambiguous_cookie') {
+      return adminAuthFailureResponse(auth.reason);
+    }
     if (auth.reason === 'forbidden') {
       return json({ error: 'Akses ditolak. Modul ini dalam masa pengembangan terbatas khusus Admin Kayla.', code: 'FORBIDDEN' }, 403);
     }
@@ -1021,6 +1048,9 @@ export default { async fetch(request, env) {
       if (!isStaticAsset) {
         const auth = await verifyAdminKayla(request, env);
         if (!auth.ok) {
+          if (auth.reason === 'unavailable' || auth.reason === 'ambiguous_cookie') {
+            return adminAuthFailureResponse(auth.reason, true);
+          }
           if (auth.reason === 'forbidden') {
             return new Response(DIGITAL_LOCKED_HTML, {
               status: 403,
